@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button, Box, Typography, Grid, Container } from "@mui/material";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import InsertChartIcon from "@mui/icons-material/InsertChart";
+import TimerIcon from "@mui/icons-material/Timer";
 
 import useTokenChecker from "../../utils/useTokenChecker.jsx";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -106,12 +107,12 @@ function HomePage() {
             }}
           >
             <Button
-              startIcon={<PlayCircleIcon />} // Add an icon to the button
+              startIcon={<TimerIcon />} // Add an icon to the button
               variant="contained"
               sx={buttonStyle}
-              onClick={() => navigate("/play/reallybadchess/")}
+              onClick={() => navigate("/timer")}
             >
-              Gioca <b style={{ marginLeft: "10px" }}>Really Bad Chess</b>
+              Vai al timer
             </Button>
             { loginStatus && 
               <Button
