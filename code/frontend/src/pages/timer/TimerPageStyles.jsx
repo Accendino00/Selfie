@@ -1,6 +1,7 @@
 const styles = {
     container: {
         display: 'flex',
+        flexDirection: 'column',
     },
     timer:{
         width: '100%',

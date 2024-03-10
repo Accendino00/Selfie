@@ -30,6 +30,9 @@ const styles = {
     resetbutton:{
         margin: '0 10px',
     },
+    stopbutton:{
+        margin: '0 10px',
+    },
 }
 
 export default styles;

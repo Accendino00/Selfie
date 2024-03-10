@@ -5,16 +5,15 @@ const styles = {
     paper : {
         width: '100%',
         padding: '20px',
+        margin: '20px 0',
     },
     textfield: {
         width: '100%',
         marginBottom: '20px',
+        marginTop: '20px',
     },
     addbutton: {
         margin: '0 10px',
-    },
-    list : {
-        width: '100%',
     },
 }
 

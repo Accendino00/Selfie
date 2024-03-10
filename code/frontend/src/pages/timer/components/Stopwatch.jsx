@@ -1,26 +1,26 @@
 import React from 'react';
 import { Paper, Button, Container } from '@mui/material';
-import styles from './StopwatchStyles.jsx'; // Assicurati di adattare il percorso e il nome del file di stile come necessario
+import styles from './StopwatchStyles.jsx';
 
-function Stopwatch() {
+function Stopwatch({ decrementStudyTime }) {
     const [time, setTime] = React.useState(0);
     const [isActive, setIsActive] = React.useState(false);
     const [isPaused, setIsPaused] = React.useState(false);
     const [intervalId, setIntervalId] = React.useState(null);
 
-    // Aggiorna il timer basandoti sul tempo trascorso, anziché incrementare i secondi
     React.useEffect(() => {
         if (isActive && !isPaused) {
             const startTime = Date.now() - time;
             const id = setInterval(() => {
                 setTime(Date.now() - startTime);
+                decrementStudyTime(1); // Decrementa il tempo di studio ogni secondo
             }, 1000);
             setIntervalId(id);
         } else if (!isActive) {
             clearInterval(intervalId);
         }
         return () => clearInterval(intervalId);
-    }, [isActive, isPaused]);
+    }, [isActive, isPaused, decrementStudyTime]);
 
     const toggle = () => {
         setIsActive(!isActive);
@@ -34,7 +34,6 @@ function Stopwatch() {
         clearInterval(intervalId);
     };
 
-    // Converti il tempo in ore, minuti e secondi
     const hours = Math.floor(time / 3600000);
     const minutes = Math.floor((time % 3600000) / 60000);
     const seconds = Math.floor((time % 60000) / 1000);

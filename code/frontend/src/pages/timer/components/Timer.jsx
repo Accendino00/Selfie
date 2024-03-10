@@ -2,7 +2,7 @@ import React from 'react';
 import { Paper, Button, Container, TextField } from '@mui/material';
 import styles from './TimerStyles.jsx';
 
-function Timer() {
+function Timer({ decrementStudyTime }) {
     const [totalSeconds, setTotalSeconds] = React.useState(0);
     const [isActive, setIsActive] = React.useState(false);
     const [inputValue, setInputValue] = React.useState('');
@@ -11,17 +11,20 @@ function Timer() {
         let interval;
         if (isActive && totalSeconds > 0) {
             interval = setInterval(() => {
-                setTotalSeconds(seconds => seconds - 1);
+                setTotalSeconds(seconds => {
+                    decrementStudyTime(1); // Decrementa il tempo di studio ogni secondo
+                    return seconds - 1;
+                });
             }, 1000);
         } else if (totalSeconds <= 0) {
             setIsActive(false);
         }
         return () => clearInterval(interval);
-    }, [isActive, totalSeconds]);
+    }, [isActive, totalSeconds, decrementStudyTime]);
 
     const startTimer = () => {
         if (inputValue) {
-            setTotalSeconds(parseInt(inputValue, 10) * 60); // Esempio: converti minuti in secondi
+            setTotalSeconds(parseInt(inputValue, 10) * 60); // Converti minuti in secondi
             setIsActive(true);
         }
     };
@@ -36,7 +39,6 @@ function Timer() {
         setInputValue('');
     };
 
-    // Calcolo ore, minuti e secondi per la visualizzazione
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
@@ -71,4 +73,3 @@ function Timer() {
 }
 
 export default Timer;
-

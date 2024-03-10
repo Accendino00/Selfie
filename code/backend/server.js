@@ -65,6 +65,8 @@ app.use((err, req, res, next) => {
 app.use("/api", require(config.ROUTESERVIZI + "/registration"))
 app.use("/api", require(config.ROUTESERVIZI + "/login"))
 app.use("/api", require(config.ROUTESERVIZI + "/diagnostic"))
+//app.use("/api", require(config.ROUTESERVIZI + "/timer"))
+app.use("/api", require(config.ROUTESERVIZI + "/notes"))
 
 
 // Setup per mandare le richieste di "/" a "routes/webpages" package

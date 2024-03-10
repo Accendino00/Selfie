@@ -3,60 +3,69 @@ import { Paper, Button, Container, TextField, List, ListItem, ListItemText, Icon
 import DeleteIcon from '@mui/icons-material/Delete';
 // Assumi che questo sia un file di stile che hai creato
 import styles from './NotesEditorStyles.jsx';
+import Cookies from 'js-cookie';
 
-function NotesEditor() {
-    const [notes, setNotes] = useState([]);
+function NotesEditor({ onNoteAdded }) {
+    const [title, setTitle] = useState('');
     const [noteInput, setNoteInput] = useState('');
+    const token = Cookies.get('token');
 
     const handleAddNote = async () => {
-        if (noteInput.trim()) {
-            const newNote = noteInput.trim();
+        const newNote = noteInput.trim();
+        const newTitle = title.trim();
+        if (newNote && newTitle) { // Aggiunto controllo su entrambi i campi
             try {
                 const response = await fetch('/api/notes', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
                     },
-                    body: JSON.stringify({ note: newNote }),
+                    body: JSON.stringify({
+                        title: newTitle,
+                        note: newNote
+                    }),
                 });
                 if (response.ok) {
-                    const addedNote = await response.json(); // Assumi che il server restituisca l'appunto salvato
-                    setNotes([...notes, addedNote]);
+                    const addedNote = await response.json();
+                    setTitle('');
                     setNoteInput('');
+                    if (onNoteAdded) {
+                        onNoteAdded(addedNote);
+                    }
                 } else {
-                    // Gestisci l'errore nel caso in cui la risposta non sia ok
                     console.error('Failed to save the note');
                 }
             } catch (error) {
                 console.error('Failed to save the note', error);
             }
+        } else {
+            // Opzionalmente, gestisci il caso in cui uno dei campi è vuoto
+            console.error('Title and note content are required');
         }
     };
 
-    const handleDeleteNote = async (id) => {
-        try {
-            const response = await fetch(`/api/notes/${id}`, {
-                method: 'DELETE',
-            });
-            if (response.ok) {
-                // Rimuovi l'appunto dall'interfaccia utente se l'eliminazione sul server è riuscita
-                const newNotes = notes.filter(note => note.id !== id);
-                setNotes(newNotes);
-            } else {
-                console.error('Failed to delete the note');
-            }
-        } catch (error) {
-            console.error('Failed to delete the note', error);
-        }
-    };
+
 
     const handleInputChange = (event) => {
         setNoteInput(event.target.value);
     };
 
+    const handleTitleChange = (event) => {
+        setTitle(event.target.value);
+    };
+
     return (
         <Container sx={styles.container}>
             <Paper elevation={3} sx={styles.paper}>
+                <TextField
+                    label="Title"
+                    variant="outlined"
+                    value={title}
+                    onChange={handleTitleChange}
+                    sx={styles.textField}
+                    fullWidth
+                />
                 <TextField
                     label="Nuovo appunto"
                     variant="outlined"
@@ -68,20 +77,6 @@ function NotesEditor() {
                 <Button sx={styles.addButton} onClick={handleAddNote} variant="contained" color="primary">
                     Aggiungi Appunto
                 </Button>
-                <List sx={styles.list}>
-                    {notes.map((note, index) => (
-                        <ListItem
-                            key={index}
-                            secondaryAction={
-                                <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteNote(note.id)}>
-                                    <DeleteIcon />
-                                </IconButton>
-                            }
-                        >
-                            <ListItemText primary={note.content} /> {/* Assumendo che l'appunto abbia un attributo 'content' */}
-                        </ListItem>
-                    ))}
-                </List>
             </Paper>
         </Container>
     );
