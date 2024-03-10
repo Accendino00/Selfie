@@ -8,7 +8,7 @@ import ErrorPage from './error-page.jsx'
 
 import LandingPage from './pages/common/LandingPage.jsx'
 
-import HomePage from './pages/common/HomePage.jsx'
+import CalendarPage from './pages/calendar/CalendarPage.jsx'
 
 
 import {
@@ -34,7 +34,7 @@ function App() {
     },
     {
       path: "/home",
-      element: <HomePage />,
+      element: <CalendarPage />,
     },
     // Routes with a navbar on the side
     {
