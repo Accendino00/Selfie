@@ -10,6 +10,10 @@ import LandingPage from './pages/common/LandingPage.jsx'
 
 import CalendarPage from './pages/calendar/CalendarPage.jsx'
 
+import NotesPage from './pages/notes/NotesPage.jsx'
+
+import TimerPage from './pages/timer/TimerPage.jsx'
+
 
 import {
   createBrowserRouter,
@@ -35,6 +39,14 @@ function App() {
     {
       path: "/home",
       element: <CalendarPage />,
+    },
+    {
+      path: "/notes",
+      element: <NotesPage />,
+    },
+    {
+      path: "/timer",
+      element: <TimerPage />,
     },
     // Routes with a navbar on the side
     {
