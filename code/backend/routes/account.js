@@ -14,7 +14,7 @@ let {
  * La richista sarà del tipo:
     GET /api/login HTTP/1.1
     User-Agent: Mozilla/4.0 (compatible; MSIE5.01; Windows NT)  // Questo potrebbe essere diverso
-    Host: www.chesscake.com                                     // Per ora localhost:8000
+    Host:                                    // Per ora localhost:8000
     Content-Type: json
     Content-Length: <lenght calcolata>
     Authentication: Bearer <token>                              // Da qui possiamo determinare il suo username

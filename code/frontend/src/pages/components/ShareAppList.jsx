@@ -21,7 +21,7 @@ const ShareAppList = ({ sharedText, url }) => {
     >
       <FacebookShareButton
         url={url}
-        hashtag="#chesscake"
+        hashtag="#Selfie"
         style={{
           display: "flex",
           alignItems: "center",
@@ -41,7 +41,7 @@ const ShareAppList = ({ sharedText, url }) => {
       <TwitterShareButton
         url={url}
         title={sharedText}
-        hashtags={["chesscake", "veryfun"]}
+        hashtags={["selfie", "veryfun"]}
         style={{
           display: "flex",
           alignItems: "center",

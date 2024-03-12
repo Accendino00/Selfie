@@ -1,39 +1,95 @@
 let express = require("express");
 let config = require("../config");
 let router = express.Router();
-
-let events = [];
-
-router.get('/getEvents', (req, res) => {
-    res.json(events);
-});
-
-router.post('/addEvents', (req, res) => {
-    let event = req.body;
-    events.push(event);
-    res.json(events);
-});
+const { authenticateJWT } = require('../middleware/authorization');
+const { clientMDB } = require('../utils/dbmanagement');
+const { ObjectId } = require('mongodb');
 
 
-router.put('/modifyEvents/:id', (req, res) => {
-    const { id } = req.params;
-    console.log(req.params)
-    const index = events.findIndex(event => event.id === id);
-    if (index >= 0) {
-      // Update the event at index
-      events[index] = { ...events[index], ...req.body };
-      console.log(events)
-      res.json(events);
-    } else {
-      res.status(404).send('Event not found');
+
+
+router.get('/getEvents', authenticateJWT, (req, res) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const calendarCollection = clientMDB.db("SelfieGD").collection('Calendar');
+        calendarCollection.find({}).toArray().then((events) => {
+          const eventsWithCorrectId = events.map((event) => {
+            event.id = event._id.toString();
+            return event;
+          });
+          res.json(eventsWithCorrectId);
+        }).catch((err) => {
+          console.log(err);
+          res.status(500).send('Error getting events');
+        }
+      );
+      } catch (err) {
+        reject(err);
+      }
     }
-  });
+  )}
+);
+
+function saveEventToDB(event) {
+  return new Promise((resolve, reject) => {
+    try {
+      const calendarCollection = clientMDB.db("SelfieGD").collection('Calendar');
+      calendarCollection.insertOne(event).then((result) => {
+        result.id = result.insertedId.toString();
+        resolve(result);
+      }) .catch((error) => {
+        reject(error);
+      }
+    );
+    } catch (err) {
+      reject(err);
+    }
+  }
+)};
+
+router.post('/addEvents', authenticateJWT, (req, res) => {
+    return new Promise((resolve, reject) => {
+      const event = req.body;
+      saveEventToDB(event).then((savedEvent) => {
+        res.json(savedEvent);
+      }).catch((err) => {
+        console.log(err);
+        res.status(500).send('Error adding event');
+      });
+    }
+  )}
+);
+
+router.put('/modifyEvents/:id', authenticateJWT, (req, res) => {
+  return new Promise((resolve, reject) => {
+    const id = req.params.id;
+    const event = req.body;
+    const calendarCollection = clientMDB.db("SelfieGD").collection('Calendar');
+    calendarCollection.updateOne({ _id: new ObjectId(id) }, { $set: event }).then((result) => {
+      res.json(result);
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send('Error modifying event');
+    });
+  }
+)}
+);
+
+
   
-  router.delete('/deleteEvents/:id', (req, res) => {
-    const { id } = req.params;
-    events = events.filter(event => event.id !== id);
-    res.json(events)
-  });
+router.delete('/deleteEvents/:id', (req, res) => {
+  return new Promise((resolve, reject) => {
+    const id = req.params.id;
+    const calendarCollection = clientMDB.db("SelfieGD").collection('Calendar');
+    calendarCollection.deleteOne({ _id: new ObjectId(id) }).then((result) => {
+      res.json(result);
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send('Error deleting event');
+    });
+  }
+)}
+);  
 
 module.exports = router;
 

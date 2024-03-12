@@ -48,6 +48,5 @@ function TimerPage() {
     );
 }
 
-
 export default TimerPage;
 

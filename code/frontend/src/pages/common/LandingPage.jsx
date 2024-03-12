@@ -13,7 +13,7 @@ function LandingPage() {
   React.useEffect(() => {
     if (!isTokenLoading) {
       if (loginStatus) {
-        navigate("/home");
+        navigate("/calendar");
       } else {
         navigate("/login");
       }

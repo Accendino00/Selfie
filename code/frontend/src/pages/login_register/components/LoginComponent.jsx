@@ -99,7 +99,7 @@ function LoginComponent(props) {
         await Cookies.set('token', data.token, { expires: inTwoDays }); // Expires in 2 days
 
         setLoading(false);
-        window.location.pathname = "/home";
+        window.location.pathname = "/calendar";
       } else {
         // Gestione errori con quello che ha fatto l'utente
         setErrorMessageLogin("Credenziali errate");
@@ -203,7 +203,7 @@ function LoginComponent(props) {
           type="submit"
           variant="outlined"
           sx={styles.anonimoButton}
-          onClick={() => window.location.pathname = "/home"}
+          onClick={() => window.location.pathname = "/calendar"}
         >
           Continua come anonimo
         </Button>

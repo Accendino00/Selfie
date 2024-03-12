@@ -22,7 +22,7 @@ export default function LoginPage() {
     }
 
     if (loginStatus) {
-        navigate("/home");
+        navigate("/calendar");
     }
 
     return (

@@ -37,7 +37,7 @@ function App() {
       element: <LoginPage />,
     },
     {
-      path: "/home",
+      path: "/calendar",
       element: <CalendarPage />,
     },
     {

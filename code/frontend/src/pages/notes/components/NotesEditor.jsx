@@ -12,8 +12,7 @@ function NotesEditor({ onNoteAdded }) {
 
     const handleAddNote = async () => {
         const newNote = noteInput.trim();
-        const newTitle = title.trim();
-        if (newNote && newTitle) { // Aggiunto controllo su entrambi i campi
+        if (newNote) { // Aggiunto controllo su entrambi i campi
             try {
                 const response = await fetch('/api/notes', {
                     method: 'POST',
@@ -22,7 +21,7 @@ function NotesEditor({ onNoteAdded }) {
                         'Authorization': `Bearer ${token}`,
                     },
                     body: JSON.stringify({
-                        title: newTitle,
+                        title: title,
                         note: newNote
                     }),
                 });

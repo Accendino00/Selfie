@@ -5,6 +5,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, FormControl, InputLabel, Box, FormControlLabel, Checkbox, ListItemText } from '@mui/material';
 import commonColors from './CalendarStyles';
+import Cookies from 'js-cookie';
 
 export default function Calendar({ createButton }) {
   const [events, setEvents] = useState([]);
@@ -21,17 +22,30 @@ export default function Calendar({ createButton }) {
   const [modifying, setModifying] = useState(false);
   const [currentId, setCurrentId] = useState('');
   const [description, setDescription] = useState('');
+  const token = Cookies.get('token');
 
   useEffect(() => {
-    fetch('/api/getEvents')
-      .then(response => response.json())
-      .then(data => {
-        setEvents(data)
-        setModifying(false)
-        setIsRecurring(false)
+    const fetchEvents = () => {
+      fetch('/api/getEvents', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       })
-      .catch(error => console.error("Error fetching events:", error));
-  }, []);
+        .then(response => response.json())
+        .then(data => {
+          setEvents(data);
+        })
+        .catch(error => console.error("Error fetching events:", error));
+    };
+  
+    // Avvia il polling al caricamento del componente
+    const intervalId = setInterval(fetchEvents, 1000); // 1 secondo
+  
+    // Pulizia: interrompe il polling quando il componente viene smontato
+    return () => clearInterval(intervalId);
+  }, [token]); // Aggiungi altre dipendenze qui se necessario
+  
 
 
 
@@ -57,6 +71,10 @@ export default function Calendar({ createButton }) {
   const deleteEvent = () => {
     fetch(`/api/deleteEvents/${currentId}`, {
       method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
     })
       .then(response => response.json())
       .then(data => { {
@@ -72,7 +90,6 @@ export default function Calendar({ createButton }) {
   const saveEvent = () => {
     
     let eventData = {
-      id: modifying ? currentId : Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
       title: eventTitle,
       description: description,
       color: eventColor,
@@ -102,6 +119,7 @@ export default function Calendar({ createButton }) {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify(eventData),
         })
@@ -117,12 +135,13 @@ export default function Calendar({ createButton }) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(eventData),
       })
         .then(response => response.json())
         .then(data => {
-          setEvents(data);
+          setEvents(...events, data);
           resetForm();
           handleClose();
 
@@ -260,6 +279,11 @@ export default function Calendar({ createButton }) {
         events={events}
         select={(e) => addEvent(e)}
         eventClick={(e) => modifyEvent(e.event)}
+        themeSystem='bootstrap5'
+        height='100%'
+        aspectRatio={1}
+        
+        
       />
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Add New Event</DialogTitle>

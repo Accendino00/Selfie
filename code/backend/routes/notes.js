@@ -5,12 +5,11 @@ const { authenticateJWT } = require('../middleware/authorization');
 const { clientMDB } = require('../utils/dbmanagement');
 const { ObjectId } = require('mongodb');
 
-
 function saveNoteToDatabase(note) {
     return new Promise((resolve, reject) => {
         try { 
             const notesCollection = clientMDB.db("SelfieGD").collection("Notes");
-            notesCollection.insertOne({ note: note }).then((result) => {
+            notesCollection.insertOne({ title: note.title, note: note }).then((result) => {
                 resolve({ 
                     id: result.insertedId.toString(), // Ottieni l'ID inserito e convertilo in stringa
                     ...note 
@@ -42,7 +41,6 @@ function deleteNoteFromDatabase(id) {
     });
 }
 
-
 function getNotesFromDatabase() {
     return new Promise((resolve, reject) => {
         const notesCollection = clientMDB.db("SelfieGD").collection("Notes");
@@ -59,7 +57,6 @@ function getNotesFromDatabase() {
         });
     });
 }
-
 
 router.post("/notes", authenticateJWT, function (req, res) {
     if (res.statusCode != 200) return;  // If the middleware didn't authenticate the user, return
@@ -106,7 +103,5 @@ router.get("/notes", authenticateJWT, function (req, res) {
         res.status(500).send({ message: "Failed to fetch notes" });
     });
 });
-
-
 
 module.exports = router;
