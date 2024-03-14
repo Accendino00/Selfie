@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Paper, Button, Container, TextField, List, ListItem, ListItemText, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 // Assumi che questo sia un file di stile che hai creato
 import styles from './NotesListStyles.jsx';
 import Cookies from 'js-cookie';
 
-function NotesList({ notes, onNoteDeleted }) { // Aggiungi onNoteDeleted come prop per gestire la cancellazione
+function NotesList({ notes, onNoteDeleted, onNoteModified }) { // Aggiungi onNoteDeleted come prop per gestire la cancellazione
     const token = Cookies.get('token');
 
     const handleDeleteNote = async (id) => {
@@ -33,9 +34,14 @@ function NotesList({ notes, onNoteDeleted }) { // Aggiungi onNoteDeleted come pr
             {notes.map(note => (
                 <ListItem key={note.id}>
                     <ListItemText primary={note.title} />
-                    <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteNote(note.id)}>
-                        <DeleteIcon />
-                    </IconButton>
+                    <div> {/* Wrap the multiple JSX elements inside a single parent element */}
+                        <IconButton edge="end" aria-label="add" onClick={() => onNoteModified(note.id)}>
+                            <AddIcon />
+                        </IconButton>
+                        <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteNote(note.id)}>
+                            <DeleteIcon />
+                        </IconButton>
+                    </div>
                 </ListItem>
             ))}
         </List>

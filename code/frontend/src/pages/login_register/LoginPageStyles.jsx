@@ -1,9 +1,9 @@
 const styles = {
     container: {
-        display: 'flex',
-        flexDirection: 'column', // Imposta i figli uno sotto l'altro
-        alignItems: 'center', // Allinea i figli al centro orizzontalmente
-        justifyContent: 'space-around', // Distanzia i figli uniformemente
+        padding: 0,
+        margin: 0, 
+        width: '100%', 
+        position:'relative',
     },
     grid:{
         height: '100%',

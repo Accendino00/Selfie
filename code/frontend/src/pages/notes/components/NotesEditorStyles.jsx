@@ -15,6 +15,9 @@ const styles = {
     addbutton: {
         margin: '0 10px',
     },
+    modifybutton: {
+        margin: '0 10px',
+    },
 }
 
 export default styles;
