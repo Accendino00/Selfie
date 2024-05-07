@@ -6,19 +6,33 @@ import ArrowBackIos from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
 import styles from "./TimerPageStyles.jsx";
 import StudyTime from "./components/StudyTime";
-import { useState } from "react";
+import FinishedStudying from "./components/FinishedStudying";
+import { useState, useEffect, useCallback } from "react";
 
 function TimerPage() {
     const [currentWidget, setCurrentWidget] = useState('timer');
-    const [studyTime, setStudyTime] = useState(0); // Il tempo di studio in secondi
+    const [studyTime, setStudyTime] = useState(3600); // Default to 1 hour
+    const [finishedStudying, setFinishedStudying] = useState(false);
 
-    const updateStudyTime = (time) => {
-        setStudyTime(time);
-    };
+    useEffect(() => {
+        if (studyTime <= 0) {
+            setFinishedStudying(true);
+            setStudyTime(0);
+        } else {
+            setFinishedStudying(false);
+        }
+    }, [studyTime]);
 
-    const decrementStudyTime = (timeDecrement) => {
-        setStudyTime((prevTime) => prevTime - timeDecrement);
-    };
+    const decrementStudyTime = useCallback((timeDecrement) => {
+        setStudyTime(prevTime => {
+            const updatedTime = Math.max(0, prevTime - timeDecrement);
+            console.log('Updated Study Time:', updatedTime);  // Debugging the update
+            return updatedTime;
+        });
+    }, []);
+    //si potrebbe usare anche mettere [studyTime] 
+    
+    
 
     const isTimer = currentWidget === 'timer';
 
@@ -28,13 +42,25 @@ function TimerPage() {
 
     return (
         <Container sx={styles.container}>
-            <StudyTime remainingTime={studyTime} updateStudyTime={updateStudyTime} />
+            {!finishedStudying ? (
+                <StudyTime remainingTime={studyTime} updateStudyTime={setStudyTime} />
+            ) : (
+                <>
+                    <Container sx={styles.container}>
+                        <FinishedStudying/>
+                        <Button onClick={() => {
+                            setFinishedStudying(false);
+                            setStudyTime(3600); // Reset to 1 hour or another initial value
+                        }}>Ricomincia</Button>
+                    </Container>
+                </>
+            )}
             {isTimer ? (
                 <>
                     <Button sx={{ position: 'absolute', top: '10px', left: '10px' }} onClick={toggleWidget}>
                         <ArrowBackIos />
                     </Button>
-                    <Timer decrementStudyTime={decrementStudyTime} />
+                    <Timer decrementStudyTime={decrementStudyTime} onTimeDecrement={decrementStudyTime} />
                 </>
             ) : (
                 <>
@@ -49,4 +75,3 @@ function TimerPage() {
 }
 
 export default TimerPage;
-

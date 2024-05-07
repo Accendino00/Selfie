@@ -1,73 +1,77 @@
-import React from 'react';
-import { Paper, Button, Container, TextField } from '@mui/material';
+import React, { useState, useEffect, useRef } from 'react';
+import { Container, Button, Paper } from '@mui/material';
+import ProgressBar from './ProgressBar.jsx';
 import styles from './TimerStyles.jsx';
+import TimeInput from './TimeInput';
 
-function Timer({ decrementStudyTime }) {
-    const [totalSeconds, setTotalSeconds] = React.useState(0);
-    const [isActive, setIsActive] = React.useState(false);
-    const [inputValue, setInputValue] = React.useState('');
+function Timer({ onTimeDecrement }) {
+    const TOTAL_DURATION = 3600;  // Total duration in seconds, can be adjusted or fetched
+    const [totalSeconds, setTotalSeconds] = useState(TOTAL_DURATION);
+    const [isActive, setIsActive] = useState(false);
+    const intervalRef = useRef(null);
 
-    React.useEffect(() => {
-        let interval;
-        if (isActive && totalSeconds > 0) {
-            interval = setInterval(() => {
-                setTotalSeconds(seconds => {
-                    decrementStudyTime(1); // Decrementa il tempo di studio ogni secondo
-                    return seconds - 1;
+    useEffect(() => {
+        if (isActive) {
+            intervalRef.current = setInterval(() => {
+                setTotalSeconds(prevSeconds => {
+                    const nextSeconds = prevSeconds - 1;
+                    if (nextSeconds <= 0) {
+                        clearInterval(intervalRef.current);
+                        setIsActive(false);
+                        onTimeDecrement(TOTAL_DURATION);
+                        return 0;
+                    }
+                    return nextSeconds;
                 });
             }, 1000);
-        } else if (totalSeconds <= 0) {
-            setIsActive(false);
         }
-        return () => clearInterval(interval);
-    }, [isActive, totalSeconds, decrementStudyTime]);
+        return () => clearInterval(intervalRef.current);
+    }, [isActive, onTimeDecrement, TOTAL_DURATION]);
+    
 
     const startTimer = () => {
-        if (inputValue) {
-            setTotalSeconds(parseInt(inputValue, 10) * 60); // Converti minuti in secondi
+        if (totalSeconds > 0 && !isActive) {
             setIsActive(true);
         }
     };
 
     const stopTimer = () => {
+        clearInterval(intervalRef.current);
         setIsActive(false);
     };
 
     const resetTimer = () => {
-        setTotalSeconds(0);
+        clearInterval(intervalRef.current);
+        setTotalSeconds(TOTAL_DURATION);
         setIsActive(false);
-        setInputValue('');
+        onTimeDecrement(TOTAL_DURATION); // Notify parent component of reset
     };
 
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
+    const handleTimeChange = (newTotalSeconds) => {
+        setTotalSeconds(newTotalSeconds);
+    };
 
     return (
         <Container sx={styles.container}>
-            <Paper elevation={3} sx={styles.paper}>
-                <TextField
-                    label="Minuti"
-                    variant="outlined"
-                    value={inputValue}
-                    onChange={e => setInputValue(e.target.value)}
-                    sx={styles.input}
-                />
-                <Container sx={styles.time}>
-                    {hours < 10 ? '0' + hours : hours}:{minutes < 10 ? '0' + minutes : minutes}:{seconds < 10 ? '0' + seconds : seconds}
-                </Container>
-                <Container sx={styles.buttongroup}>
-                    <Button sx={styles.startbutton} onClick={startTimer} disabled={isActive}>
-                        Start
-                    </Button>
-                    <Button sx={styles.stopbutton} onClick={stopTimer} disabled={!isActive}>
-                        Stop
-                    </Button>
-                    <Button sx={styles.resetbutton} onClick={resetTimer}>
-                        Reset
-                    </Button>
-                </Container>
-            </Paper>
+            {isActive ? (
+                <>
+                    <ProgressBar 
+                hours={Math.floor(totalSeconds / 3600)} 
+                minutes={Math.floor((totalSeconds % 3600) / 60)} 
+                seconds={totalSeconds % 60} 
+                inputValue={TOTAL_DURATION}
+                label="Tempo di studio" 
+                clockwise={true}
+            />
+                    <Button sx={styles.stopbutton} onClick={stopTimer}>Stop</Button>
+                    <Button sx={styles.resetbutton} onClick={resetTimer}>Reset</Button>
+                </>
+            ) : (
+                <Paper elevation={3} sx={styles.paper}>
+                    <TimeInput totalSeconds={totalSeconds} onTimeChange={handleTimeChange} />
+                    <Button sx={styles.startbutton} onClick={startTimer} disabled={totalSeconds <= 0}>Start</Button>
+                </Paper>
+            )}
         </Container>
     );
 }
