@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { TextField, Container, Button } from '@mui/material'; // Aggiunta di Button qui
+import { Container, Button } from '@mui/material';
 import styles from './StudyTimeStyles.jsx';
+import TimeInput from './TimeInput'; // Assicurati che il percorso sia corretto
 
 function StudyTime({ remainingTime, updateStudyTime }) {
     const [editMode, setEditMode] = useState(!remainingTime);
 
-    const handleInputChange = (event) => {
-        updateStudyTime(event.target.value * 60); // Converti i minuti in secondi
+    const handleButtonClick = () => {
         setEditMode(false);
     };
 
@@ -19,15 +19,12 @@ function StudyTime({ remainingTime, updateStudyTime }) {
             {editMode ? (
                 <>
                     <p>Imposta il tuo tempo di studio</p>
-                    <TextField
-                        label="Minuti"
-                        variant="outlined"
-                        onChange={handleInputChange}
-                    />
+                    <TimeInput totalSeconds={remainingTime} onTimeChange={updateStudyTime} />
+                    <Button onClick={handleButtonClick}>Conferma</Button>
                 </>
             ) : (
                 <>
-                    <p>Tempo di studio rimanente: {Math.floor(remainingTime / 60)} minuti</p>
+                    <p>Tempo di studio rimanente: {Math.floor(remainingTime / 3600)} ore, {Math.floor((remainingTime % 3600) / 60)} minuti, {remainingTime % 60} secondi</p>
                     <Button onClick={handleUpdateClick}>Aggiorna</Button>
                 </>
             )}

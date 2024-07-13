@@ -1,6 +1,7 @@
 import React from 'react';
 import { Paper, Button, Container } from '@mui/material';
 import styles from './StopwatchStyles.jsx';
+import ProgressBar from './ProgressBar.jsx';
 
 function Stopwatch({ decrementStudyTime }) {
     const [time, setTime] = React.useState(0);
@@ -40,6 +41,16 @@ function Stopwatch({ decrementStudyTime }) {
 
     return (
         <Container sx={styles.container}>
+            {isActive ? (
+                <Container sx={styles.container}>
+                    <ProgressBar hours={hours} minutes={minutes} seconds={seconds} inputValue={60} label="Tempo di studio" clockwise={false} />
+                    <Container sx={styles.buttongroup}>
+                        <Button sx={styles.resetbutton} onClick={reset}>
+                            Reset
+                    </Button>
+                    </Container>
+                </Container>
+            ) : (
             <Paper elevation={3} sx={styles.paper}>
                 <Container sx={styles.time}>
                     {hours < 10 ? '0' + hours : hours}:{minutes < 10 ? '0' + minutes : minutes}:{seconds < 10 ? '0' + seconds : seconds}
@@ -53,6 +64,7 @@ function Stopwatch({ decrementStudyTime }) {
                     </Button>
                 </Container>
             </Paper>
+            )}
         </Container>
     );
 }

@@ -13,29 +13,10 @@ const styles = {
         zIndex: 2,
         backgroundColor: 'rgba(255, 255, 255, 0.8)',
     },
-    input:{
-        width: '100%',
-        marginBottom: '20px',
-    },
-    time:{
+    text:{
         textAlign: 'center',
         fontSize: '2rem',
         fontWeight: 'bold',
-    },
-    buttongroup:{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: '20px',
-    },
-    startbutton:{
-        margin: '0 10px',
-    },
-    resetbutton:{
-        margin: '0 10px',
-    },
-    stopbutton:{
-        margin: '0 10px',
     },
 }
 
