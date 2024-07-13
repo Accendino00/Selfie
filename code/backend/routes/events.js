@@ -11,7 +11,7 @@ const { ObjectId } = require('mongodb');
 router.get('/getEvents', authenticateJWT, (req, res) => {
     return new Promise((resolve, reject) => {
       try {
-        const calendarCollection = clientMDB.db("SelfieGD").collection('Calendar');
+        const calendarCollection = clientMDB.db("SelfieGD").collection('Events');
         calendarCollection.find({}).toArray().then((events) => {
           const eventsWithCorrectId = events.map((event) => {
             event.id = event._id.toString();
@@ -33,7 +33,7 @@ router.get('/getEvents', authenticateJWT, (req, res) => {
 function saveEventToDB(event) {
   return new Promise((resolve, reject) => {
     try {
-      const calendarCollection = clientMDB.db("SelfieGD").collection('Calendar');
+      const calendarCollection = clientMDB.db("SelfieGD").collection('Events');
       calendarCollection.insertOne(event).then((result) => {
         result.id = result.insertedId.toString();
         resolve(result);
@@ -64,7 +64,7 @@ router.put('/modifyEvents/:id', authenticateJWT, (req, res) => {
   return new Promise((resolve, reject) => {
     const id = req.params.id;
     const event = req.body;
-    const calendarCollection = clientMDB.db("SelfieGD").collection('Calendar');
+    const calendarCollection = clientMDB.db("SelfieGD").collection('Events');
     calendarCollection.updateOne({ _id: new ObjectId(id) }, { $set: event }).then((result) => {
       res.json(result);
     }).catch((err) => {
@@ -80,7 +80,7 @@ router.put('/modifyEvents/:id', authenticateJWT, (req, res) => {
 router.delete('/deleteEvents/:id', (req, res) => {
   return new Promise((resolve, reject) => {
     const id = req.params.id;
-    const calendarCollection = clientMDB.db("SelfieGD").collection('Calendar');
+    const calendarCollection = clientMDB.db("SelfieGD").collection('Events');
     calendarCollection.deleteOne({ _id: new ObjectId(id) }).then((result) => {
       res.json(result);
     }).catch((err) => {

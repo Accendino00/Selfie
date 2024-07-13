@@ -43,14 +43,18 @@ const nonBlockingAutheticateJWT = (req, res, next) => {
       }
 
       req.user = user;
-      next();
     });
-  } else {
-    next();
   }
-}
+  next();
+};
+
+// Funzione per ottenere l'ID dell'utente
+const getUserId = (req, res) => {
+  res.json({ userId: req.user });
+};
 
 module.exports = {
   authenticateJWT: authenticateJWT,
-  nonBlockingAutheticateJWT: nonBlockingAutheticateJWT
+  nonBlockingAutheticateJWT: nonBlockingAutheticateJWT,
+  getUserId: getUserId,
 };

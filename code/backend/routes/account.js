@@ -6,6 +6,7 @@ let { clientMDB } = require("../utils/dbmanagement");
 let {
   authenticateJWT,
   nonBlockingAutheticateJWT,
+  getUserId,
 } = require("../middleware/authorization");
 
 /**
@@ -183,5 +184,6 @@ function getAccountData(username, res) {
     });
 }
 
+router.get('/getUserId', authenticateJWT, getUserId);
 
 module.exports = router;

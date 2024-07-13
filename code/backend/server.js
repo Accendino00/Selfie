@@ -1,11 +1,7 @@
 /*
   @author:
-    Petru
     Davide
     Giuseppe
-    Saad
-    Alex
-    Rafid
 
   @description:
     Questo file è il punto di partenza del nostro server.
@@ -19,6 +15,7 @@
 /* IMPORT VARI */
 
 const express = require('express');
+const cookieParser = require("cookie-parser");
 const config = require('./config'); // Contiene variabili utili per il server
 const { clientMDB, connectToDatabase, disconnectFromDatabase }  = require('./utils/dbmanagement'); 
 
@@ -34,7 +31,7 @@ let server = null;
 /* MIDDLEWARE */
 
 // Middleware per autenticare JWT
-const { authenticateJWT, nonBlockingAutheticateJWT } = require('./middleware/authorization'); 
+const { authenticateJWT, nonBlockingAutheticateJWT, getUserId } = require('./middleware/authorization'); 
 
 // Gestione di CORS per poter usare Vite dev per sviluppare il frontend
 const cors = require('cors');
@@ -61,17 +58,20 @@ app.use((err, req, res, next) => {
   next();
 });
 
-
+app.use(cookieParser());
+app.use(express.json());
 app.use("/api", require(config.ROUTESERVIZI + "/registration"))
 app.use("/api", require(config.ROUTESERVIZI + "/login"))
 app.use("/api", require(config.ROUTESERVIZI + "/diagnostic"))
 app.use("/api", require(config.ROUTESERVIZI + "/notes"))
-app.use("/api", require(config.ROUTESERVIZI + "/calendar"))
+app.use("/api", require(config.ROUTESERVIZI + "/calendars"))
+app.use("/api", require(config.ROUTESERVIZI + "/events"))
+app.use("/api", require(config.ROUTESERVIZI + "/account"))
+
 
 
 // Setup per mandare le richieste di "/" a "routes/webpages" package
 app.get("*", require(config.ROUTESERVIZI + "/webpages"));
-
 
 
 

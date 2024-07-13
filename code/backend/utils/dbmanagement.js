@@ -10,7 +10,7 @@ const e = require("express");
 
 let dbs = ["SelfieGD"];
 let collections = {
-  SelfieGD: ["Users", "Calendar", "Notes"],
+  SelfieGD: ["Users", "Calendars", "Notes", "Events"],
 };
 
 // Client per MongoDB
