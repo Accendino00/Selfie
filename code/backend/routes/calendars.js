@@ -8,8 +8,9 @@ const { ObjectId } = require('mongodb');
 router.get('/getCalendars', authenticateJWT, (req, res) => {
     return new Promise((resolve, reject) => {
       try {
+        const userId = req.query.userId;
         const calendarCollection = clientMDB.db("SelfieGD").collection('Calendars');
-        calendarCollection.find({}).toArray().then((calendars) => {
+        calendarCollection.find({ user: userId }).toArray().then((calendars) => {
           const calendarsWithCorrectId = calendars.map((calendar) => {
             calendar.id = calendar._id.toString();
             return calendar;

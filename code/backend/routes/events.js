@@ -7,28 +7,37 @@ const { ObjectId } = require('mongodb');
 
 
 
-
 router.get('/getEvents', authenticateJWT, (req, res) => {
-    return new Promise((resolve, reject) => {
-      try {
-        const calendarCollection = clientMDB.db("SelfieGD").collection('Events');
-        calendarCollection.find({}).toArray().then((events) => {
-          const eventsWithCorrectId = events.map((event) => {
-            event.id = event._id.toString();
-            return event;
-          });
-          res.json(eventsWithCorrectId);
-        }).catch((err) => {
-          console.log(err);
-          res.status(500).send('Error getting events');
-        }
-      );
-      } catch (err) {
-        reject(err);
-      }
+  return new Promise((resolve, reject) => {
+    try {
+      const calendars = req.query.calendars; // Deserializza l'array
+      console.log(calendars);
+      const username = req.query.username;
+      const calendarCollection = clientMDB.db("SelfieGD").collection('Events');
+
+      calendarCollection.find({
+        name: username,
+      }).toArray().then((events) => {
+        // Filtra gli eventi in base ai calendari
+        const filteredEvents = events.filter((event) => calendars.includes(event.calendar));
+
+        // Converti _id in stringa per ogni evento
+        const eventsWithCorrectId = filteredEvents.map((event) => {
+          event.id = event._id.toString();
+          return event;
+        });
+
+        res.json(eventsWithCorrectId);
+      }).catch((err) => {
+        console.log(err);
+        res.status(500).send('Error getting events');
+      });
+    } catch (err) {
+      reject(err);
     }
-  )}
-);
+  });
+});
+
 
 function saveEventToDB(event) {
   return new Promise((resolve, reject) => {
