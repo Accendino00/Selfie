@@ -6,8 +6,10 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, FormControl, InputLabel, Box, FormControlLabel, Checkbox, ListItemText } from '@mui/material';
 import commonColors from './CalendarStyles';
 import Cookies from 'js-cookie';
+import useTokenChecker from '../../utils/useTokenChecker';
 
-export default function Calendar({ createButton }) {
+export default function Calendar({ createButton, chosenCalendars, calendars }) {
+  const { loginStatus, isTokenLoading, username } = useTokenChecker();
   const [events, setEvents] = useState([]);
   const [open, setOpen] = useState(false);
   const [eventTitle, setEventTitle] = useState('');
@@ -22,11 +24,14 @@ export default function Calendar({ createButton }) {
   const [modifying, setModifying] = useState(false);
   const [currentId, setCurrentId] = useState('');
   const [description, setDescription] = useState('');
+  const [selectedCalendars, setSelectedCalendars] = useState([]);
   const token = Cookies.get('token');
+
+
 
   useEffect(() => {
     const fetchEvents = () => {
-      fetch('/api/getEvents', {
+      fetch(`/api/getEvents?calendars=${chosenCalendars}&username=${username}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -38,22 +43,20 @@ export default function Calendar({ createButton }) {
         })
         .catch(error => console.error("Error fetching events:", error));
     };
-  
+
     // Avvia il polling al caricamento del componente
     const intervalId = setInterval(fetchEvents, 1000); // 1 secondo
-  
+
     // Pulizia: interrompe il polling quando il componente viene smontato
     return () => clearInterval(intervalId);
-  }, [token]); // Aggiungi altre dipendenze qui se necessario
-  
-
+  }, [token, chosenCalendars, username]);
 
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
   useEffect(() => {
-    if (createButton){
+    if (createButton) {
       addEvent(null);
     }
   }, [createButton])
@@ -61,7 +64,7 @@ export default function Calendar({ createButton }) {
 
   const addEvent = (info) => {
     resetForm();
-    if(info){
+    if (info) {
       setStartDate(info.startStr);
       setEndDate(info.endStr);
     }
@@ -77,7 +80,8 @@ export default function Calendar({ createButton }) {
       }
     })
       .then(response => response.json())
-      .then(data => { {
+      .then(data => {
+        {
           setEvents(data);
           resetForm();
           handleClose();
@@ -87,50 +91,54 @@ export default function Calendar({ createButton }) {
   };
 
 
+
+
   const saveEvent = () => {
-    
+
     let eventData = {
       title: eventTitle,
       description: description,
       color: eventColor,
       allDay: allDay,
-      start: combineDateAndTime(startDate, startTime), 
+      start: combineDateAndTime(startDate, startTime),
       end: combineDateAndTime(endDate, endTime),
+      calendar: selectedCalendars,
+      name: username
     };
 
-      if (isRecurring) {
-        if (startTime !== '') {
-          eventData.startTime = startTime;
-        }
-        if (endTime !== '') {
-          eventData.endTime = endTime;
-        }
-        eventData.daysOfWeek = convertDaysToIntegers(recurringDays);
-        eventData.startRecur = startDate;
-      } else {
-        eventData.daysOfWeek = null;
-        eventData.startTime = null;
-        eventData.endTime = null;
-        eventData.startRecur = null;
+    if (isRecurring) {
+      if (startTime !== '') {
+        eventData.startTime = startTime;
       }
-      
-      if (modifying) {
-        fetch(`/api/modifyEvents/${currentId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(eventData),
-        })
+      if (endTime !== '') {
+        eventData.endTime = endTime;
+      }
+      eventData.daysOfWeek = convertDaysToIntegers(recurringDays);
+      eventData.startRecur = startDate;
+    } else {
+      eventData.daysOfWeek = null;
+      eventData.startTime = null;
+      eventData.endTime = null;
+      eventData.startRecur = null;
+    }
+
+    if (modifying) {
+      fetch(`/api/modifyEvents/${currentId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(eventData),
+      })
         .then(response => response.json())
         .then(data => {
           setEvents(data);
           resetForm();
           handleClose();
         })
-          
-      } else {
+
+    } else {
       fetch('/api/addEvents', {
         method: 'POST',
         headers: {
@@ -206,20 +214,20 @@ export default function Calendar({ createButton }) {
 
   function convertIntegersToDays(dayIntegers) {
     const days = [
-      'Sunday', 
-      'Monday', 
-      'Tuesday', 
-      'Wednesday', 
-      'Thursday', 
-      'Friday', 
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
       'Saturday'
     ];
-  
+
     return dayIntegers.map(dayIndex => days[dayIndex]);
   }
 
   const modifyEvent = (event) => {
-    if(event._def.recurringDef !== null) {
+    if (event._def.recurringDef !== null) {
       setIsRecurring(true);
       setRecurringDays(convertIntegersToDays(event._def.recurringDef.typeData.daysOfWeek));
     }
@@ -233,12 +241,12 @@ export default function Calendar({ createButton }) {
     setEventTitle(event.title);
     setDescription(event.extendedProps.description);
     // mi serve dateToUsable perche getMonth() mi ritorna 1 se e' gennaio, invece mi serve 01
-    if(event.start !== null) {
-    setStartDate(dateToUsable(event.start.getFullYear(), event.start.getMonth(), event.start.getDate()));
+    if (event.start !== null) {
+      setStartDate(dateToUsable(event.start.getFullYear(), event.start.getMonth(), event.start.getDate()));
     } else {
       setStartDate('')
     }
-    if(event.end !== null){
+    if (event.end !== null) {
       setEndDate(dateToUsable(event.end.getFullYear(), event.end.getMonth(), event.end.getDate()));
     } else {
       setEndDate('')
@@ -262,7 +270,7 @@ export default function Calendar({ createButton }) {
     setDescription('');
     setModifying(false);
     setCurrentId('');
-};
+  };
 
 
   return (
@@ -282,12 +290,33 @@ export default function Calendar({ createButton }) {
         themeSystem='bootstrap5'
         height='100%'
         aspectRatio={1}
-        
-        
+
+
       />
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Add New Event</DialogTitle>
         <DialogContent>
+          <FormControl fullWidth margin="dense">
+            <InputLabel id="calendar-select-label">Select Calendars</InputLabel>
+            <Select
+              labelId="calendar-select-label"
+              id="calendars"
+              multiple
+              value={selectedCalendars}
+              onChange={(e) => setSelectedCalendars(e.target.value)}
+              label="Select Calendars"
+              variant="standard"
+              renderValue={(selected) => selected.join(', ')}
+            >
+              {calendars.map((calendar) => (
+                <MenuItem key={calendar.id} value={calendar.name}>
+                  <Checkbox checked={selectedCalendars.indexOf(calendar.name) > -1} />
+                  <ListItemText primary={calendar.name} />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           <FormControlLabel
             control={<Checkbox checked={allDay} onChange={handleAllDayChange} />}
             label="All Day Event"
@@ -348,7 +377,7 @@ export default function Calendar({ createButton }) {
               </Select>
             </FormControl>
           )}
-          
+
           <TextField
             autoFocus
             margin="dense"
