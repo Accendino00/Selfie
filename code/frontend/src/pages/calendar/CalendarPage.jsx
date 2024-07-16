@@ -33,13 +33,14 @@ const CalendarPage = () => {
   const [chosenCalendars, setChosenCalendars] = useState([]);
   const [createCalendarButton, setCreateCalendarButton] = useState(false);
   const [newCalendarName, setNewCalendarName] = useState('');
-  const [openInvitedEvents, setOpenInvitedEvents] = useState(true);
+  const [openInvitedEvents, setOpenInvitedEvents] = useState(false);
   const [invitedEvents, setInvitedEvents] = useState([]);
   const [invitedEventsData, setInvitedEventsData] = useState([]);
   const [selectedInvitedEvents, setSelectedInvitedEvents] = useState([]);
   const token = Cookies.get('token');
   const { loginStatus, isTokenLoading, username } = useTokenChecker();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [checkboxState, setCheckboxState] = useState({});
 
   useEffect(() => {
     if (!isTokenLoading) {
@@ -147,6 +148,10 @@ const CalendarPage = () => {
   };
 
   const handleCheckboxChange = (calendarName) => {
+    setCheckboxState((prevState) => ({
+      ...prevState,
+      [calendarName]: !prevState[calendarName],
+    }));
     setChosenCalendars(prevChosenCalendars => {
       if (prevChosenCalendars.includes(calendarName)) {
         // If the calendar is already chosen, remove it
@@ -159,6 +164,10 @@ const CalendarPage = () => {
   };
 
   const handleCheckboxChangeEvents = (event) => {
+    setCheckboxState((prevState) => ({
+      ...prevState,
+      [event]: !prevState[event],
+    }));
     setSelectedInvitedEvents(prevSelectedInvitedEvents => {
       if (prevSelectedInvitedEvents.includes(event)) {
         // If the event is already chosen, remove it
@@ -262,7 +271,7 @@ const CalendarPage = () => {
                 <List component="div" disablePadding>
                   <ListItem key="shared" sx={{ pl: 4 }}>
                     <FormControlLabel
-                      control={<Checkbox defaultChecked={false} onChange={() => handleCheckboxChange('shared')} />}
+                      control={<Checkbox checked={checkboxState['shared'] || false} onChange={() => handleCheckboxChange('shared')} />}
                       label="Shared Events"
                     />
                     <Button onClick={() => console.log('Shared calendar cannot be deleted')} endIcon={<DeleteIcon />}>
@@ -271,7 +280,7 @@ const CalendarPage = () => {
                   {calendars.map((calendar) => (
                     <ListItem key={calendar._id} sx={{ pl: 4 }}>
                       <FormControlLabel
-                        control={<Checkbox defaultChecked={false} onChange={() => handleCheckboxChange(calendar.name)} />}
+                        control={<Checkbox checked={checkboxState[calendar.name] || false} onChange={() => handleCheckboxChange(calendar.name)} />}
                         label={calendar.name}
                       />
                       <Button onClick={() => deleteCalendar(calendar._id)} endIcon={<DeleteIcon />}>
@@ -290,20 +299,20 @@ const CalendarPage = () => {
                   {invitedEvents.map((event) => (
                     <ListItem key={event} sx={{ pl: 4 }}>
                       <FormControlLabel
-                        control={<Checkbox defaultChecked={false} onChange={() => handleCheckboxChangeEvents(event)} />}
+                        control={<Checkbox checked={checkboxState[event] || false} onChange={() => handleCheckboxChangeEvents(event)} />}
                         label={event}
                       />
                       <Button onClick={() => declineInvitedEvents(event)} endIcon={<DeleteIcon />}>
                       </Button>
                     </ListItem>
                   ))}
-                  <Button onClick={() => acceptInvitedEvents(selectedInvitedEvents)}>Accept</Button>
+                  <Button onClick={() => acceptInvitedEvents(Object.keys(checkboxState).filter(key => checkboxState[key]))}>Accept</Button>
                 </List>
               </Collapse>
             </List>
           </Drawer>
           <Box sx={{ width: '100%', marginTop: '4vh' }}>
-            <Calendar createButton={create} chosenCalendars={chosenCalendars} calendars={calendars} />
+            <Calendar createButton={create} chosenCalendars={Object.keys(checkboxState).filter(key => checkboxState[key])} calendars={calendars} />
           </Box>
         </Box>
 

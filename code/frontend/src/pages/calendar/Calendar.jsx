@@ -7,6 +7,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, S
 import commonColors from './CalendarStyles';
 import Cookies from 'js-cookie';
 import useTokenChecker from '../../utils/useTokenChecker';
+import { Typography } from '@mui/material';
 import './calendarCSS.css';
 
 export default function Calendar({ createButton, chosenCalendars, calendars }) {
@@ -29,6 +30,9 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
   const [inviteUser, setInviteUser] = useState('');
   const [invitedUsers, setInvitedUsers] = useState([]);
   const [shared, setShared] = useState([]);
+  const [timesToRepeat, setTimesToRepeat] = useState(0);
+  const [location, setLocation] = useState('');
+
   const token = Cookies.get('token');
 
 
@@ -49,11 +53,11 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     };
 
     // Avvia il polling al caricamento del componente
-    const intervalId = setInterval(fetchEvents, 1000); // 1 secondo
+    const intervalId = setInterval(fetchEvents, 500); // 1 secondo
 
     // Pulizia: interrompe il polling quando il componente viene smontato
     return () => clearInterval(intervalId);
-  }, [token, chosenCalendars, username]);
+  }, [chosenCalendars]);
 
 
   const handleOpen = () => setOpen(true);
@@ -106,21 +110,35 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
       allDay: allDay,
       start: combineDateAndTime(startDate, startTime),
       end: combineDateAndTime(endDate, endTime),
+      timesToRepeat: timesToRepeat,
       calendar: selectedCalendars,
       name: username,
       invitedUsers: invitedUsers,
       shared: shared
+
     };
 
     if (isRecurring) {
+      if (eventData.start !== null && eventData.daysOfWeek === null) {
+        eventData.daysOfWeek = convertDataToDays(eventData.start.getDay());
+      } else {
+        eventData.daysOfWeek = convertDaysToIntegers(recurringDays);
+      }
+      eventData.startRecur = startDate;
       if (startTime !== '') {
         eventData.startTime = startTime;
+      } else {
+        eventData.startTime = null;
       }
       if (endTime !== '') {
         eventData.endTime = endTime;
+      } else {
+        eventData.endTime = null;
       }
-      eventData.daysOfWeek = convertDaysToIntegers(recurringDays);
-      eventData.startRecur = startDate;
+      if (timesToRepeat !== 0) {
+        eventData.endRecur = calculateRepeatEndDate(startDate, timesToRepeat);
+        eventData.timesToRepeat = timesToRepeat;
+      }
     } else {
       eventData.daysOfWeek = null;
       eventData.startTime = null;
@@ -139,6 +157,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
       })
         .then(response => response.json())
         .then(data => {
+          console.log(data);
           setEvents(data);
           resetForm();
           handleClose();
@@ -167,6 +186,10 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
   const handleAllDayChange = (event) => {
     setAllDay(event.target.checked);
   };
+
+  const handleTimesToRepeatChange = (event) => {
+    setTimesToRepeat(event.target.value)
+  }
 
 
   const dateToUsable = (year, month, day) => {
@@ -200,8 +223,13 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
       return date = new Date(year, month - 1, day);
     }
 
+  }
 
-
+  const calculateRepeatEndDate = (startDate, timesToRepeat) => {
+    let [year, month, day] = startDate.split('-').map(num => parseInt(num, 10));
+    let date = new Date(year, month - 1, day);
+    date.setDate(date.getDate() + (7 * timesToRepeat));
+    return date;
   }
 
   function convertDaysToIntegers(dayNames) {
@@ -234,14 +262,20 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
 
   const modifyEvent = (event) => {
     setSelectedCalendars(event._def.extendedProps.calendar);
+    if (event.end !== null) {
+      setEndDate(dateToUsable(event.end.getFullYear(), event.end.getMonth(), event.end.getDate()));
+    } else {
+      setEndDate('')
+    }
     if (event._def.recurringDef !== null) {
       setIsRecurring(true);
       setRecurringDays(convertIntegersToDays(event._def.recurringDef.typeData.daysOfWeek));
     }
     setCurrentId(event.id);
     setAllDay(event.allDay);
-    if (!event.allDay) {
+    if (!event.allDay && event.start !== null && event.end !== null) {
       // mi serve timeToUsable perche getHours() e getMinutes() mi ritornano tipo 2 se e' sono le 02:00, invece mi serve 02
+      console.log(event)
       setStartTime(timeToUsable(event.start.getHours(), event.start.getMinutes()));
       setEndTime(timeToUsable(event.end.getHours(), event.end.getMinutes()));
     }
@@ -253,10 +287,8 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     } else {
       setStartDate('')
     }
-    if (event.end !== null) {
-      setEndDate(dateToUsable(event.end.getFullYear(), event.end.getMonth(), event.end.getDate()));
-    } else {
-      setEndDate('')
+    if (event.extendedProps.timesToRepeat !== null) {
+      setTimesToRepeat(event.extendedProps.timesToRepeat);
     }
     setEventColor(event.backgroundColor);
     setModifying(true);
@@ -306,7 +338,6 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
         themeSystem='bootstrap5'
         height='100%'
         aspectRatio={1}
-
       />
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Add New Event</DialogTitle>
@@ -332,6 +363,32 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
             </Select>
           </FormControl>
 
+          {/* Ensure a calendar is selected */}
+          {selectedCalendars.length === 0 && (
+            <Typography color="error">Please select at least one calendar.</Typography>
+          )}
+          <TextField
+            autoFocus
+            margin="dense"
+            id="title"
+            label="Event Title"
+            type="text"
+            fullWidth
+            variant="standard"
+            value={eventTitle}
+            onChange={(e) => setEventTitle(e.target.value)}
+          />
+          <TextField
+            autoFocus
+            margin="dense"
+            id="title"
+            label="Description"
+            type="text"
+            fullWidth
+            variant="standard"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
           <FormControlLabel
             control={<Checkbox checked={allDay} onChange={handleAllDayChange} />}
             label="All Day Event"
@@ -371,50 +428,57 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
             label="Recurring"
           />
           {isRecurring && (
-            <FormControl fullWidth margin="dense">
-              <InputLabel id="recurring-day-label">Days of the Week</InputLabel>
-              <Select
-                labelId="recurring-day-label"
-                id="recurring-day"
-                multiple
-                value={recurringDays}
-                onChange={(e) => setRecurringDays(e.target.value)}
-                label="Days of the Week"
-                variant="standard"
-                renderValue={(selected) => selected.join(', ')}
-              >
-                {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day) => (
-                  <MenuItem key={day} value={day}>
-                    <Checkbox checked={recurringDays.indexOf(day) > -1} />
-                    <ListItemText primary={day} />
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <>
+              <FormControl fullWidth margin="dense">
+                <InputLabel id="recurring-day-label">Days of the Week</InputLabel>
+                <Select
+                  labelId="recurring-day-label"
+                  id="recurring-day"
+                  multiple
+                  value={recurringDays}
+                  onChange={(e) => {
+                    setRecurringDays(e.target.value);
+
+                    // Automatically update start date based on recurring days
+                    if (e.target.value.length > 0) {
+                      const today = new Date();
+                      const nextDay = new Date(
+                        today.setDate(
+                          today.getDate() +
+                          ((7 - today.getDay() + ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].indexOf(e.target.value[0])) % 7)
+                        )
+                      );
+                      setStartDate(nextDay.toISOString().split('T')[0]);
+
+                      // Reset end date if it doesn't make sense
+                      if (new Date(endDate) < new Date(nextDay)) {
+                        setEndDate('');
+                      }
+                    }
+                  }}
+                  label="Days of the Week"
+                  variant="standard"
+                  renderValue={(selected) => selected.join(', ')}
+                >
+                  {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day) => (
+                    <MenuItem key={day} value={day}>
+                      <Checkbox checked={recurringDays.indexOf(day) > -1} />
+                      <ListItemText primary={day} />
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <TextField
+                label="Number of Repeats"
+                type="number"
+                fullWidth
+                margin="dense"
+                value={timesToRepeat}
+                onChange={handleTimesToRepeatChange}
+              />
+            </>
           )}
 
-          <TextField
-            autoFocus
-            margin="dense"
-            id="title"
-            label="Event Title"
-            type="text"
-            fullWidth
-            variant="standard"
-            value={eventTitle}
-            onChange={(e) => setEventTitle(e.target.value)}
-          />
-          <TextField
-            autoFocus
-            margin="dense"
-            id="title"
-            label="Description"
-            type="text"
-            fullWidth
-            variant="standard"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
           <TextField
             margin="dense"
             id="start"
@@ -440,6 +504,16 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
             }}
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
+          />
+          <TextField
+            margin="dense"
+            id="location"
+            label="Location"
+            type="text"
+            fullWidth
+            variant="standard"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
           />
           <FormControl fullWidth margin="dense">
             <InputLabel id="color-select-label">Event Color</InputLabel>
@@ -484,9 +558,21 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
         <DialogActions>
           {modifying && <Button onClick={deleteEvent}>Delete</Button>}
           <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={saveEvent}>Save</Button>
+          <Button
+            onClick={() => {
+              // Ensure a calendar is selected before saving
+              if (selectedCalendars.length === 0) {
+                alert("Please select at least one calendar.");
+                return;
+              }
+              saveEvent();
+            }}
+          >
+            Save
+          </Button>
         </DialogActions>
       </Dialog>
     </>
+
   );
 }

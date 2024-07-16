@@ -14,6 +14,30 @@ function NotesPage() {
     const [noteToModify, setNoteToModify] = useState(null);
     const token = Cookies.get('token');
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
+    const [userId, setUserId] = useState(null);
+
+    if (loginStatus) {
+        const fetchUserId = async () => {
+            try {
+                const response = await fetch(`/api/getUserId?username=${username}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                if (response.ok) {
+                    const fetchedUserId = await response.json();
+                    setUserId(fetchedUserId);
+                } else {
+                    console.error('Failed to fetch user id');
+                }
+            }
+            catch (error) {
+                console.error('Failed to fetch user id', error);
+            }
+        }
+        fetchUserId();
+    }
+
 
     useEffect(() => {
         if (!isTokenLoading) {
@@ -26,9 +50,9 @@ function NotesPage() {
       
     
     useEffect(() => {
-        const fetchNotes = async () => {
+        const fetchNotes = async (userId) => {
             try {
-                const response = await fetch('/api/notes', {
+                const response = await fetch(`/api/notes?=${userId}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                     },
@@ -44,7 +68,7 @@ function NotesPage() {
             }
         };
 
-        fetchNotes();
+        fetchNotes(userId);
     }, []);
 
     const handleNoteAdded = (note) => {

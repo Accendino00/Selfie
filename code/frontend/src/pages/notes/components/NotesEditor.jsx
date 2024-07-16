@@ -6,18 +6,42 @@ import styles from './NotesEditorStyles.jsx';
 import Cookies from 'js-cookie';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import useTokenChecker from '../../../utils/useTokenChecker';
 
 function NotesEditor({ onNoteAdded, noteToModify }) {
     const [title, setTitle] = useState('');
     const [noteInput, setNoteInput] = useState('');
     const token = Cookies.get('token');
+    const { loginStatus, isTokenLoading, username } = useTokenChecker();
+    const [userId, setUserId] = useState(null);
+
+    if (loginStatus) {
+        const fetchUserId = async () => {
+            try {
+                const response = await fetch(`/api/getUserId?username=${username}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                if (response.ok) {
+                    const fetchedUserId = await response.json();
+                    setUserId(fetchedUserId);
+                } else {
+                    console.error('Failed to fetch user id');
+                }
+            }
+            catch (error) {
+                console.error('Failed to fetch user id', error);
+            }
+        }
+        fetchUserId();
+    }
 
     const handleAddNote = async () => {
         const newNote = noteInput.trim();
         const newTitle = title.trim();
         if (newNote) { // Aggiunto controllo su entrambi i campi
             try {
-                console.log('Adding note', newTitle, newNote);
                 const response = await fetch('/api/notes', {
                     method: 'POST',
                     headers: {
@@ -26,7 +50,8 @@ function NotesEditor({ onNoteAdded, noteToModify }) {
                     },
                     body: JSON.stringify({
                         title: newTitle,
-                        note: newNote
+                        note: newNote,
+                        userId: userId
                     }),
                 });
                 if (response.ok) {
@@ -63,7 +88,8 @@ function NotesEditor({ onNoteAdded, noteToModify }) {
                     },
                     body: JSON.stringify({
                         title: newTitle,
-                        note: newNote
+                        note: newNote,
+                        userId: userId
                     }),
                 });
                 if (response.ok) {

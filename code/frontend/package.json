@@ -20,6 +20,7 @@
     "@fullcalendar/timegrid": "^6.1.11",
     "@mui/icons-material": "^5.15.12",
     "@mui/material": "^5.14.16",
+    "bootswatch": "^5.3.3",
     "js-cookie": "^3.0.5",
     "react": "^18.2.0",
     "react-calendar": "^4.8.0",

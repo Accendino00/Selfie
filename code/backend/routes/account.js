@@ -6,7 +6,6 @@ let { clientMDB } = require("../utils/dbmanagement");
 let {
   authenticateJWT,
   nonBlockingAutheticateJWT,
-  getUserId,
 } = require("../middleware/authorization");
 
 /**
@@ -50,6 +49,8 @@ router.get("/getAccountData/:username", function (req, res) {
   getAccountData(username, res);
 });
 
+
+
 function getAccountData(username, res) {
   // Prendiamo il profilo utente dal database
   const usersCollection = clientMDB.db("SelfieGD").collection("Users");
@@ -76,6 +77,48 @@ function getAccountData(username, res) {
       });
     });
 }
+
+
+function getUserId(username){
+  return new Promise((resolve, reject) => {
+    const usersCollection = clientMDB.db("SelfieGD").collection("Users");
+    usersCollection
+      .findOne({ username: username })
+      .then((user) => {
+        if (!user) {
+          reject("Utente non trovato");
+        } else {
+          resolve(user._id);
+        }
+      })
+      .catch((error) => {
+        reject("Errore interno");
+      });
+  });
+}
+
+router.get("/getUserId", authenticateJWT, function (req, res) {
+  // req.user dovrebbe essere impostato con il nome utente che dobbiamo cercare nel DB
+  const username = req.query.username;
+  // Se username non è definito allo ritorniamo 403 e un messaggio di errore
+  if (!username) {
+    res.status(403).send({
+      success: false,
+      message: "Non sei autorizzato",
+    });
+  }
+
+  getUserId(username)
+    .then((userId) => {
+      res.status(200).send(userId);
+    })
+    .catch((error) => {
+      res.status(500).send({
+        success: false,
+        message: error,
+      });
+    });
+});
 
 
 module.exports = router;
