@@ -7,13 +7,13 @@ import Box from '@mui/material/Box';
 import { useNavigate } from 'react-router-dom';
 
 function LandingPage() {
-  const { loginStatus, isTokenLoading} = useTokenChecker();
+  const { loginStatus, isTokenLoading } = useTokenChecker();
   const navigate = useNavigate();
 
   React.useEffect(() => {
     if (!isTokenLoading) {
       if (loginStatus) {
-        navigate("/calendar");
+        navigate("/home");
       } else {
         navigate("/login");
       }

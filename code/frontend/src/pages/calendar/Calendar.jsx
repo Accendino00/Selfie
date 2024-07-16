@@ -7,6 +7,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, S
 import commonColors from './CalendarStyles';
 import Cookies from 'js-cookie';
 import useTokenChecker from '../../utils/useTokenChecker';
+import './calendarCSS.css';
 
 export default function Calendar({ createButton, chosenCalendars, calendars }) {
   const { loginStatus, isTokenLoading, username } = useTokenChecker();
@@ -25,6 +26,9 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
   const [currentId, setCurrentId] = useState('');
   const [description, setDescription] = useState('');
   const [selectedCalendars, setSelectedCalendars] = useState([]);
+  const [inviteUser, setInviteUser] = useState('');
+  const [invitedUsers, setInvitedUsers] = useState([]);
+  const [shared, setShared] = useState([]);
   const token = Cookies.get('token');
 
 
@@ -103,7 +107,9 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
       start: combineDateAndTime(startDate, startTime),
       end: combineDateAndTime(endDate, endTime),
       calendar: selectedCalendars,
-      name: username
+      name: username,
+      invitedUsers: invitedUsers,
+      shared: shared
     };
 
     if (isRecurring) {
@@ -227,6 +233,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
   }
 
   const modifyEvent = (event) => {
+    setSelectedCalendars(event._def.extendedProps.calendar);
     if (event._def.recurringDef !== null) {
       setIsRecurring(true);
       setRecurringDays(convertIntegersToDays(event._def.recurringDef.typeData.daysOfWeek));
@@ -270,8 +277,17 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     setDescription('');
     setModifying(false);
     setCurrentId('');
+    setShared([]);
   };
 
+  const addInvitedUser = () => {
+    setInvitedUsers([...invitedUsers, inviteUser]);
+    setInviteUser('');
+  };
+
+  const removeInvitedUser = (user) => {
+    setInvitedUsers(invitedUsers.filter(u => u !== user));
+  };
 
   return (
     <>
@@ -290,7 +306,6 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
         themeSystem='bootstrap5'
         height='100%'
         aspectRatio={1}
-
 
       />
       <Dialog open={open} onClose={handleClose}>
@@ -446,6 +461,25 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
               ))}
             </Select>
           </FormControl>
+          <TextField
+            margin="dense"
+            id="username"
+            label="Invite User"
+            type="text"
+            fullWidth
+            variant="standard"
+            value={inviteUser}
+            onChange={(e) => setInviteUser(e.target.value)}
+          />
+          <Button onClick={addInvitedUser}>Add User</Button>
+          <div>
+            {invitedUsers.map((user, index) => (
+              <div key={index}>
+                {user}
+                <Button onClick={() => removeInvitedUser(user)}>Remove</Button>
+              </div>
+            ))}
+          </div>
         </DialogContent>
         <DialogActions>
           {modifying && <Button onClick={deleteEvent}>Delete</Button>}

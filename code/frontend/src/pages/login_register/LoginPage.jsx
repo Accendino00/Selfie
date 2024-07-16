@@ -8,7 +8,6 @@ import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useNavigate } from 'react-router-dom';
 
-
 export default function LoginPage() {  
     const { loginStatus, isTokenLoading} = useTokenChecker();
     const navigate = useNavigate();
@@ -22,31 +21,29 @@ export default function LoginPage() {
     }
 
     if (loginStatus) {
-        navigate("/calendar");
+        navigate("/home");
     }
 
     return (
         <Container 
-            maxWidth = 'false'
-            sx = {styles.container}
-            >
+            maxWidth='false'
+            sx={styles.container}
+        >
             <Grid 
                 container 
                 sx={styles.grid}
-                >
+            >
                 <Grid 
                     item 
                     xs={6}
                     sx={styles.imageGrid}
-                    >
+                >
                 </Grid>
                 <Grid 
                     item 
-                    xs={6}
-                    >
-                    
+                    xs={12} sm={6}
+                >
                     <LoginComponent trigger="true"/>
-                    
                 </Grid>
             </Grid>
         </Container>

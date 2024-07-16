@@ -14,6 +14,11 @@ import NotesPage from './pages/notes/NotesPage.jsx'
 
 import TimerPage from './pages/timer/TimerPage.jsx'
 
+import HomePage from './pages/common/Homepage.jsx'
+
+import NavPage from './pages/common/NavPage.jsx'
+
+import Navbar from './pages/navbar/Navbar.jsx'
 
 import {
   createBrowserRouter,
@@ -31,28 +36,38 @@ function App() {
       path: "/",
       element: <LandingPage />,
     },
-    // Routes without a navbar on the side
     {
       path: "/login",
       element: <LoginPage />,
     },
     {
-      path: "/calendar",
-      element: <CalendarPage />,
+      path: "/home",
+      element: <HomePage />
     },
     {
-      path: "/notes",
-      element: <NotesPage />,
+      element: <NavPage />,
+      children: [
+        {
+          path: "/calendar",
+          element: <CalendarPage />,
+        },
+        {
+          path: "/notes",
+          element: <NotesPage />,
+        },
+        {
+          path: "/timer",
+          element: <TimerPage />,
+        },
+      ]
     },
-    {
-      path: "/timer",
-      element: <TimerPage />,
-    },
+    // Routes without a navbar on the side
     // Routes with a navbar on the side
     {
       path: "*",
       element: <ErrorPage />,
     }
+
   ]);
 
   return (

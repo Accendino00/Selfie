@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 
 // Componenti nostre
 import styles from './LoginStyles'; // Import styles
-import { formFields} from './LoginConfig'; // Import configurations
+import { formFields } from './LoginConfig'; // Import configurations
 import PasswordField from './fields/PasswordField'; // Import password field
 import UsernameField from './fields/UsernameField'; // Import username field
 import RegisterComponent from './registerpopup/RegisterComponent';
@@ -15,6 +15,7 @@ import MuiAlert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import LoginIcon from '@mui/icons-material/Login'; // Import login icon
 import { Button, Typography, Box, Grid } from '@mui/material';
+import { TableRow } from '@mui/material';
 
 // Gestione cookie
 import Cookies from 'js-cookie';
@@ -99,7 +100,7 @@ function LoginComponent(props) {
         await Cookies.set('token', data.token, { expires: inTwoDays }); // Expires in 2 days
 
         setLoading(false);
-        window.location.pathname = "/calendar";
+        window.location.pathname = "/home";
       } else {
         // Gestione errori con quello che ha fatto l'utente
         setErrorMessageLogin("Credenziali errate");
@@ -115,101 +116,91 @@ function LoginComponent(props) {
   };
 
   return (props.trigger) ? (
-    <Grid container sx={styles.grid} spacing={2}>
+    <>
 
-      <Snackbar open={openRegisterSuccess} autoHideDuration={4000} onClose={handleCloseRegister} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
-        <Alert onClose={handleCloseRegister} severity="success" sx={{ width: '300px' }}>
-          Registrazione ha avuto successo
-        </Alert>
-      </Snackbar>
+      <Grid container sx={styles.grid} spacing={2}>
 
-      <Snackbar open={openLoginError} autoHideDuration={4000} onClose={handleCloseLogin} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
-        <Alert onClose={handleCloseLogin} severity="error" sx={{ width: '300px' }}>
-          {errorMessageLogin}
-        </Alert>
-      </Snackbar>
+        <Snackbar open={openRegisterSuccess} autoHideDuration={4000} onClose={handleCloseRegister} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+          <Alert onClose={handleCloseRegister} severity="success" sx={{ width: '300px' }}>
+            Registrazione ha avuto successo
+          </Alert>
+        </Snackbar>
 
-      <Grid item>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <img src="/image-logo.jpeg" alt="Selfie" style={{ maxWidth: '160px', height: 'auto' }} />
-          <Typography variant="h4" sx={styles.titleStyle}>
-            Chess Cake
-          </Typography>
-        </Box>
-      </Grid>
+        <Snackbar open={openLoginError} autoHideDuration={4000} onClose={handleCloseLogin} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+          <Alert onClose={handleCloseLogin} severity="error" sx={{ width: '300px' }}>
+            {errorMessageLogin}
+          </Alert>
+        </Snackbar>
 
-      <Grid item>
-        <UsernameField
-          {...formFields.username}
-          username={username}
-          setUsername={setUsername}
-          error={openLoginError}
-        />
-      </Grid>
-      <Grid item>
-        <PasswordField
-          {...formFields.password}
-          password={password}
-          setPassword={setPassword}
-          error={openLoginError}
-        />
-      </Grid>
-      <Grid item>
-        <Grid container
-          direction="row"
-          spacing={2}
-          sx={styles.gridButtons}
-        >
-          <Grid item>
-            <Link
-              sx={styles.registerButton}
-              variant="body2"
-              component="button"
-              onClick={(() => setButtonPopup(true))}
-            >
-              Registrati
-            </Link>
-            <RegisterComponent
-              trigger={buttonPopup}
-              setTrigger={setButtonPopup}
-              setOpenRegisterSuccess={setOpenRegisterSuccess}
-            >
-            </RegisterComponent>
-          </Grid>
-          {
-            loading ? (
-              <Grid item>
-                <CircularProgress />
-              </Grid>
-            ) : (
-              <Grid item>
-                <Button
-                  type="submit"
-                  fullWidth
-                  onClick={handleSubmitLogin}
-                  variant="contained"
-                  endIcon={<LoginIcon />}
-                  sx={styles.loginButton}
-                >
-                  Login
-                </Button>
-              </Grid>
-            )
-          }
+        <Grid item>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <img src="/image-logo2.png" alt="Selfie" style={{ maxWidth: '160px', height: 'auto', }} />
+          </Box>
         </Grid>
-      </Grid>
-      <Grid item>
-        <Button
-          type="submit"
-          variant="outlined"
-          sx={styles.anonimoButton}
-          onClick={() => window.location.pathname = "/calendar"}
-        >
-          Continua come anonimo
-        </Button>
-      </Grid>
-    </Grid >
 
+        <Grid item>
+          <UsernameField
+            {...formFields.username}
+            username={username}
+            setUsername={setUsername}
+            error={openLoginError}
+          />
+        </Grid>
+        <Grid item>
+          <PasswordField
+            {...formFields.password}
+            password={password}
+            setPassword={setPassword}
+            error={openLoginError}
+          />
+        </Grid>
+        <Grid item>
+          <Grid container
+            direction="row"
+            spacing={2}
+            sx={styles.gridButtons}
+          >
+            <Grid item>
+              <Link
+                sx={styles.registerButton}
+                variant="body2"
+                component="button"
+                onClick={(() => setButtonPopup(true))}
+              >
+                Registrati
+              </Link>
+              <RegisterComponent
+                trigger={buttonPopup}
+                setTrigger={setButtonPopup}
+                setOpenRegisterSuccess={setOpenRegisterSuccess}
+              >
+              </RegisterComponent>
+            </Grid>
+            {
+              loading ? (
+                <Grid item>
+                  <CircularProgress />
+                </Grid>
+              ) : (
+                <Grid item>
+                  <Button
+                    type="submit"
+                    fullWidth
+                    onClick={handleSubmitLogin}
+                    variant="contained"
+                    endIcon={<LoginIcon />}
+                    sx={styles.loginButton}
+                  >
+                    Login
+                  </Button>
+                </Grid>
+              )
+            }
+          </Grid>
+        </Grid>
+
+      </Grid >
+    </>
   ) : "";
 };
 

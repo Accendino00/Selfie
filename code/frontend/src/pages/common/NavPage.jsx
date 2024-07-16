@@ -4,14 +4,14 @@ import Navbar from '../navbar/Navbar.jsx';
 import useTokenChecker from '../../utils/useTokenChecker.jsx';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
-import HomePage from '/Homepage.jsx';
+import HomePage from './Homepage.jsx';
 import NavPagesBackground from './NavPagesBackground.jsx';
 
 function NavPage() {
-    const { loginStatus, isTokenLoading} = useTokenChecker();
+    const { loginStatus, isTokenLoading } = useTokenChecker();
 
     const location = useLocation();
-    const isChildRoute = /^\/play\/.+/.test(location.pathname);
+    const isChildRoute = location.pathname
 
 
     if (isTokenLoading) {
@@ -24,9 +24,8 @@ function NavPage() {
 
     return (
         <>
-            <NavPagesBackground />
             <Navbar loginStatus={loginStatus} />
-            {isChildRoute ? <Outlet /> : <HomePage />} 
+            {isChildRoute ? <Outlet /> : <HomePage />}
         </>
     );
 }

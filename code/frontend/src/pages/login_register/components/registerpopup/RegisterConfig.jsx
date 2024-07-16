@@ -30,6 +30,36 @@ export const formFields = {
     autoComplete: "current-password",
     placeholder: "Password",
   },
+  truename: {
+    margin: "normal",
+    required: true,
+    fullWidth: true,
+    id: "truename",
+    name: "truename",
+    autoComplete: "truename",
+    placeholder: "Nome",
+  },
+  birthdate: {
+    margin: "normal",
+    required: true,
+    fullWidth: true,
+    id: "birthdate",
+    name: "birthdate",
+    autoComplete: "birthdate",
+    placeholder: "Data di nascita",
+
+  },
+  confirmPassword: {
+    margin: "normal",
+    required: true,
+    fullWidth: true,
+    name: "confirmPassword",
+    type: "password",
+    id: "confirmPassword",
+    autoComplete: "current-password",
+    placeholder: "Conferma Password",
+  },
+
 };
 
 export const formTitle = {

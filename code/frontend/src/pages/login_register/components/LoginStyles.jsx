@@ -39,27 +39,6 @@ const styles = {
 
 
     },
-    anonimoButton:{
-        boxShadow: 'none',
-        textTransform: 'none',
-        fontSize: 16,
-        padding: '6px 12px',
-        border: '1px solid',
-        lineHeight: 1.5,
-        color: '#000000',
-        borderColor: '#000000',
-        borderBlockColor: '#000000',
-        '&:hover': {
-            borderColor: '#000000',
-            boxShadow: 'none',
-            borderBlockColor: '#000000',
-        },
-        '&:active': {
-            boxShadow: 'none',
-            borderColor: '#000000',
-            borderBlockColor: '#000000',
-        },
-    },
     usernameTextField:{
         '& label.Mui-focused': {
             color: '#FFD700',
@@ -82,6 +61,29 @@ const styles = {
             borderBottomColor: '#FFD700',
           },
 
+    },
+    truenameTextField:{
+        '& label.Mui-focused': {
+            color: '#FFD700',
+          },
+          '& .MuiFilledInput-underline:after': {
+            borderBottomColor: '#FFD700',
+          },
+          '& .MuiFilledInput-underline:before': {
+            borderBottomColor: '#FFD700',
+          },
+    },
+
+    birthdateTextField:{
+        '& label.Mui-focused': {
+            color: '#FFD700',
+          },
+          '& .MuiFilledInput-underline:after': {
+            borderBottomColor: '#FFD700',
+          },
+          '& .MuiFilledInput-underline:before': {
+            borderBottomColor: '#FFD700',
+          },
     },
 
     registerButton:{

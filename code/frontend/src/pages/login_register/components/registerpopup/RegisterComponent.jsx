@@ -6,9 +6,12 @@ import { formFields, formTitle } from './RegisterConfig'; // IRegister configura
 import PasswordField from '../fields/PasswordField'; // Password field
 import UsernameField from '../fields/UsernameField'; // Username field
 import ConfirmPasswordField from '../fields/ConfirmPasswordField'; // Confirm password field
+import TruenameTextField from '../fields/TruenameTextField';
+import BirthdateTextField from '../fields/BirthdateTextField';
 import Grid from '@mui/material/Grid';
 import CircularProgress from '@mui/material/CircularProgress';
 import Snackbar from '@mui/material/Snackbar';
+import TextField from '@mui/material/TextField';
 import MuiAlert from '@mui/material/Alert';
 
 // Per il popup che indica una registrazione avvenuta con successo
@@ -19,6 +22,8 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 function RegisterComponent(props) {
   const [username, setUsername] = useState(''); // Username state
   const [password, setPassword] = useState(''); // Password state
+  const [truename, setTruename] = useState(''); // Truename state
+  const [birthdate, setBirthdate] = useState(''); // Birthdate state
   const [confirmedPassword, setConfirmedPassword] = useState(''); // Confirmed password state
   const [passwordsMatch, setPasswordsMatch] = useState(0); // 0 no password, 1 passwords match, -1 passwords don't match
   const [loading, setLoading] = useState(false); // Loading state
@@ -46,7 +51,7 @@ function RegisterComponent(props) {
     return () => {
       document.removeEventListener("keydown", listener);
     };
-  }, [username, password,  props.trigger]);
+  }, [username, password, truename, birthdate,  props.trigger]);
 
   // Handle form submission
   const handleSubmit = async (e) => {
@@ -69,6 +74,8 @@ function RegisterComponent(props) {
     let formData = {
       username: username,
       password: password,
+      truename: truename,
+      birthdate: birthdate
     }
 
     try {
@@ -152,6 +159,20 @@ function RegisterComponent(props) {
               passwordsMatch={passwordsMatch}
               password={password}
               error={errorRegistration}
+            />
+          </Grid>
+          <Grid item>
+            <TruenameTextField
+              {...formFields.truename}
+              truename={truename}
+              setTruename={setTruename}
+            />
+          </Grid>
+          <Grid item>
+            <BirthdateTextField
+              {...formFields.birthdate}
+              birthdate={birthdate}
+              setBirthdate={setBirthdate}
             />
           </Grid>
           {

@@ -65,6 +65,7 @@ const styles = {
   usernameHelperText: "Imposta un username",
   emailHelperText: "Imposta un indirizzo email",
   passwordHelperText: "Imposta una password",
+  
 
   grid: {
     padding: '40px 90px 60px 90px',

@@ -19,4 +19,6 @@
     { name: 'Pink', hex: '#FFC0CB' },
   ];
 
+  
+
 export default commonColors;
