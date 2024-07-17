@@ -5,16 +5,18 @@ const { authenticateJWT } = require('../middleware/authorization');
 const { clientMDB } = require('../utils/dbmanagement');
 const { ObjectId } = require('mongodb');
 
-function saveNoteToDatabase(title, note, userId) {
+function saveNoteToDatabase(title, note, userId, creationDate, modificationDate) {
     return new Promise((resolve, reject) => {
         try { 
             const notesCollection = clientMDB.db("SelfieGD").collection("Notes");
-            notesCollection.insertOne({ title: title, note: note, userId: userId }).then((result) => {
+            notesCollection.insertOne({ title: title, note: note, userId: userId, creationDate: creationDate, modificationDate: modificationDate }).then((result) => {
                 resolve({ 
                     id: result.insertedId.toString(), // Ottieni l'ID inserito e convertilo in stringa
                     title: title,
                     note: note,
-                    userId: userId
+                    userId: userId,
+                    creationDate: creationDate,
+                    modificationDate: modificationDate
                 });
             }).catch((error) => {
                 reject(error);
@@ -46,12 +48,15 @@ function deleteNoteFromDatabase(id) {
 function getNotesFromDatabase(userId) {
     return new Promise((resolve, reject) => {
         const notesCollection = clientMDB.db("SelfieGD").collection("Notes");
-        notesCollection.find( {userId: new ObjectId(userId)} ).toArray() //non so se va messo new object
+        notesCollection.find( { userId: userId } ).toArray() //non so se va messo new object
         .then((notes) => {
             const notesWithCorrectId = notes.map(note => ({ 
                 id: note._id.toString(), 
                 title: note.title,
-                note: note.note
+                note: note.note,
+                userId: note.userId,
+                creationDate: note.creationDate,
+                modificationDate: note.modificationDate
             }));
             resolve(notesWithCorrectId);
         }).catch((error) => {
@@ -66,14 +71,17 @@ router.post("/notes", authenticateJWT, function (req, res) {
     const title = req.body.title;
     const note = req.body.note;
     const userId = req.body.userId;
+    const creationDate = req.body.creationDate;
+    const modificationDate = req.body.modificationDate;
     if (!note) {
         res.status(400).send({ message: "Note is required" });
         return;
     }
 
         // Nel tuo endpoint POST
-    saveNoteToDatabase(title, note, userId).then((savedNote) => {
-        res.status(201).send(savedNote); // Assicurati che savedNote includa l'id generato dal MongoDB
+    saveNoteToDatabase(title, note, userId, creationDate, modificationDate).then((savedNote) => {
+        console.log("Note saved successfully", savedNote);
+        res.status(201).send(savedNote); 
     }).catch((error) => {
         console.error("Failed to save the note", error);
         res.status(500).send({ message: "Failed to save the note" });
@@ -127,7 +135,9 @@ router.get("/notes/:id", authenticateJWT, function (req, res) {
                 id: note._id.toString(), // Assicurati di convertire ObjectId in stringa
                 title: note.title,
                 note: note.note,
-                userId: note.userId
+                userId: note.userId,
+                creationDate: note.creationDate,
+                modificationDate: note.modificationDate
             });
         }
     })
@@ -149,13 +159,15 @@ router.put("/notes/:id", authenticateJWT, function (req, res) {
     const title = req.body.title;
     const note = req.body.note;
     const userId = req.body.userId;
+    const creationDate = req.body.creationDate;
+    const modificationDate = req.body.modificationDate;
     if (!note) {
         res.status(400).send({ message: "Note is required" });
         return;
     }
 
     const notesCollection = clientMDB.db("SelfieGD").collection("Notes");
-    notesCollection.updateOne({ _id: new ObjectId(id) }, { $set: { title: title, note: note, userId: userId } })
+    notesCollection.updateOne({ _id: new ObjectId(id) }, { $set: { title: title, note: note, userId: userId, creationDate: creationDate, modificationDate: modificationDate } })
     .then(result => {
         if (result.matchedCount === 0) {
             res.status(404).send({ message: "Note not found" });
@@ -170,7 +182,9 @@ router.put("/notes/:id", authenticateJWT, function (req, res) {
                         id: updatedNote._id.toString(), // Convert ObjectId to string
                         title: updatedNote.title,
                         note: updatedNote.note,
-                        userId: updatedNote.userId
+                        userId: updatedNote.userId,
+                        creationDate: updatedNote.creationDate,
+                        modificationDate: updatedNote.modificationDate
                     });
                 }
             })

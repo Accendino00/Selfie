@@ -14,10 +14,13 @@ function NotesPage() {
     const [noteToModify, setNoteToModify] = useState(null);
     const token = Cookies.get('token');
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
-    const [userId, setUserId] = useState(null);
+    const [userId, setUserId] = useState('');
 
-    if (loginStatus) {
+
+    useEffect(() => {
+        let timeoutId;
         const fetchUserId = async () => {
+            if (!token || !username) return; // Verifica che il token e username siano disponibili
             try {
                 const response = await fetch(`/api/getUserId?username=${username}`, {
                     headers: {
@@ -30,13 +33,24 @@ function NotesPage() {
                 } else {
                     console.error('Failed to fetch user id');
                 }
-            }
-            catch (error) {
+            } catch (error) {
                 console.error('Failed to fetch user id', error);
             }
+
+            // Imposta il timeout per la prossima fetch
+            timeoutId = setTimeout(fetchUserId, 5000);
+        };
+
+        if (loginStatus && username) {
+            fetchUserId(); // Esegui subito la fetch all'inizio
         }
-        fetchUserId();
-    }
+
+        return () => {
+            if (timeoutId) {
+                clearTimeout(timeoutId); // Cancella il timeout quando il componente si smonta
+            }
+        };
+    }, [loginStatus, username, token, notes]); // Dipendenze appropriate
 
 
     useEffect(() => {
@@ -52,7 +66,7 @@ function NotesPage() {
     useEffect(() => {
         const fetchNotes = async (userId) => {
             try {
-                const response = await fetch(`/api/notes?=${userId}`, {
+                const response = await fetch(`/api/notes?userId=${userId}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                     },
@@ -69,7 +83,7 @@ function NotesPage() {
         };
 
         fetchNotes(userId);
-    }, []);
+    }, [userId, token, loginStatus, username, notes]);
 
     const handleNoteAdded = (note) => {
         // Aggiorna lo stato delle note aggiungendo la nuova nota
@@ -102,6 +116,7 @@ function NotesPage() {
         }
     };
 
+
     if (isTokenLoading || loginStatus === undefined) {
         return (
           <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
@@ -114,7 +129,7 @@ function NotesPage() {
         return (
             <Container sx={styles.container}>
                 <NotesEditor onNoteAdded={handleNoteAdded} noteToModify={noteToModify} />
-                <NotesList notes={notes} onNoteDeleted={handleNoteDeleted} onNoteModified={handleNoteModified} />
+                <NotesList notes={notes} onNoteDeleted={handleNoteDeleted} onNoteModified={handleNoteModified} onCopyNote={handleNoteAdded} />
             </Container>
         );
     } else {

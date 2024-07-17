@@ -51,7 +51,9 @@ function NotesEditor({ onNoteAdded, noteToModify }) {
                     body: JSON.stringify({
                         title: newTitle,
                         note: newNote,
-                        userId: userId
+                        userId: userId,
+                        creationDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
+                        modificationDate: new Date().toISOString().slice(0, 19).replace('T', ' ')
                     }),
                 });
                 if (response.ok) {
@@ -89,7 +91,9 @@ function NotesEditor({ onNoteAdded, noteToModify }) {
                     body: JSON.stringify({
                         title: newTitle,
                         note: newNote,
-                        userId: userId
+                        userId: userId,
+                        creationDate: noteToModify.creationDate,
+                        modificationDate: new Date().toISOString().slice(0, 19).replace('T', ' ')
                     }),
                 });
                 if (response.ok) {
