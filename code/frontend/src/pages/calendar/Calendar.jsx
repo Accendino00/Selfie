@@ -32,13 +32,14 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
   const [shared, setShared] = useState([]);
   const [timesToRepeat, setTimesToRepeat] = useState(0);
   const [location, setLocation] = useState('');
-
+  const [draggedOpen, setDraggedOpen] = useState(false);
+  const [dragVariable, setDragVariable] = useState(false);
   const token = Cookies.get('token');
 
 
 
   useEffect(() => {
-    const fetchEvents = () => {
+    const interval = setInterval(() => {
       fetch(`/api/getEvents?calendars=${chosenCalendars}&username=${username}`, {
         method: 'GET',
         headers: {
@@ -50,14 +51,11 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
           setEvents(data);
         })
         .catch(error => console.error("Error fetching events:", error));
-    };
-
-    // Avvia il polling al caricamento del componente
-    const intervalId = setInterval(fetchEvents, 500); // 1 secondo
+    }, 500);
 
     // Pulizia: interrompe il polling quando il componente viene smontato
-    return () => clearInterval(intervalId);
-  }, [chosenCalendars]);
+    return () => clearInterval(interval);
+  }, [chosenCalendars, draggedOpen, dragVariable, modifying]);
 
 
   const handleOpen = () => setOpen(true);
@@ -103,6 +101,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
 
   const saveEvent = () => {
 
+
     let eventData = {
       title: eventTitle,
       description: description,
@@ -147,6 +146,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     }
 
     if (modifying) {
+
       fetch(`/api/modifyEvents/${currentId}`, {
         method: 'PUT',
         headers: {
@@ -157,13 +157,14 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
       })
         .then(response => response.json())
         .then(data => {
-          console.log(data);
+
           setEvents(data);
           resetForm();
           handleClose();
         })
 
     } else {
+
       fetch('/api/addEvents', {
         method: 'POST',
         headers: {
@@ -275,7 +276,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     setAllDay(event.allDay);
     if (!event.allDay && event.start !== null && event.end !== null) {
       // mi serve timeToUsable perche getHours() e getMinutes() mi ritornano tipo 2 se e' sono le 02:00, invece mi serve 02
-      console.log(event)
+
       setStartTime(timeToUsable(event.start.getHours(), event.start.getMinutes()));
       setEndTime(timeToUsable(event.end.getHours(), event.end.getMinutes()));
     }
@@ -293,8 +294,54 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     setEventColor(event.backgroundColor);
     setModifying(true);
     handleOpen();
+
   }
 
+  const draggedEvents = (event) => {
+
+    setSelectedCalendars(event._def.extendedProps.calendar);
+    if (event.end !== null) {
+      setEndDate(dateToUsable(event.end.getFullYear(), event.end.getMonth(), event.end.getDate()));
+    } else {
+      setEndDate('')
+    }
+    if (event._def.recurringDef !== null) {
+      setIsRecurring(true);
+      setRecurringDays(convertIntegersToDays(event._def.recurringDef.typeData.daysOfWeek));
+    }
+    setCurrentId(event.id);
+    setAllDay(event.allDay);
+    if (!event.allDay && event.start !== null && event.end !== null) {
+      // mi serve timeToUsable perche getHours() e getMinutes() mi ritornano tipo 2 se e' sono le 02:00, invece mi serve 02
+
+      setStartTime(timeToUsable(event.start.getHours(), event.start.getMinutes()));
+      setEndTime(timeToUsable(event.end.getHours(), event.end.getMinutes()));
+    }
+    setEventTitle(event.title);
+    setDescription(event.extendedProps.description);
+    // mi serve dateToUsable perche getMonth() mi ritorna 1 se e' gennaio, invece mi serve 01
+    if (event.start !== null) {
+      setStartDate(dateToUsable(event.start.getFullYear(), event.start.getMonth(), event.start.getDate()));
+    } else {
+      setStartDate('')
+    }
+    if (event.extendedProps.timesToRepeat !== null) {
+      setTimesToRepeat(event.extendedProps.timesToRepeat);
+    }
+
+    setEventColor(event.backgroundColor);
+    setModifying(true);
+
+    handleDraggedOpen();
+  }
+
+  const handleDraggedOpen = () => {
+    setDraggedOpen(true);
+  }
+
+  const handleDraggedClose = () => {
+    setDraggedOpen(false);
+  }
 
   const resetForm = () => {
     setEventTitle('');
@@ -334,11 +381,35 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
         selectable={true}
         events={events}
         select={(e) => addEvent(e)}
+        editable={true}
         eventClick={(e) => modifyEvent(e.event)}
+        eventStartEditable={true}
+        eventReceive={(e) => draggedEvents(e.event)}
+        eventDragStart={(e) => setDragVariable(true)}
+        eventDragStop={(e) => setDragVariable(false)}
         themeSystem='bootstrap5'
         height='100%'
         aspectRatio={1}
       />
+      <Dialog open={draggedOpen} onClose={handleDraggedClose}>
+        <DialogTitle>Modify Event</DialogTitle>
+        <DialogContent>
+          <FormControl fullWidth margin="dense">
+            <Typography> Are you sure you want to modify this event?</Typography>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDraggedClose}>Cancel</Button>
+          <Button
+            onClick={() => {
+              saveEvent();
+              handleDraggedClose();
+            }}
+          >
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Add New Event</DialogTitle>
         <DialogContent>
