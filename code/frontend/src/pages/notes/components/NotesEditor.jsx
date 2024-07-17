@@ -8,7 +8,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import useTokenChecker from '../../../utils/useTokenChecker';
 
-function NotesEditor({ onNoteAdded, noteToModify }) {
+function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeEditor }) {
     const [title, setTitle] = useState('');
     const [noteInput, setNoteInput] = useState('');
     const token = Cookies.get('token');
@@ -97,10 +97,11 @@ function NotesEditor({ onNoteAdded, noteToModify }) {
                     }),
                 });
                 if (response.ok) {
-                    console.log(response);
                     const modifiedNote = await response.json();
                     setTitle('');
                     setNoteInput('');
+                    setNoteToModify(null);
+                    setVisualizeEditor(false);
                     if (onNoteAdded) {
                         onNoteAdded(modifiedNote);
                     }

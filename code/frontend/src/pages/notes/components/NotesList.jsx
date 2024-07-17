@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
-import { Paper, Button, Container, TextField, List, ListItem, ListItemText, IconButton, Box } from '@mui/material';
+import { Card, CardActions, CardContent, IconButton, Typography, TextField, Menu, MenuItem, Select } from '@mui/material';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import ContentCopy from '@mui/icons-material/ContentCopy';
 // Assumi che questo sia un file di stile che hai creato
 import styles from './NotesListStyles.jsx';
 import Cookies from 'js-cookie';
-import { Select, MenuItem } from '@mui/material';
 
-function NotesList({ notes, onNoteDeleted, onNoteModified, onCopyNote }) { // Aggiungi onNoteDeleted come prop per gestire la cancellazione
+
+function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote }) { // Aggiungi onNoteDeleted come prop per gestire la cancellazione
     const token = Cookies.get('token');
     const [order, setOrder] = useState('title-asc');
+    const [anchorEl, setAnchorEl] = useState({});
+    const [searchTerm, setSearchTerm] = useState("");
 
     const handleDeleteNote = async (id) => {
         try {
@@ -85,6 +88,9 @@ function NotesList({ notes, onNoteDeleted, onNoteModified, onCopyNote }) { // Ag
         setOrder(event.target.value);
     };
 
+    console.log(notes);
+
+
     const sortedNotes = [...notes].sort((a, b) => {
         const [key, dir] = order.split('-');
         if (key === 'title') {
@@ -94,8 +100,19 @@ function NotesList({ notes, onNoteDeleted, onNoteModified, onCopyNote }) { // Ag
         }
     });
 
+    const handleMenu = (event, id) => {
+        setAnchorEl(prev => ({ ...prev, [id]: event.currentTarget }));
+    };
+
+    const handleClose = (id) => {
+        setAnchorEl(prev => ({ ...prev, [id]: null }));
+    };
+
+    const filteredNotes = sortedNotes.filter(note => note.title.toLowerCase().includes(searchTerm.toLowerCase()));
+
     return (
-        <>
+        <div>
+            <TextField label="Search Notes" variant="outlined" fullWidth onChange={e => setSearchTerm(e.target.value)} />
             <Select
                 value={order}
                 onChange={handleOrderChange}
@@ -109,25 +126,32 @@ function NotesList({ notes, onNoteDeleted, onNoteModified, onCopyNote }) { // Ag
                 <MenuItem value="modificationDate-asc">Data di Modifica Crescente</MenuItem>
                 <MenuItem value="modificationDate-desc">Data di Modifica Decrescente</MenuItem>
             </Select>
-            <List>
-                {sortedNotes.map((note) => (
-                    <ListItem key={note.id}>
-                        <ListItemText primary={note.title} />
-                        <div>
-                            <IconButton edge="end" aria-label="copy" onClick={() => handleCopyNote(note.id)}>
-                                <ContentCopy />
-                            </IconButton>
-                            <IconButton edge="end" aria-label="add" onClick={() => onNoteModified(note.id)}>
-                                <AddIcon />
-                            </IconButton>
-                            <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteNote(note.id)}>
-                                <DeleteIcon />
-                            </IconButton>
-                        </div>
-                    </ListItem>
-                ))}
-            </List>
-        </>
+            {filteredNotes.map((note) => (
+                <Card key={note.id} sx={styles.card}>
+                    <CardContent>
+                        <Typography variant="h5">{note.title}</Typography>
+                    </CardContent>
+                    <CardActions disableSpacing>
+                        <IconButton aria-label="settings" onClick={(e) => handleMenu(e, note.id)}>
+                            <MoreVertIcon />
+                        </IconButton>
+                        <Menu
+                            id="simple-menu"
+                            anchorEl={anchorEl[note.id]}
+                            keepMounted
+                            open={Boolean(anchorEl[note.id])}
+                            onClose={() => handleClose(note.id)}
+                        >
+                            <MenuItem onClick={() => handleCopyNote(note.id)}>Copy</MenuItem>
+                            <MenuItem onClick={() => handleDeleteNote(note.id)}>Delete</MenuItem>
+                        </Menu>
+                        <IconButton onClick={() => onNoteModified(note.id)}>
+                            <AddIcon />
+                        </IconButton>
+                    </CardActions>
+                </Card>
+            ))}
+        </div>
     );
 }
 

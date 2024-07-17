@@ -7,6 +7,8 @@ import Cookies from 'js-cookie';
 import { CircularProgress, Box } from "@mui/material";
 import useTokenChecker from "../../utils/useTokenChecker";
 import { useNavigate } from "react-router-dom";
+import { useMediaQuery, Fab, IconButton, Tooltip } from "@mui/material";
+import AddIcon from '@mui/icons-material/Add';
 
 function NotesPage() {
     const navigate = useNavigate();
@@ -15,6 +17,8 @@ function NotesPage() {
     const token = Cookies.get('token');
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
     const [userId, setUserId] = useState('');
+    const [visualizeEditor, setVisualizeEditor] = useState(false);
+    const isDesktop = useMediaQuery('(min-width:600px)'); // Adjust 600px based on your breakpoint needs
 
 
     useEffect(() => {
@@ -50,7 +54,7 @@ function NotesPage() {
                 clearTimeout(timeoutId); // Cancella il timeout quando il componente si smonta
             }
         };
-    }, [loginStatus, username, token, notes]); // Dipendenze appropriate
+    }, [loginStatus, username, token]); // Dipendenze appropriate
 
 
     useEffect(() => {
@@ -92,6 +96,7 @@ function NotesPage() {
                 return prevNotes.map(n => n.id === note.id ? note : n);
             }
         })
+        setVisualizeEditor(false);
     };
 
     const handleNoteDeleted = (id) => {
@@ -99,6 +104,7 @@ function NotesPage() {
     };
     
     const handleNoteModified = async (id) => {
+        setVisualizeEditor(true);
         try {
             const response = await fetch(`/api/notes/${id}`, {
                 headers: {
@@ -114,28 +120,40 @@ function NotesPage() {
         } catch (error) {
             console.error('Failed to fetch the note', error);
         }
-    };
+    };    
 
+    const openEditor = () => {
+        setVisualizeEditor(true);
+    }
 
     if (isTokenLoading || loginStatus === undefined) {
         return (
-          <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-            <CircularProgress />
-          </Box>
+            <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+                <CircularProgress />
+            </Box>
         );
     }
 
-    if(loginStatus) {
+    if (loginStatus) {
         return (
             <Container sx={styles.container}>
-                <NotesEditor onNoteAdded={handleNoteAdded} noteToModify={noteToModify} />
-                <NotesList notes={notes} onNoteDeleted={handleNoteDeleted} onNoteModified={handleNoteModified} onCopyNote={handleNoteAdded} />
+                {isDesktop ? (
+                    <Tooltip title="New Note">
+                        <IconButton onClick={() => {openEditor()}} sx={styles.newNoteDesktop}>
+                            <AddIcon />
+                            Nuovo
+                        </IconButton>
+                    </Tooltip>
+                ) : (
+                    <Fab color="primary" aria-label="add" onClick={() => {openEditor()}} sx={styles.newNoteMobile}>
+                        <AddIcon />
+                    </Fab>
+                )}
+                {visualizeEditor && <NotesEditor onNoteAdded={handleNoteAdded} noteToModify={noteToModify} setNoteToModify={setNoteToModify} setVisualizeEditor={setVisualizeEditor} />}
+                <NotesList notes={notes} setNotes={setNotes} onNoteDeleted={handleNoteDeleted} onNoteModified={handleNoteModified} onCopyNote={handleNoteAdded} />
             </Container>
         );
-    } else {
-        <> </>;
     }
 }
 
 export default NotesPage;
-
