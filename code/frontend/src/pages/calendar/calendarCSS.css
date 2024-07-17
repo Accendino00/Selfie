@@ -6,3 +6,8 @@
   .fc .fc-toolbar-title{
     font-size: 1.4em !important;
   }
+
+  .fc .fc-toolbar.fc-header-toolbar{
+    height: 1vh !important;
+    padding: 0 0.5em 0 0.5em !important;
+  }

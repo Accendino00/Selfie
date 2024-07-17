@@ -64,7 +64,7 @@ const CalendarPage = () => {
     };
 
     // Start polling on component mount
-    const intervalId = setInterval(fetchCalendars, 1000); // 10 seconds
+    const intervalId = setInterval(fetchCalendars, 1000);
     fetchCalendars();
     // Cleanup: stop polling on component unmount
     return () => clearInterval(intervalId);
@@ -89,7 +89,7 @@ const CalendarPage = () => {
     };
 
     // Start polling on component mount
-    const intervalId = setInterval(fetchInvitedEvents, 1000); // 10 seconds
+    const intervalId = setInterval(fetchInvitedEvents, 1000);
     fetchInvitedEvents();
     // Cleanup: stop polling on component unmount
     return () => clearInterval(intervalId);
@@ -230,7 +230,7 @@ const CalendarPage = () => {
 
   if (loginStatus) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', height: '93vh', width: '100%', overflow: 'hidden' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: '92vh', width: '100%', overflow: 'hidden' }}>
         <Box sx={{ display: 'flex', height: '100vh', width: '100%' }}>
           <IconButton
             sx={{

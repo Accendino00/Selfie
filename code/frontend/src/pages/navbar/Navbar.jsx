@@ -191,7 +191,6 @@ const Navbar = () => {
 
     const currentDate = new Date();
 
-    console.log("event: ", event)
     console.log("isNotifiable returns: ", noticeDate)
 
     return currentDate > noticeDate && eventEndDate > currentDate;
@@ -223,7 +222,7 @@ const Navbar = () => {
 
   if (loginStatus) {
     return (
-      <AppBar position="static">
+      <AppBar position="static" sx={{ height: '8vh' }}>
         <Toolbar>
           <IconButton
             color="inherit"
