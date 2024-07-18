@@ -55,7 +55,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
 
     // Pulizia: interrompe il polling quando il componente viene smontato
     return () => clearInterval(interval);
-  }, [chosenCalendars, draggedOpen, dragVariable, modifying]);
+  }, [chosenCalendars, draggedOpen, dragVariable, modifying, token, username]);
 
 
   const handleOpen = () => setOpen(true);
@@ -100,7 +100,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
 
 
   const saveEvent = () => {
-
+    console.log('eventTitle', eventTitle);
 
     let eventData = {
       title: eventTitle,
@@ -112,18 +112,25 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
       timesToRepeat: timesToRepeat,
       calendar: selectedCalendars,
       name: username,
+      location: location,
       invitedUsers: invitedUsers,
-      shared: shared
+      shared: shared,
+      isRecurring: isRecurring
 
     };
 
     if (isRecurring) {
-      if (eventData.start !== null && eventData.daysOfWeek === null) {
-        eventData.daysOfWeek = convertDataToDays(eventData.start.getDay());
-      } else {
+      if (recurringDays.length !== 0) {
         eventData.daysOfWeek = convertDaysToIntegers(recurringDays);
+      } else {
+        eventData.daysOfWeek = null;
       }
       eventData.startRecur = startDate;
+      eventData.start = startDate;
+      if (endDate !== '' || endDate !== null) {
+        eventData.endRecur = endDate;
+        eventData.end = endDate;
+      }
       if (startTime !== '') {
         eventData.startTime = startTime;
       } else {
@@ -175,6 +182,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
       })
         .then(response => response.json())
         .then(data => {
+          console.log('data', data);
           setEvents(...events, data);
           resetForm();
           handleClose();
@@ -270,15 +278,24 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     }
     if (event._def.recurringDef !== null) {
       setIsRecurring(true);
-      setRecurringDays(convertIntegersToDays(event._def.recurringDef.typeData.daysOfWeek));
+      if (event._def.recurringDef.typeData.daysOfWeek !== null) {
+        setRecurringDays(convertIntegersToDays(event._def.recurringDef.typeData.daysOfWeek));
+
+      }
     }
     setCurrentId(event.id);
     setAllDay(event.allDay);
-    if (!event.allDay && event.start !== null && event.end !== null) {
+    if (!event.allDay) {
       // mi serve timeToUsable perche getHours() e getMinutes() mi ritornano tipo 2 se e' sono le 02:00, invece mi serve 02
+      if (event.start === null) {
+        setStartTime('');
+      } else if (event.end === null) {
+        setEndTime('');
+      } else {
 
-      setStartTime(timeToUsable(event.start.getHours(), event.start.getMinutes()));
-      setEndTime(timeToUsable(event.end.getHours(), event.end.getMinutes()));
+        setStartTime(timeToUsable(event.start.getHours(), event.start.getMinutes()));
+        setEndTime(timeToUsable(event.end.getHours(), event.end.getMinutes()));
+      }
     }
     setEventTitle(event.title);
     setDescription(event.extendedProps.description);
@@ -291,6 +308,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     if (event.extendedProps.timesToRepeat !== null) {
       setTimesToRepeat(event.extendedProps.timesToRepeat);
     }
+    setLocation(event.extendedProps.location);
     setEventColor(event.backgroundColor);
     setModifying(true);
     handleOpen();
@@ -307,7 +325,9 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     }
     if (event._def.recurringDef !== null) {
       setIsRecurring(true);
-      setRecurringDays(convertIntegersToDays(event._def.recurringDef.typeData.daysOfWeek));
+      if (event.extendedProps.daysOfWeek !== null) {
+        setRecurringDays(convertIntegersToDays(event._def.recurringDef.typeData.daysOfWeek));
+      }
     }
     setCurrentId(event.id);
     setAllDay(event.allDay);
@@ -449,6 +469,9 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
             value={eventTitle}
             onChange={(e) => setEventTitle(e.target.value)}
           />
+          {!eventTitle && (
+            <Typography color="error">Please insert a Title for your event.</Typography>
+          )}
           <TextField
             autoFocus
             margin="dense"
@@ -546,6 +569,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
                 margin="dense"
                 value={timesToRepeat}
                 onChange={handleTimesToRepeatChange}
+                inputProps={{ min: 0 }}
               />
             </>
           )}
@@ -562,7 +586,12 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
             }}
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
+            required
           />
+          {/* Error message for no start date selected */}
+          {!startDate && (
+            <Typography color="error">Please select a start date.</Typography>
+          )}
           <TextField
             margin="dense"
             id="end"
@@ -575,7 +604,12 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
             }}
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
+            required={!isRecurring}
           />
+          {/* Error message for no end date selected when not recurring */}
+          {!endDate && !isRecurring && (
+            <Typography color="error">Please select an end date.</Typography>
+          )}
           <TextField
             margin="dense"
             id="location"
@@ -631,12 +665,15 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
           <Button onClick={handleClose}>Cancel</Button>
           <Button
             onClick={() => {
-              // Ensure a calendar is selected before saving
+              if (!startDate || (endDate === "" && !isRecurring)) {
+                alert("Please enter both start and end dates.");
+                return;
+              }
               if (selectedCalendars.length === 0) {
                 alert("Please select at least one calendar.");
                 return;
               }
-              saveEvent();
+              saveEvent()
             }}
           >
             Save

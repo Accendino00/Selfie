@@ -41,6 +41,7 @@ const CalendarPage = () => {
   const { loginStatus, isTokenLoading, username } = useTokenChecker();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [checkboxState, setCheckboxState] = useState({});
+  const [firstLogin, setFirstLogin] = useState(false);
 
   useEffect(() => {
     if (!isTokenLoading) {
@@ -48,7 +49,16 @@ const CalendarPage = () => {
         navigate("/login");
       }
     }
+
   }, [loginStatus, isTokenLoading]);
+
+  useEffect(() => {
+    const savedCheckboxState = JSON.parse(localStorage.getItem('checkboxState')) || {};
+    const savedChosenCalendars = JSON.parse(localStorage.getItem('chosenCalendars')) || [];
+  
+    setCheckboxState(savedCheckboxState);
+    setChosenCalendars(savedChosenCalendars);
+  }, []);
 
   useEffect(() => {
     const fetchCalendars = () => {
@@ -59,13 +69,20 @@ const CalendarPage = () => {
         }
       })
         .then(response => response.json())
-        .then(data => setCalendars(data))
+        .then(data => {
+
+          if (data.length === 0 && username) {
+            createFirstCalendar();
+          }
+          setCalendars(data)
+        })
         .catch(error => console.error('Error fetching calendars:', error));
     };
 
     // Start polling on component mount
     const intervalId = setInterval(fetchCalendars, 1000);
     fetchCalendars();
+     
     // Cleanup: stop polling on component unmount
     return () => clearInterval(intervalId);
   }, [token, username]);
@@ -104,6 +121,33 @@ const CalendarPage = () => {
     setOpenInvitedEvents(!openInvitedEvents);
   };
 
+  const createFirstCalendar = () => {
+    if (!username) {
+      console.error('User ID not found');
+      return;
+    }
+
+    fetch('/api/createCalendars', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ name: 'Base Calendar', user: username }),
+    })
+
+      .then(response => response.json())
+      .then(data => {
+        setCalendars([{
+          id: data.id, name
+            : 'Base Calendar'
+        }]);
+      })
+      .catch(error => console.error('Error creating first calendar:', error));
+  };
+
+
+
   const createCalendar = () => {
     if (!username) {
       console.error('User ID not found');
@@ -139,7 +183,7 @@ const CalendarPage = () => {
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          setCalendars(calendars.filter(calendar => calendar._id !== id));
+          setCalendars(calendars.filter(calendar => calendar.id !== id)); // ??
         } else {
           console.error('Failed to delete calendar:', data.message);
         }
@@ -148,18 +192,28 @@ const CalendarPage = () => {
   };
 
   const handleCheckboxChange = (calendarName) => {
-    setCheckboxState((prevState) => ({
-      ...prevState,
-      [calendarName]: !prevState[calendarName],
-    }));
+    setCheckboxState((prevState) => {
+      const newState = {
+        ...prevState,
+        [calendarName]: !prevState[calendarName],
+      };
+      // Save the updated checkbox state to local storage
+      localStorage.setItem('checkboxState', JSON.stringify(newState));
+      return newState;
+    });
+  
     setChosenCalendars(prevChosenCalendars => {
+      let newChosenCalendars;
       if (prevChosenCalendars.includes(calendarName)) {
         // If the calendar is already chosen, remove it
-        return prevChosenCalendars.filter(name => name !== calendarName);
+        newChosenCalendars = prevChosenCalendars.filter(name => name !== calendarName);
       } else {
         // If the calendar is not chosen, add it
-        return [...prevChosenCalendars, calendarName];
+        newChosenCalendars = [...prevChosenCalendars, calendarName];
       }
+      // Save the updated list of chosen calendars to local storage
+      localStorage.setItem('chosenCalendars', JSON.stringify(newChosenCalendars));
+      return newChosenCalendars;
     });
   };
 

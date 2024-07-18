@@ -51,11 +51,11 @@ function RegisterComponent(props) {
     return () => {
       document.removeEventListener("keydown", listener);
     };
-  }, [username, password, truename, birthdate,  props.trigger]);
+  }, [username, password, truename, birthdate, props.trigger]);
 
   // Handle form submission
   const handleSubmit = async (e) => {
-    if(e)
+    if (e)
       e.preventDefault(); // Prevent default form submission
 
     setErrorRegistration(false);
@@ -98,6 +98,7 @@ function RegisterComponent(props) {
         props.setTrigger(false);
         props.setOpenRegisterSuccess(true);
         setLoading(false);
+        
       } else {
         setErrorMessage("L'utente esiste già o le credenziali contengono caratteri non validi")
         setErrorRegistration(true);
@@ -110,6 +111,9 @@ function RegisterComponent(props) {
       setLoading(false);
     }
   };
+
+  
+
 
   return (props.trigger) ? (
     <Container maxWidth='false' sx={styles.background} >

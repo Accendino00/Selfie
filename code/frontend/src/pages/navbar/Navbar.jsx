@@ -22,6 +22,7 @@ import RadioGroup from '@mui/material/RadioGroup';
 import Radio from '@mui/material/Radio';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { Grid } from '@mui/material';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -40,6 +41,11 @@ const Navbar = () => {
   ];
 
 
+  const handleLogout = () => {
+    Cookies.remove('token');
+    navigate('/');
+  };
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -57,7 +63,10 @@ const Navbar = () => {
         }
 
         const data = await response.json();
-        setEvents(data);
+        if (JSON.stringify(data) !== JSON.stringify(events)) {  // Simple deep equality check
+          setEvents(data);
+          setShownNotifications(data.filter(isNotifiable).length);
+        }
         setError(null);  // Reset error state if data fetch is successful
       } catch (error) {
         console.error('Error fetching events:', error);
@@ -67,7 +76,8 @@ const Navbar = () => {
     };
 
     fetchEvents();
-  }, [token, username]);
+  }, [token, username, selectedNotification, events]);
+
 
   // carica tempo di preavviso per le notifiche degli eventi selezionato
   useEffect(() => {
@@ -120,21 +130,13 @@ const Navbar = () => {
     setSelectedNotification(value);
   };
 
-  const renderSettingsMenu = () => (
-    <Menu
-      id="settings-menu"
-      anchorEl={settingsAnchorEl}
-      open={Boolean(settingsAnchorEl)}
-      onClose={handleClose}
-      MenuListProps={{ 'aria-labelledby': 'settings-button' }}
-    >
-      {notificationTimes.map((time, index) => (
-        <MenuItem key={index} onClick={() => console.log(`Notification set for ${time}`)}>
-          {time}
-        </MenuItem>
-      ))}
-    </Menu>
-  );
+
+  function convertRecurringEventToFirstUsefulDate(event) {
+    if (!event.isRecurring) {
+      return event
+    }
+    return recurrenceMath(event);
+  }
 
   const renderNotifications = () => {
     if (error) {
@@ -143,9 +145,9 @@ const Navbar = () => {
     if (events.length === 0) {
       return <Typography variant="body2" color="text.secondary" align="center">No events found.</Typography>;
     }
-    return events.filter(isNotifiable).slice(0, 3).map((event, index) => (
+    return events.filter(isNotifiable).map(event => convertRecurringEventToFirstUsefulDate(event)).sort((a, b) => a.startDate - b.startDate).map((event, index) => (
       <MenuItem key={index}>
-        <Box bgcolor={event.color}>
+        <Grid container direction="column" bgcolor={event.color} alignItems="center" justifyContent="center">
           <Typography key={index} variant="body2" color="text.secondary" align="center" style={{ marginLeft: "5px", marginRight: "5px", borderRadius: "10px" }}>
             {event.title}
           </Typography>
@@ -153,7 +155,7 @@ const Navbar = () => {
             {event.start && new Date(event.start).toLocaleDateString()}
             {event.end && ` to ${new Date(event.end).toLocaleDateString()}`}
           </Typography>
-        </Box>
+        </Grid>
       </MenuItem>
     )
 
@@ -184,19 +186,101 @@ const Navbar = () => {
     );
   };
 
-  const isNotifiable = (event) => {
-    const eventEndDate = new Date(event.end);
 
-    const noticeDate = new Date(eventEndDate.getTime() - noticeTimeToMilliseconds());
+  function formatDate(date) {
+    let year = date.getFullYear();
+    let month = (date.getMonth() + 1).toString().padStart(2, '0'); // getMonth() returns 0-11
+    let day = date.getDate().toString().padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  }
+
+  function stringToDate(dateString) {
+    let [year, month, day] = dateString.split('-').map(Number);
+    return new Date(year, month - 1, day); // month is 0-indexed in JavaScript Date
+  }
+
+  function calculateAllRecurrencies(event, finalDate) {
+    const recurrencies = [];
+    let nextStartDate = new Date(event.start);
+    let nextEndDate = null;
+    if (event.end) {
+      nextEndDate = new Date(event.end);
+    }
+    // We'll use this to control the recurrence loop
+
+
+    while (nextStartDate.getFullYear() <= finalDate) {
+      let startDate = formatDate(nextStartDate)
+      let endDate = nextEndDate ? formatDate(nextEndDate) : null
+
+
+
+      const newEvent = {
+        title: event.title,
+        description: event.description,
+        color: event.color,
+        allDay: event.allDay,
+        start: startDate,
+        end: endDate,
+        calendar: event.calendar,
+        name: event.name,
+        location: event.location,
+        invitedUsers: event.invitedUsers,
+        shared: event.shared,
+        isRecurring: event.isRecurring
+      };
+
+      recurrencies.push(newEvent);
+
+      // Increment the date by 1 week
+      nextStartDate.setDate(nextStartDate.getDate() + 7);
+      if (nextEndDate) {
+        nextEndDate.setDate(nextEndDate.getDate() + 7);
+      }
+    }
+
+    return recurrencies
+  }
+
+  function getFirstUsefulDate(event) {
+    const recurrencies = calculateAllRecurrencies(event, getNextYear())
+    const currentDate = new Date()
+    return recurrencies.filter(event => stringToDate(event.start) > currentDate)
+      .sort((a, b) => stringToDate(a.start) - stringToDate(b.start))[0] || null;
+
+  }
+
+  function getNextYear() {
+    const currentDate = new Date();
+    const nextYear = currentDate.getFullYear() + 1;
+    return nextYear;
+  };
+
+  function recurrenceMath(event) {
+    const currentDate = new Date()
+
+    if (event.isRecurring) {
+      if (!event && event.end < currentDate) return null
+      else {
+        return getFirstUsefulDate(event)
+      }
+    }
+
+  }
+
+  function isNotifiable(event) {
+    const eventStartDate = new Date(event.start);
+
+    const noticeDate = new Date(eventStartDate.getTime() - noticeTimeToMilliseconds());
 
     const currentDate = new Date();
 
-    console.log("isNotifiable returns: ", noticeDate)
 
-    return currentDate > noticeDate && eventEndDate > currentDate;
+    return (currentDate > noticeDate && eventStartDate > currentDate) || recurrenceMath(event);
   };
 
-  const noticeTimeToMilliseconds = () => {
+  function noticeTimeToMilliseconds() {
     const timeUnits = {
       'min': 60000,
       'hour': 60000 * 60,
@@ -210,8 +294,6 @@ const Navbar = () => {
       'year': 60000 * 60 * 24 * 7 * 30 * 365,
       'years': 60000 * 60 * 24 * 7 * 30 * 365
     };
-
-    console.log("selectedNotificatoin: ", selectedNotification)
 
     const [number, unit] = selectedNotification?.split(' ') ?? [30, 'min'];
 
@@ -270,7 +352,13 @@ const Navbar = () => {
               <NotificationsIcon />
             </Badge>
           </IconButton>
-
+          <IconButton
+            color="inherit"
+            aria-label="logout"
+            onClick={handleLogout}
+          >
+            <ExitToAppIcon />
+          </IconButton>
           <Menu
             id="notification-menu"
             anchorEl={anchorEl}
