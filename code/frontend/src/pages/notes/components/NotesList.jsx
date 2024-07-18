@@ -15,6 +15,10 @@ function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote 
     const [anchorEl, setAnchorEl] = useState({});
     const [searchTerm, setSearchTerm] = useState("");
 
+    NotesList.defaultProps = {
+        notes: []
+    };
+
     const handleDeleteNote = async (id) => {
         try {
             const response = await fetch(`/api/notes/${id}`, {
@@ -72,7 +76,7 @@ function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote 
             console.error('Failed to copy the note', error);
         });
     };
-    
+
 
     const handleOrderChange = (event) => {
         setOrder(event.target.value);
