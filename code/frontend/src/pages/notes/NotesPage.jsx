@@ -122,9 +122,9 @@ function NotesPage() {
         }
     };    
 
-    const openEditor = () => {
-        setVisualizeEditor(true);
-    }
+    const toggleEditor = () => {
+        setVisualizeEditor(!visualizeEditor);
+    };
 
     if (isTokenLoading || loginStatus === undefined) {
         return (
@@ -139,7 +139,7 @@ function NotesPage() {
             <Container sx={styles.container}>
                 {isDesktop ? (
                     <Tooltip title="New Note">
-                        <IconButton onClick={() => {openEditor()}} sx={styles.newNoteDesktop}>
+                        <IconButton onClick={() => {toggleEditor()}} sx={styles.newNoteDesktop}>
                             <AddIcon />
                             Nuovo
                         </IconButton>

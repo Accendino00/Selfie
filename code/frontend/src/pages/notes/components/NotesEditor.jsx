@@ -6,7 +6,12 @@ import styles from './NotesEditorStyles.jsx';
 import Cookies from 'js-cookie';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import Quill from 'quill';
+import MarkdownShortcuts from 'quill-markdown-shortcuts';
 import useTokenChecker from '../../../utils/useTokenChecker';
+
+// Register the Markdown module with Quill
+Quill.register('modules/markdownShortcuts', MarkdownShortcuts);
 
 function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeEditor }) {
     const [title, setTitle] = useState('');
@@ -134,6 +139,17 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
         setTitle(event.target.value);
     };
 
+    const modules = {
+        toolbar: [
+            [{ 'header': '1' }, { 'header': '2' }, { 'font': [] }],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['bold', 'italic', 'underline'],
+            ['link', 'image'],
+            ['clean'],
+        ],
+        markdownShortcuts: {},
+    };
+
     return (
         <Container sx={styles.container}>
             <Paper elevation={3} sx={styles.paper}>
@@ -145,7 +161,9 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                     sx={styles.textField}
                     fullWidth
                 />
-                <ReactQuill theme="snow" value={noteInput} onChange={setNoteInput} />
+                <div style={styles.quill}>
+                    <ReactQuill theme="snow" value={noteInput} onChange={setNoteInput} modules={modules}/>
+                </div>
                 {noteToModify ? <Button sx={styles.modifyButton} onClick={handleModifyNote} variant="contained" color="primary">
                     Modifica Appunto
                 </Button> : <Button sx={styles.addButton} onClick={handleAddNote} variant="contained" color="primary">
