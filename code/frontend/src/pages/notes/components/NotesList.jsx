@@ -71,18 +71,8 @@ function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote 
         }).catch(error => {
             console.error('Failed to copy the note', error);
         });
-    }
+    };
     
-    //volendo sarebbe da fare la ricerca dell'appunto 
-    //volendo sarebbe da fare la ricerca dell'appunto 
-    //volendo sarebbe da fare la ricerca dell'appunto 
-    //volendo sarebbe da fare la ricerca dell'appunto 
-    //volendo sarebbe da fare la ricerca dell'appunto 
-    //volendo sarebbe da fare la ricerca dell'appunto 
-    //volendo sarebbe da fare la ricerca dell'appunto 
-    //volendo sarebbe da fare la ricerca dell'appunto 
-    //volendo sarebbe da fare la ricerca dell'appunto 
-    //volendo sarebbe da fare la ricerca dell'appunto 
 
     const handleOrderChange = (event) => {
         setOrder(event.target.value);

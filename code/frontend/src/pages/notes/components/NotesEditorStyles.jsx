@@ -1,23 +1,29 @@
 const styles = {
     container: {
+        marginTop: '20px',
         display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
     },
-    paper : {
-        width: '100%',
+    paper: {
         padding: '20px',
-        margin: '20px 0',
-    },
-    textfield: {
         width: '100%',
+        maxWidth: '800px',
+    },
+    textField: {
         marginBottom: '20px',
+    },
+    quill: {
+        height: '400px', // Adjust the height as needed
+        marginBottom: '20px',
+    },
+    addButton: {
         marginTop: '20px',
     },
-    addbutton: {
-        margin: '0 10px',
+    modifyButton: {
+        marginTop: '20px',
     },
-    modifybutton: {
-        margin: '0 10px',
-    },
-}
+};
+
 
 export default styles;
