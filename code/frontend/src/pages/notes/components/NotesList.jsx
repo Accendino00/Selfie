@@ -7,9 +7,11 @@ import ContentCopy from '@mui/icons-material/ContentCopy';
 // Assumi che questo sia un file di stile che hai creato
 import styles from './NotesListStyles.jsx';
 import Cookies from 'js-cookie';
+import { useEffect } from 'react';
+import FileCopyIcon from '@mui/icons-material/FileCopy';
 
 
-function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote }) { // Aggiungi onNoteDeleted come prop per gestire la cancellazione
+function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote, isDesktop }) { // Aggiungi onNoteDeleted come prop per gestire la cancellazione
     const token = Cookies.get('token');
     const [order, setOrder] = useState('title-asc');
     const [anchorEl, setAnchorEl] = useState({});
@@ -106,47 +108,87 @@ function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote 
 
     return (
         <div>
-            <TextField label="Search Notes" variant="outlined" fullWidth onChange={e => setSearchTerm(e.target.value)} />
-            <Select
-                value={order}
-                onChange={handleOrderChange}
-                displayEmpty
-                inputProps={{ 'aria-label': 'Without label' }}
-            >
-                <MenuItem value="title-asc">Titolo Crescente</MenuItem>
-                <MenuItem value="title-desc">Titolo Decrescente</MenuItem>
-                <MenuItem value="creationDate-asc">Data di Creazione Crescente</MenuItem>
-                <MenuItem value="creationDate-desc">Data di Creazione Decrescente</MenuItem>
-                <MenuItem value="modificationDate-asc">Data di Modifica Crescente</MenuItem>
-                <MenuItem value="modificationDate-desc">Data di Modifica Decrescente</MenuItem>
-            </Select>
-            {filteredNotes.map((note) => (
-                <Card key={note.id} sx={styles.card}>
-                    <CardContent>
-                        <Typography variant="h5">{note.title}</Typography>
-                    </CardContent>
-                    <CardActions disableSpacing>
-                        <IconButton aria-label="settings" onClick={(e) => handleMenu(e, note.id)}>
-                            <MoreVertIcon />
-                        </IconButton>
-                        <Menu
-                            id="simple-menu"
-                            anchorEl={anchorEl[note.id]}
-                            keepMounted
-                            open={Boolean(anchorEl[note.id])}
-                            onClose={() => handleClose(note.id)}
-                        >
-                            <MenuItem onClick={() => handleCopyNote(note.id)}>Copy</MenuItem>
-                            <MenuItem onClick={() => handleDeleteNote(note.id)}>Delete</MenuItem>
-                        </Menu>
-                        <IconButton onClick={() => onNoteModified(note.id)}>
-                            <AddIcon />
-                        </IconButton>
-                    </CardActions>
-                </Card>
-            ))}
+            {isDesktop ? (
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <TextField label="Search Notes" variant="outlined" fullWidth onChange={e => setSearchTerm(e.target.value)} />
+                    <Select
+                        value={order}
+                        onChange={handleOrderChange}
+                        displayEmpty
+                        inputProps={{ 'aria-label': 'Without label' }}
+                    >
+                        <MenuItem value="title-asc">Titolo Crescente</MenuItem>
+                        <MenuItem value="title-desc">Titolo Decrescente</MenuItem>
+                        <MenuItem value="creationDate-asc">Data di Creazione Crescente</MenuItem>
+                        <MenuItem value="creationDate-desc">Data di Creazione Decrescente</MenuItem>
+                        <MenuItem value="modificationDate-asc">Data di Modifica Crescente</MenuItem>
+                        <MenuItem value="modificationDate-desc">Data di Modifica Decrescente</MenuItem>
+                    </Select>
+                    <ul>
+                        {filteredNotes.map((note) => (
+                            <li key={note.id}>
+                                {note.title}
+                                <IconButton onClick={() => onNoteModified(note.id)} aria-label="edit">
+                                    <AddIcon />
+                                </IconButton>
+                                <IconButton aria-label="copy" onClick={() => handleCopyNote(note.id)}>
+                                    <FileCopyIcon />
+                                </IconButton>
+                                <IconButton aria-label="delete" onClick={() => handleDeleteNote(note.id)}>
+                                    <DeleteIcon />
+                                </IconButton>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            ) : (
+                <div>
+                    <TextField label="Search Notes" variant="outlined" fullWidth onChange={e => setSearchTerm(e.target.value)} />
+                    <Select
+                        value={order}
+                        onChange={handleOrderChange}
+                        displayEmpty
+                        inputProps={{ 'aria-label': 'Without label' }}
+                    >
+                        <MenuItem value="title-asc">Titolo Crescente</MenuItem>
+                        <MenuItem value="title-desc">Titolo Decrescente</MenuItem>
+                        <MenuItem value="creationDate-asc">Data di Creazione Crescente</MenuItem>
+                        <MenuItem value="creationDate-desc">Data di Creazione Decrescente</MenuItem>
+                        <MenuItem value="modificationDate-asc">Data di Modifica Crescente</MenuItem>
+                        <MenuItem value="modificationDate-desc">Data di Modifica Decrescente</MenuItem>
+                    </Select>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around' }}>
+                        {filteredNotes.map((note) => (
+                            <Card key={note.id} sx={{ maxWidth: '300px', margin: '10px' }}>
+                                <CardContent>
+                                    <Typography variant="h5">{note.title}</Typography>
+                                </CardContent>
+                                <CardActions disableSpacing>
+                                    <IconButton aria-label="settings" onClick={(e) => handleMenu(e, note.id)}>
+                                        <MoreVertIcon />
+                                    </IconButton>
+                                    <Menu
+                                        id="simple-menu"
+                                        anchorEl={anchorEl[note.id]}
+                                        keepMounted
+                                        open={Boolean(anchorEl[note.id])}
+                                        onClose={() => handleClose(note.id)}
+                                    >
+                                        <MenuItem onClick={() => handleCopyNote(note.id)}>Copy</MenuItem>
+                                        <MenuItem onClick={() => handleDeleteNote(note.id)}>Delete</MenuItem>
+                                    </Menu>
+                                    <IconButton onClick={() => onNoteModified(note.id)}>
+                                        <AddIcon />
+                                    </IconButton>
+                                </CardActions>
+                            </Card>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
+    
 }
 
 

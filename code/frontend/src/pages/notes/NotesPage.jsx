@@ -4,11 +4,13 @@ import NotesEditor from "./components/NotesEditor";
 import { Container } from "@mui/material";
 import NotesList from "./components/NotesList";
 import Cookies from 'js-cookie';
-import { CircularProgress, Box } from "@mui/material";
+import { CircularProgress, Box, Button } from "@mui/material";
 import useTokenChecker from "../../utils/useTokenChecker";
 import { useNavigate } from "react-router-dom";
 import { useMediaQuery, Fab, IconButton, Tooltip } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+
 
 function NotesPage() {
     const navigate = useNavigate();
@@ -138,22 +140,61 @@ function NotesPage() {
         return (
             <Container sx={styles.container}>
                 {isDesktop ? (
-                    <Tooltip title="New Note">
-                        <IconButton onClick={() => {toggleEditor()}} sx={styles.newNoteDesktop}>
-                            <AddIcon />
-                            Nuovo
-                        </IconButton>
-                    </Tooltip>
+                    <>
+                        <Tooltip title="New Note">
+                            <Button onClick={() => {toggleEditor()}} sx={styles.newNoteDesktop}>
+                                <AddIcon />
+                                Nuovo
+                            </Button>
+                        </Tooltip>
+                        <NotesList 
+                            notes={notes} 
+                            setNotes={setNotes} 
+                            onNoteDeleted={handleNoteDeleted} 
+                            onNoteModified={handleNoteModified} 
+                            onCopyNote={handleNoteAdded} 
+                            isDesktop={isDesktop} 
+                        />
+                        <NotesEditor 
+                            onNoteAdded={handleNoteAdded} 
+                            noteToModify={noteToModify} 
+                            setNoteToModify={setNoteToModify} 
+                            setVisualizeEditor={setVisualizeEditor} 
+                        />
+                    </>
                 ) : (
-                    <Fab color="primary" aria-label="add" onClick={() => {openEditor()}} sx={styles.newNoteMobile}>
-                        <AddIcon />
-                    </Fab>
+                    visualizeEditor ? (
+                        <>
+                            <Fab color="primary" aria-label="back" onClick={() => {setVisualizeEditor(false)}} sx={styles.newNoteMobile}>
+                                <ArrowBackIcon />
+                            </Fab>
+                            <NotesEditor 
+                                onNoteAdded={handleNoteAdded} 
+                                noteToModify={noteToModify} 
+                                setNoteToModify={setNoteToModify} 
+                                setVisualizeEditor={setVisualizeEditor} 
+                            />
+                        </>
+                    ) : (
+                        <>
+                            <Fab color="primary" aria-label="add" onClick={() => {toggleEditor()}} sx={styles.newNoteMobile}>
+                                <AddIcon />
+                            </Fab>
+                            <NotesList 
+                                notes={notes} 
+                                setNotes={setNotes} 
+                                onNoteDeleted={handleNoteDeleted} 
+                                onNoteModified={handleNoteModified} 
+                                onCopyNote={handleNoteAdded} 
+                                isDesktop={isDesktop} 
+                            />
+                        </>
+                    )
                 )}
-                {visualizeEditor && <NotesEditor onNoteAdded={handleNoteAdded} noteToModify={noteToModify} setNoteToModify={setNoteToModify} setVisualizeEditor={setVisualizeEditor} />}
-                <NotesList notes={notes} setNotes={setNotes} onNoteDeleted={handleNoteDeleted} onNoteModified={handleNoteModified} onCopyNote={handleNoteAdded} />
             </Container>
         );
     }
+    
 }
 
 export default NotesPage;
