@@ -9,6 +9,10 @@ import Cookies from 'js-cookie';
 import useTokenChecker from '../../utils/useTokenChecker';
 import { Typography } from '@mui/material';
 import './calendarCSS.css';
+import Tasks from './Tasks';
+import IconButton from '@mui/material/IconButton';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import Drawer from '@mui/material/Drawer';
 
 export default function Calendar({ createButton, chosenCalendars, calendars }) {
   const { loginStatus, isTokenLoading, username } = useTokenChecker();
@@ -34,6 +38,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
   const [location, setLocation] = useState('');
   const [draggedOpen, setDraggedOpen] = useState(false);
   const [dragVariable, setDragVariable] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const token = Cookies.get('token');
 
 
@@ -100,7 +105,6 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
 
 
   const saveEvent = () => {
-    console.log('eventTitle', eventTitle);
 
     let eventData = {
       title: eventTitle,
@@ -182,7 +186,6 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
       })
         .then(response => response.json())
         .then(data => {
-          console.log('data', data);
           setEvents(...events, data);
           resetForm();
           handleClose();
@@ -362,6 +365,8 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
   const handleDraggedClose = () => {
     setDraggedOpen(false);
   }
+
+  const toggleDrawer = (open) => () => setDrawerOpen(open);
 
   const resetForm = () => {
     setEventTitle('');
@@ -680,6 +685,28 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <IconButton
+        onClick={toggleDrawer(true)}
+        style={{
+          position: 'fixed',
+          right: '-15px', 
+          top: 'calc(45% - 24px)', 
+          width: '34px', 
+          height: '34px',
+          zIndex: 1000, 
+          color: 'white',
+          backgroundColor: '#0d6efd', 
+          boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.2)', 
+        }}
+      >
+        <ArrowBackIosIcon />
+      </IconButton>
+      <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer(false)}>
+        <Box p={2} width="250px" role="presentation">
+          <Tasks />
+        </Box>
+      </Drawer>
     </>
 
   );

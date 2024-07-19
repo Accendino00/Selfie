@@ -46,7 +46,7 @@ const HomePage = () => {
     const nextYear = currentDate.getFullYear() + 1;
     return nextYear;
   };
-  
+
   function formatDate(date) {
     let year = date.getFullYear();
     let month = (date.getMonth() + 1).toString().padStart(2, '0'); // getMonth() returns 0-11
@@ -115,7 +115,7 @@ const HomePage = () => {
     const currentDate = new Date()
 
     if (event.isRecurring) {
-      if (!event && event.end < currentDate) return null
+      if (event.end && (stringToDate(event.end) < currentDate)) return null
       else {
         return getFirstUsefulDate(event)
       }
@@ -146,7 +146,7 @@ const HomePage = () => {
       // Display up to 3 notifiable events
       return notifiableEvents.slice(0, 3).map((event, index) => (
         <Typography key={index} variant="body2" color="#ffffffbf" align="center" bgcolor={event.color}>
-          {event.title} - {new Date(event.start).toLocaleDateString()} to {new Date(event.end).toLocaleDateString()}
+          {event.title} - {new Date(event.start).toLocaleDateString()} {event.end && ` to ${new Date(event.end).toLocaleDateString()}`}
         </Typography>
       ));
     }

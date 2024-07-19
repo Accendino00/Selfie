@@ -261,7 +261,7 @@ const Navbar = () => {
     const currentDate = new Date()
 
     if (event.isRecurring) {
-      if (!event && event.end < currentDate) return null
+      if (event.end && (stringToDate(event.end) < currentDate)) return null
       else {
         return getFirstUsefulDate(event)
       }
