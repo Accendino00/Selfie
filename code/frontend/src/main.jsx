@@ -20,6 +20,8 @@ import NavPage from './pages/common/NavPage.jsx'
 
 import Navbar from './pages/navbar/Navbar.jsx'
 
+import PomodoroPage from './pages/pomodoro/PomodoPage.jsx'
+
 import {
   createBrowserRouter,
   RouterProvider,
@@ -57,7 +59,7 @@ function App() {
         },
         {
           path: "/timer",
-          element: <TimerPage />,
+          element: <PomodoroPage />,
         },
       ]
     },
