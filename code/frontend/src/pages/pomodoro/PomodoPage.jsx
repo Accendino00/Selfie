@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Button, Typography, TextField } from '@mui/material';
 import styles from "./PomodoroPageStyles";
 import ProgressBarComponent from './components/ProgressBarComponent';
+import useTokenChecker from '../../utils/useTokenChecker';
 
 const PomodoroPage = () => {
     const [studyTime, setStudyTime] = useState(30); // tempo di studio in minuti
@@ -14,6 +15,16 @@ const PomodoroPage = () => {
     const [minutes, setMinutes] = useState(0);
     const [seconds, setSeconds] = useState(0);
     const [isStudyTime, setIsStudyTime] = useState(true);
+
+    const { loginStatus, isTokenLoading, username } = useTokenChecker();
+
+    useEffect(() => {
+        if (!isTokenLoading) {
+          if (!loginStatus) {
+            navigate("/login");
+          }
+        }
+    }, [loginStatus, isTokenLoading]);
 
     useEffect(() => {
         calculateCycleSettings(totalMinutes);
@@ -86,57 +97,59 @@ const PomodoroPage = () => {
     const handleTotalTimeChange = (e) => {
         setTotalMinutes(e.target.value);
     };
-
-    return (
-        <Container sx={styles.container}>
-            <Typography variant="h5" sx={styles.heading}>Timer Pomodoro</Typography>
-            <TextField
-                label="Tempo di Studio (in minuti)"
-                variant="outlined"
-                type="number"
-                value={studyTime}
-                onChange={(e) => setStudyTime(Number(e.target.value))}
-                sx={styles.textField}
-            />
-            <TextField
-                label="Durata Pausa (in minuti)"
-                variant="outlined"
-                type="number"
-                value={breakTime}
-                onChange={(e) => setBreakTime(Number(e.target.value))}
-                sx={styles.textField}
-            />
-            <TextField
-                label="Numero di Cicli"
-                variant="outlined"
-                type="number"
-                value={cycles}
-                onChange={(e) => setCycles(Number(e.target.value))}
-                sx={styles.textField}
-            />
-            <TextField
-                label="Tempo Totale (in minuti)"
-                variant="outlined"
-                type="number"
-                value={totalMinutes}
-                onChange={handleTotalTimeChange}
-                sx={styles.textField}
-            />
-            <Typography variant="subtitle1" sx={{ mt: 2 }}>
-                Cicli rimanenti: {cycles - Math.floor(currentCycle / 2)}
-            </Typography>
-            <ProgressBarComponent
-                hours={hours}
-                minutes={minutes}
-                seconds={seconds}
-                inputValue={isStudyTime ? studyTime : breakTime}
-                label={isStudyTime ? 'Studio' : 'Pausa'}
-            />
-            <Button onClick={handleStartCycle} sx={styles.button}>Inizia Ciclo</Button>
-            <Button onClick={handleResetCycle} sx={styles.button}>Ricomincia Ciclo</Button>
-            <Button onClick={handleEndCycle} sx={styles.button}>Fine Ciclo</Button>
-        </Container>
-    );    
+    
+    if(loginStatus) {
+        return (
+            <Container sx={styles.container}>
+                <Typography variant="h5" sx={styles.heading}>Timer Pomodoro</Typography>
+                <TextField
+                    label="Tempo di Studio (in minuti)"
+                    variant="outlined"
+                    type="number"
+                    value={studyTime}
+                    onChange={(e) => setStudyTime(Number(e.target.value))}
+                    sx={styles.textField}
+                />
+                <TextField
+                    label="Durata Pausa (in minuti)"
+                    variant="outlined"
+                    type="number"
+                    value={breakTime}
+                    onChange={(e) => setBreakTime(Number(e.target.value))}
+                    sx={styles.textField}
+                />
+                <TextField
+                    label="Numero di Cicli"
+                    variant="outlined"
+                    type="number"
+                    value={cycles}
+                    onChange={(e) => setCycles(Number(e.target.value))}
+                    sx={styles.textField}
+                />
+                <TextField
+                    label="Tempo Totale (in minuti)"
+                    variant="outlined"
+                    type="number"
+                    value={totalMinutes}
+                    onChange={handleTotalTimeChange}
+                    sx={styles.textField}
+                />
+                <Typography variant="subtitle1" sx={{ mt: 2 }}>
+                    Cicli rimanenti: {cycles - Math.floor(currentCycle / 2)}
+                </Typography>
+                <ProgressBarComponent
+                    hours={hours}
+                    minutes={minutes}
+                    seconds={seconds}
+                    inputValue={isStudyTime ? studyTime : breakTime}
+                    label={isStudyTime ? 'Studio' : 'Pausa'}
+                />
+                <Button onClick={handleStartCycle} sx={styles.button}>Inizia Ciclo</Button>
+                <Button onClick={handleResetCycle} sx={styles.button}>Ricomincia Ciclo</Button>
+                <Button onClick={handleEndCycle} sx={styles.button}>Fine Ciclo</Button>
+            </Container>
+        );    
+    }
 };
 
 export default PomodoroPage;
