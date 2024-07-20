@@ -145,9 +145,17 @@ const HomePage = () => {
 
       // Display up to 3 notifiable events
       return notifiableEvents.slice(0, 3).map((event, index) => (
-        <Typography key={index} variant="body2" color="#ffffffbf" align="center" bgcolor={event.color}>
-          {event.title} - {new Date(event.start).toLocaleDateString()} {event.end && ` to ${new Date(event.end).toLocaleDateString()}`}
-        </Typography>
+        <Grid container direction="row" alignItems="center" justifyContent="center">
+          <div style={{
+            width: '10px',
+            height: '10px',
+            backgroundColor: event.color,
+            marginRight: '10px',
+          }} />
+          <Typography key={index} variant="body2" color="#ffffffbf" align="center">
+            {event.title} - {new Date(event.start).toLocaleDateString()} {event.end && ` to ${new Date(event.end).toLocaleDateString()}`}
+          </Typography>
+        </Grid>
       ));
     }
   };

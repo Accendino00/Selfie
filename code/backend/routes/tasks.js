@@ -99,16 +99,16 @@ router.delete('/deleteTask/:id', authenticateJWT, (req, res) => {
     return new Promise((resolve, reject) => {
         try {
             const id = req.params.id;
-            console.log('Deleting task backend:', id);
+            
             const tasksCollection = clientMDB.db("SelfieGD").collection('Tasks');
             tasksCollection.deleteOne({ _id: new ObjectId(id) }).then((result) => {
                 res.json(result);
             }).catch((error) => {
-                console.log(id);
+                
                 res.status(500).send('Error deleting task');
             });
         } catch (error) {
-            console.log(id);
+            
             res.status(500).send('Error deleting task');
         }
     });

@@ -39,6 +39,10 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
   const [draggedOpen, setDraggedOpen] = useState(false);
   const [dragVariable, setDragVariable] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [tasks, setTasks] = useState([]);
+  const [tasksDialogOpen, setTasksDialogOpen] = useState(false);
+  const [taskToModify, setTaskToModify] = useState('');
+
   const token = Cookies.get('token');
 
 
@@ -124,6 +128,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     };
 
     if (isRecurring) {
+      console.log('ao')
       if (recurringDays.length !== 0) {
         eventData.daysOfWeek = convertDaysToIntegers(recurringDays);
       } else {
@@ -131,9 +136,17 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
       }
       eventData.startRecur = startDate;
       eventData.start = startDate;
-      if (endDate !== '' || endDate !== null) {
+      eventData.end = endDate;
+      if (endDate !== '' && endDate !== null) {
         eventData.endRecur = endDate;
-        eventData.end = endDate;
+        console.log('ciao2')
+      } else if (timesToRepeat !== "0" && eventData.daysOfWeek !== null) {
+        console.log('ciao')
+        eventData.endRecur = calculateRepeatEndDate(startDate, timesToRepeat);
+      } else {
+        eventData.endRecur = null;
+        eventData.end = null;
+        console.log('ciao3')
       }
       if (startTime !== '') {
         eventData.startTime = startTime;
@@ -145,18 +158,27 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
       } else {
         eventData.endTime = null;
       }
-      if (timesToRepeat !== 0) {
+      if (timesToRepeat !== "0" && eventData.daysOfWeek === null && eventData.endRecur === null && eventData.end === null) {
+        console.log('asdasd')
         eventData.endRecur = calculateRepeatEndDate(startDate, timesToRepeat);
         eventData.timesToRepeat = timesToRepeat;
+        eventData.daysOfWeek = getDayOfWeek(startDate, eventData.end);
+      } else if (timesToRepeat === "0") {
+        eventData.timesToRepeat = null;
       }
+      console.log(eventData.end)
     } else {
       eventData.daysOfWeek = null;
       eventData.startTime = null;
       eventData.endTime = null;
       eventData.startRecur = null;
+      eventData.endRecur = null;
     }
 
     if (modifying) {
+      if (!validateDates()) {
+        return;
+      }
 
       fetch(`/api/modifyEvents/${currentId}`, {
         method: 'PUT',
@@ -240,9 +262,37 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
   const calculateRepeatEndDate = (startDate, timesToRepeat) => {
     let [year, month, day] = startDate.split('-').map(num => parseInt(num, 10));
     let date = new Date(year, month - 1, day);
-    date.setDate(date.getDate() + (7 * timesToRepeat));
+    date.setDate(date.getDate() + (7 * (parseInt(timesToRepeat))));
     return date;
   }
+
+  const getDayOfWeek = (startDate, endDate) => {
+    console.log('imin');
+    console.log(startDate, endDate);
+
+    // Check if startDate is a Date object, if not convert from string
+    let start = startDate instanceof Date ? startDate : new Date(startDate);
+    let daysOfWeek = [];
+
+    if (endDate === null) {
+      // If endDate is null, only use startDate
+      daysOfWeek.push(start.getDay());
+      console.log('Only start date provided, calculated day of week.');
+    } else {
+      // Check if endDate is a Date object, if not convert from string
+      let end = endDate instanceof Date ? endDate : new Date(endDate);
+
+      // Iterate over each day between the start date and the end date
+      for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
+        // Get the day of the week (0 for Sunday, 1 for Monday, ..., 6 for Saturday)
+        daysOfWeek.push(date.getDay());
+      }
+    }
+
+    // Return an array of unique day of the week indices
+    return [...new Set(daysOfWeek)];
+  }
+
 
   function convertDaysToIntegers(dayNames) {
     const dayMap = {
@@ -273,13 +323,34 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
   }
 
   const modifyEvent = (event) => {
+
+    if (event.extendedProps.isTask) {
+
+      setTasksDialogOpen(true);
+      setTaskToModify({
+        title: event.title,
+        description: event.extendedProps.description,
+        start: event.start,
+        end: event.start,
+        color: event.backgroundColor,
+        allDay: event.allDay,
+        isTask: event.extendedProps.isTask,
+        name: event.extendedProps.name,
+        isRecurring: event.extendedProps.isRecurring,
+        timesToRepeat: event.extendedProps.timesToRepeat,
+        _id: event.id
+      });
+
+      return;
+    }
+
     setSelectedCalendars(event._def.extendedProps.calendar);
     if (event.end !== null) {
       setEndDate(dateToUsable(event.end.getFullYear(), event.end.getMonth(), event.end.getDate()));
     } else {
       setEndDate('')
     }
-    if (event._def.recurringDef !== null) {
+    if (event._def.extendedProps.isRecurring) {
       setIsRecurring(true);
       if (event._def.recurringDef.typeData.daysOfWeek !== null) {
         setRecurringDays(convertIntegersToDays(event._def.recurringDef.typeData.daysOfWeek));
@@ -320,25 +391,34 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
 
   const draggedEvents = (event) => {
 
+    console.log(event.start)
     setSelectedCalendars(event._def.extendedProps.calendar);
     if (event.end !== null) {
       setEndDate(dateToUsable(event.end.getFullYear(), event.end.getMonth(), event.end.getDate()));
     } else {
       setEndDate('')
     }
-    if (event._def.recurringDef !== null) {
+    if (event._def.extendedProps.isRecurring) {
       setIsRecurring(true);
       if (event.extendedProps.daysOfWeek !== null) {
-        setRecurringDays(convertIntegersToDays(event._def.recurringDef.typeData.daysOfWeek));
+        console.log(getDayOfWeek(event.start, event.end))
+        setRecurringDays(getDayOfWeek(event.start, event.end));
+        console.log(recurringDays)
       }
     }
     setCurrentId(event.id);
     setAllDay(event.allDay);
-    if (!event.allDay && event.start !== null && event.end !== null) {
+    if (!event.allDay) {
       // mi serve timeToUsable perche getHours() e getMinutes() mi ritornano tipo 2 se e' sono le 02:00, invece mi serve 02
+      if (event.start === null) {
+        setStartTime('');
+      } else if (event.end === null) {
+        setEndTime('');
+      } else {
 
-      setStartTime(timeToUsable(event.start.getHours(), event.start.getMinutes()));
-      setEndTime(timeToUsable(event.end.getHours(), event.end.getMinutes()));
+        setStartTime(timeToUsable(event.start.getHours(), event.start.getMinutes()));
+        setEndTime(timeToUsable(event.end.getHours(), event.end.getMinutes()));
+      }
     }
     setEventTitle(event.title);
     setDescription(event.extendedProps.description);
@@ -351,10 +431,9 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     if (event.extendedProps.timesToRepeat !== null) {
       setTimesToRepeat(event.extendedProps.timesToRepeat);
     }
-
+    setLocation(event.extendedProps.location);
     setEventColor(event.backgroundColor);
     setModifying(true);
-
     handleDraggedOpen();
   }
 
@@ -393,6 +472,59 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     setInvitedUsers(invitedUsers.filter(u => u !== user));
   };
 
+  const handleTasksFromTasks = (tasks) => {
+    setTasks(tasks);
+  }
+
+  const handleTaskFinish = (tasksDialogOpen, taskToModify) => {
+    setTasksDialogOpen(false)
+    if (taskToModify) {
+      setTaskToModify('');
+    }
+  }
+
+  const displayEventsAndTasks = () => {
+    let eventsAndTasks = [];
+    for (let i = 0; i < events.length; i++) {
+      eventsAndTasks.push(events[i]);
+    }
+    for (let i = 0; i < tasks.length; i++) {
+      if (tasks[i].completed === false) {
+        eventsAndTasks.push(tasks[i]);
+      }
+    }
+    return eventsAndTasks
+  }
+
+  /*const handleEventContent = (event) => {
+    console.log(event)
+    return (
+      <Box display="flex" sx={{ height: "2vh" }}>
+
+        {event.event.timeText}
+        {event.event.title}
+      </Box>
+    )
+  }*/
+
+  const validateDates = () => {
+    if (new Date(startDate) > new Date(endDate)) {
+      alert("End date must be after the start date.");
+      return false;
+    }
+    return true;
+  };
+
+  const validateTimes = () => {
+    if (startDate === endDate && startTime && endTime && (new Date(`1970/01/01 ${startTime}`) >= new Date(`1970/01/01 ${endTime}`))) {
+      alert("End time must be after the start time on the same day.");
+      return false;
+    }
+    return true;
+  };
+
+
+
   return (
     <>
       <FullCalendar
@@ -404,7 +536,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
         }}
         initialView="dayGridMonth"
         selectable={true}
-        events={events}
+        events={displayEventsAndTasks()}
         select={(e) => addEvent(e)}
         editable={true}
         eventClick={(e) => modifyEvent(e.event)}
@@ -412,6 +544,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
         eventReceive={(e) => draggedEvents(e.event)}
         eventDragStart={(e) => setDragVariable(true)}
         eventDragStop={(e) => setDragVariable(false)}
+        //eventContent={handleEventContent}
         themeSystem='bootstrap5'
         height='100%'
         aspectRatio={1}
@@ -519,6 +652,11 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
                 }}
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
+                InputProps={{
+                  inputProps: {
+                    min: startDate === endDate ? startTime : undefined,
+                  }
+                }}
               />
             </>
           )}
@@ -610,6 +748,11 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
             required={!isRecurring}
+            InputProps={{
+              inputProps: {
+                min: startDate
+              }
+            }}
           />
           {/* Error message for no end date selected when not recurring */}
           {!endDate && !isRecurring && (
@@ -670,6 +813,9 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
           <Button onClick={handleClose}>Cancel</Button>
           <Button
             onClick={() => {
+              if (!validateDates() || !validateTimes()) {
+                return;
+              }
               if (!startDate || (endDate === "" && !isRecurring)) {
                 alert("Please enter both start and end dates.");
                 return;
@@ -685,26 +831,28 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
           </Button>
         </DialogActions>
       </Dialog>
+      {/* Lo metto anche qua perche i dati vengono passati lo stesso senza aspettare che il Drawer venga aperto */}
+      <Tasks tasksToSend={handleTasksFromTasks} tasksDialog={tasksDialogOpen} taskToModify={taskToModify} taskFinish={handleTaskFinish} />
 
       <IconButton
         onClick={toggleDrawer(true)}
         style={{
           position: 'fixed',
-          right: '-15px', 
-          top: 'calc(45% - 24px)', 
-          width: '34px', 
+          right: '-15px',
+          top: 'calc(45% - 24px)',
+          width: '34px',
           height: '34px',
-          zIndex: 1000, 
+          zIndex: 1000,
           color: 'white',
-          backgroundColor: '#0d6efd', 
-          boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.2)', 
+          backgroundColor: '#0d6efd',
+          boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.2)',
         }}
       >
         <ArrowBackIosIcon />
       </IconButton>
       <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer(false)}>
         <Box p={2} width="250px" role="presentation">
-          <Tasks />
+          <Tasks tasksToSend={handleTasksFromTasks} tasksDialog={tasksDialogOpen} taskToModify={taskToModify} taskFinish={handleTaskFinish} />
         </Box>
       </Drawer>
     </>

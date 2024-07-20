@@ -41,7 +41,7 @@ const CalendarPage = () => {
   const { loginStatus, isTokenLoading, username } = useTokenChecker();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [checkboxState, setCheckboxState] = useState({});
-  const [firstLogin, setFirstLogin] = useState(false);
+  
 
   useEffect(() => {
     if (!isTokenLoading) {
@@ -201,7 +201,7 @@ const CalendarPage = () => {
       localStorage.setItem('checkboxState', JSON.stringify(newState));
       return newState;
     });
-  
+
     setChosenCalendars(prevChosenCalendars => {
       let newChosenCalendars;
       if (prevChosenCalendars.includes(calendarName)) {
