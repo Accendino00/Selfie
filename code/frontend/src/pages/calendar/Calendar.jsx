@@ -13,6 +13,7 @@ import Tasks from './Tasks';
 import IconButton from '@mui/material/IconButton';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import Drawer from '@mui/material/Drawer';
+import StudyComponent from './components/StudyComponent';
 
 export default function Calendar({ createButton, chosenCalendars, calendars }) {
   const { loginStatus, isTokenLoading, username } = useTokenChecker();
@@ -42,6 +43,11 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
   const [tasks, setTasks] = useState([]);
   const [tasksDialogOpen, setTasksDialogOpen] = useState(false);
   const [taskToModify, setTaskToModify] = useState('');
+  const [studyTime, setStudyTime] = useState(0);
+  const [breakTime, setBreakTime] = useState(0);
+  const [cycles, setCycles] = useState(0);
+  const [totalMinutes, setTotalMinutes] = useState(0);
+  const [isStudyEvent, setIsStudyEvent] = useState(false);
 
   const token = Cookies.get('token');
 
@@ -123,7 +129,12 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
       location: location,
       invitedUsers: invitedUsers,
       shared: shared,
-      isRecurring: isRecurring
+      isRecurring: isRecurring,
+      studyTime: studyTime,
+      breakTime: breakTime,
+      cycles: cycles,
+      totalMinutes: totalMinutes,
+      isStudyEvent: isStudyEvent
 
     };
 
@@ -487,7 +498,9 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     let eventsAndTasks = [];
     for (let i = 0; i < events.length; i++) {
       eventsAndTasks.push(events[i]);
-    }
+    //  if(events[i].isStudyEvent){
+    //    
+    //}
     for (let i = 0; i < tasks.length; i++) {
       if (tasks[i].completed === false) {
         eventsAndTasks.push(tasks[i]);
@@ -522,7 +535,6 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     }
     return true;
   };
-
 
 
   return (
@@ -651,7 +663,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
                   shrink: true,
                 }}
                 value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
+                onChange={(e) => setEndTime((isStudyEvent) ? startTime + totalMinutes : e.target.value)}
                 InputProps={{
                   inputProps: {
                     min: startDate === endDate ? startTime : undefined,
@@ -788,6 +800,12 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
               ))}
             </Select>
           </FormControl>
+          <FormControlLabel
+            control={<Checkbox checked={isStudyEvent} onChange={(e) => setIsStudyEvent(e.target.checked)} />} 
+            label="Study ?"
+          />
+          {isStudyEvent && 
+          <StudyComponent studyTime={studyTime} setStudyTime={setStudyTime} breakTime={breakTime} setBreakTime={setBreakTime} cycles={cycles} setCycles={setCycles} totalMinutes={totalMinutes} setTotalMinutes={setTotalMinutes} />}
           <TextField
             margin="dense"
             id="username"
