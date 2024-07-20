@@ -58,6 +58,11 @@ function App() {
           element: <NotesPage />,
         },
         {
+          path: "/timer/:studyTime/:breakTime/:cycles/:totalMinutes",
+          element: <PomodoroPage />,
+        },
+        // Route without parameters
+        {
           path: "/timer",
           element: <PomodoroPage />,
         },

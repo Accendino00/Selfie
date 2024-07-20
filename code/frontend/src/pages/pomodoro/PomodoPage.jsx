@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { Container, Button, Typography, TextField } from '@mui/material';
 import styles from "./PomodoroPageStyles";
 import ProgressBarComponent from './components/ProgressBarComponent';
@@ -6,11 +7,19 @@ import useTokenChecker from '../../utils/useTokenChecker';
 import { Box } from '@mui/material';
 
 const PomodoroPage = () => {
-    const [studyTime, setStudyTime] = useState(30); // tempo di studio in minuti
-    const [breakTime, setBreakTime] = useState(5); // tempo di pausa in minuti
-    const [cycles, setCycles] = useState(5);
-    const [remainingCycles, setRemainingCycles] = useState(cycles);
-    const [totalMinutes, setTotalMinutes] = useState(175);
+    const params = useParams();
+
+    // Default values if no parameters are provided
+    const defaultStudyTime = 30;
+    const defaultBreakTime = 5;
+    const defaultCycles = 5;
+    const defaultTotalMinutes = 125;  // Assuming some default total minutes
+
+    const [studyTime, setStudyTime] = useState(Number(params.studyTime) || defaultStudyTime);
+    const [breakTime, setBreakTime] = useState(Number(params.breakTime) || defaultBreakTime);
+    const [cycles, setCycles] = useState(Number(params.cycles) || defaultCycles);
+    const [remainingCycles, setRemainingCycles] = useState(Number(params.cycles) || defaultCycles);
+    const [totalMinutes, setTotalMinutes] = useState(Number(params.totalMinutes) || defaultTotalMinutes);
     const [totalSeconds, setTotalSeconds] = useState(totalMinutes * 60);
     const [currentCycle, setCurrentCycle] = useState(0);
     const [isActive, setIsActive] = useState(false);
