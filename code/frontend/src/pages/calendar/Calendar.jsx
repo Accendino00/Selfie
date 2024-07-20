@@ -14,6 +14,7 @@ import IconButton from '@mui/material/IconButton';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import Drawer from '@mui/material/Drawer';
 import StudyComponent from './components/StudyComponent';
+import { useNavigate } from 'react-router-dom';
 
 export default function Calendar({ createButton, chosenCalendars, calendars }) {
   const { loginStatus, isTokenLoading, username } = useTokenChecker();
@@ -50,6 +51,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
   const [isStudyEvent, setIsStudyEvent] = useState(false);
 
   const token = Cookies.get('token');
+  const navigate = useNavigate();
 
 
 
@@ -509,6 +511,10 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     return eventsAndTasks
   }
 
+  const handleStudyNow = () => {
+    navigate(`/timer/${studyTime}/${breakTime}/${cycles}/${totalMinutes}`);
+  }
+
   /*const handleEventContent = (event) => {
     console.log(event)
     return (
@@ -828,6 +834,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
         </DialogContent>
         <DialogActions>
           {modifying && <Button onClick={deleteEvent}>Delete</Button>}
+          {modifying && isStudyEvent && <Button onClick={handleStudyNow}>Study Now</Button>} 
           <Button onClick={handleClose}>Cancel</Button>
           <Button
             onClick={() => {
