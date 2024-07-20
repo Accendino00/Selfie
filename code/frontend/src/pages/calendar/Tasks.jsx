@@ -3,8 +3,9 @@ import { Box, Typography, List, ListItem, ListItemText, IconButton, Button, Dial
 import { Delete, Edit } from '@mui/icons-material';
 import useTokenChecker from '../../utils/useTokenChecker';
 import cookies from 'js-cookie';
+import { Form } from 'react-router-dom';
 
-const Tasks = () => {
+const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish }) => {
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
     const [tasks, setTasks] = useState([]);
     const [openDialog, setOpenDialog] = useState(false);
@@ -19,8 +20,17 @@ const Tasks = () => {
     const [timesToRepeat, setTimesToRepeat] = useState(0);
     const [allDay, setAllDay] = useState(false);
     const [currentId, setCurrentId] = useState(null);
+    const [completed, setCompleted] = useState(false);
+
     const token = cookies.get('token');
 
+
+    useEffect(() => {
+        if (tasksDialog && taskToModify) {
+            modifyTask(taskToModify);
+            taskFinish();
+        }
+    }, [tasksDialog, taskToModify]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -31,15 +41,18 @@ const Tasks = () => {
                 }
             })
                 .then(response => response.json())
-                .then(data => setTasks(data))
+                .then(data => {
+                    tasksToSend(data)
+                    setTasks(data)
+                })
                 .catch(error => console.error("Error fetching tasks:", error));
         }, 500);
 
         return () => clearInterval(interval);
     }, [username, token]);
 
-    const handleDeleteTask = (id) => {
-        fetch(`/api/deleteTask/${id}`, {
+    const handleDeleteTask = (currentId) => {
+        fetch(`/api/deleteTask/${currentId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -49,12 +62,13 @@ const Tasks = () => {
             .then(response => response.json())
             .then(data => {
                 setTasks(data)
+                resetForm();
+                handleCloseDialog();
             })
             .catch(error => console.error("Error deleting task:", error));
     };
 
     const addTask = () => {
-        console.log('Adding task:', title, description, startDate, startTime, taskColor, isRecurring, timesToRepeat, allDay);
         const taskData = {
             title: title,
             description: description,
@@ -64,11 +78,22 @@ const Tasks = () => {
             timesToRepeat: timesToRepeat,
             isRecurring: isRecurring,
             allDay: allDay,
-            color: taskColor
+            color: taskColor,
+            isTask: true,
+            completed: completed
         };
 
+        if (isRecurring) {
+            taskData.startRecur = startDate;
+            taskData.start = startDate;
+            if (timesToRepeat > 0) {
+                taskData.timesToRepeat = timesToRepeat;
+                taskData.endRecur = calculateRepeatEndDate(startDate, timesToRepeat);
+                taskData.daysOfWeek = getDayOfWeek(startDate);
+            }
+        }
+
         if (modifying) {
-            console.log(taskData);
             fetch(`/api/modifyTask/${currentId}`, {
                 method: 'PUT',
                 headers: {
@@ -86,8 +111,6 @@ const Tasks = () => {
                 })
 
         } else {
-
-
             fetch(`/api/addTask`, {
                 method: 'POST',
                 headers: {
@@ -107,6 +130,11 @@ const Tasks = () => {
     };
 
     const modifyTask = (task) => {
+        if (task.completed) {
+            setCompleted(true);
+        } else {
+            setCompleted(false);
+        }
         if (task.isRecurring) {
             setIsRecurring(true);
             if (task.recurringDays) {
@@ -150,7 +178,7 @@ const Tasks = () => {
             setTaskColor('#000000');
         }
         setModifying(true);
-        setOpenDialog(true);  // Assuming handleOpen sets the dialog to open
+        setOpenDialog(true);
     };
 
     const dateToUsable = (year, month, date) => {
@@ -215,12 +243,49 @@ const Tasks = () => {
         setAllDay(false);
         setCurrentId(null);
         setModifying(false);
+        setCompleted(false);
     }
 
     const handleAddTask = () => {
         resetForm();
         addTask();
     }
+
+    const calculateRepeatEndDate = (startDate, timesToRepeat) => {
+        let [year, month, day] = startDate.split('-').map(num => parseInt(num, 10));
+        let date = new Date(year, month - 1, day);
+        date.setDate(date.getDate() + (7 * (parseInt(timesToRepeat) + 1)));
+
+        let endYear = date.getFullYear();
+        let endMonth = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based
+        let endDay = date.getDate().toString().padStart(2, '0');
+
+        return `${endYear}-${endMonth}-${endDay}`;
+    }
+
+    const getDayOfWeek = (dateString) => {
+        // Create a Date object from the date string
+        let [year, month, day] = dateString.split('-').map(num => parseInt(num, 10));
+        let date = new Date(year, month - 1, day);
+
+        // Get the day of the week (0 for Sunday, 1 for Monday, ..., 6 for Saturday)
+        return [date.getDay()];
+    }
+
+    const handleToggleComplete = (id) => {
+        setCompleted(!completed);
+        const newTasks = tasks.map(task => {
+            if (task._id === id) {
+                return { ...task, completed: !task.completed };
+            }
+            return task;
+        });
+        setTasks(newTasks);
+    };
+
+    const listItemStyle = (completed) => ({
+        textDecoration: completed ? 'line-through' : 'none',
+    });
 
 
     return (
@@ -230,14 +295,14 @@ const Tasks = () => {
                 {Array.isArray(tasks) && tasks.map(task => (
                     <ListItem key={task._id} alignItems="flex-start">
                         <div style={{
-                            width: '10px',     
-                            height: '10px',    
-                            backgroundColor: task.color,  
+                            width: '10px',
+                            height: '10px',
+                            backgroundColor: task.color,
                             marginRight: '10px',
-                            marginTop: '13px',	
+                            marginTop: '13px',
                         }} />
                         <ListItemText
-                            primary={task.title}
+                            primary={<span style={listItemStyle(task.completed)}>{task.title}</span>}
                             secondary={
                                 <>
                                     {task.description && <>
@@ -368,8 +433,19 @@ const Tasks = () => {
                         }
                         label="All Day Task"
                     />
+                    {modifying &&
+                        <FormControlLabel
+                            control={<Checkbox
+                                checked={completed}
+                                onChange={() => handleToggleComplete(currentId)}
+                                color="primary"
+                            />}
+                            label="Completed?"
+                        />
+                    }
                 </DialogContent>
                 <DialogActions>
+                    {modifying && <Button onClick={() => handleDeleteTask(currentId)}>Delete</Button>}
                     <Button onClick={handleCloseDialog} color="secondary">
                         Cancel
                     </Button>
