@@ -41,7 +41,7 @@ export default function PasswordField({password, setPassword, error, confirmPass
                 onClick={togglePasswordVisibility}
                 edge="end"
               >
-                {showPassword ? <VisibilityOff /> : <Visibility />}
+                {showPassword ? <VisibilityOff sx={{color:"#7d5ffc"}} /> : <Visibility sx={{color:"#7d5ffc"}} />}
               </IconButton>
             </InputAdornment>
           ),

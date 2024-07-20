@@ -4,7 +4,8 @@ const styles = {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '20px'
+        padding: '20px',
+        backgroundColor: '#000000',
     },
     heading: {
         marginBottom: '20px'
@@ -17,6 +18,8 @@ const styles = {
         width: '200px'
     }
 };
+
+
 
 export default styles;
 

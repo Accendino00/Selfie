@@ -125,10 +125,9 @@ function RegisterComponent(props) {
 
       <Paper elevation={10} sx={styles.paper} >
         <Grid container sx={styles.grid} spacing={2}>
-          {/* Many Grid items which have the various field components in them */}
           <Grid item xs={12}>
             <IconButton onClick={() => props.setTrigger(false)} sx={styles.closeButton}>
-              <CloseIcon />
+              <CloseIcon sx={{color: '#7d5ffc'}}/>
             </IconButton>
           </Grid>
           <Grid item>

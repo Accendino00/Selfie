@@ -190,7 +190,7 @@ const HomePage = () => {
           }}
         >
           <img
-            src="../../../public/home.jpg"
+            src="../../../public/background.jpg"
             alt="background"
             style={{
               width: '100%',

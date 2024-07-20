@@ -14,6 +14,8 @@ import IconButton from '@mui/material/IconButton';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import Drawer from '@mui/material/Drawer';
 import StudyComponent from './components/StudyComponent';
+import { useRef } from 'react';
+import "bootswatch/dist/Vapor/bootstrap.min.css"
 
 export default function Calendar({ createButton, chosenCalendars, calendars }) {
   const { loginStatus, isTokenLoading, username } = useTokenChecker();
@@ -48,6 +50,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
   const [cycles, setCycles] = useState(0);
   const [totalMinutes, setTotalMinutes] = useState(0);
   const [isStudyEvent, setIsStudyEvent] = useState(false);
+  const calendarRef = useRef(null);
 
   const token = Cookies.get('token');
 
@@ -141,7 +144,10 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     if (isRecurring) {
       console.log('ao')
       if (recurringDays.length !== 0) {
-        eventData.daysOfWeek = convertDaysToIntegers(recurringDays);
+        console.log('ao2')
+        eventData.daysOfWeek = recurringDays;
+        console.log('recurringDays', recurringDays)
+        console.log(eventData.daysOfWeek)
       } else {
         eventData.daysOfWeek = null;
       }
@@ -153,6 +159,8 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
         console.log('ciao2')
       } else if (timesToRepeat !== "0" && eventData.daysOfWeek !== null) {
         console.log('ciao')
+        console.log(eventData.start)
+        console.log(eventData.end)
         eventData.endRecur = calculateRepeatEndDate(startDate, timesToRepeat);
       } else {
         eventData.endRecur = null;
@@ -187,6 +195,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     }
 
     if (modifying) {
+      console.log("modifying", eventData.daysOfWeek)
       if (!validateDates()) {
         return;
       }
@@ -260,6 +269,10 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
   }
 
   const combineDateAndTime = (date, time) => {
+    if (date === null) {
+      console.log('date is null')
+      return null;
+    }
     let [year, month, day] = date.split('-').map(num => parseInt(num, 10));
     if (time !== '') {
       let [hours, minutes] = time.split(':').map(num => parseInt(num, 10));
@@ -306,6 +319,8 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
 
 
   function convertDaysToIntegers(dayNames) {
+    console.log('dayNames', dayNames)
+
     const dayMap = {
       'Sunday': 0,
       'Monday': 1,
@@ -364,7 +379,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     if (event._def.extendedProps.isRecurring) {
       setIsRecurring(true);
       if (event._def.recurringDef.typeData.daysOfWeek !== null) {
-        setRecurringDays(convertIntegersToDays(event._def.recurringDef.typeData.daysOfWeek));
+        setRecurringDays(getDayOfWeek(event.start, event.end));
 
       }
     }
@@ -402,22 +417,40 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
 
   const draggedEvents = (event) => {
 
-    console.log(event.start)
-    setSelectedCalendars(event._def.extendedProps.calendar);
-    if (event.end !== null) {
-      setEndDate(dateToUsable(event.end.getFullYear(), event.end.getMonth(), event.end.getDate()));
-    } else {
-      setEndDate('')
-    }
+    setCurrentId(event.id);
+    console.log(event.id)
     if (event._def.extendedProps.isRecurring) {
       setIsRecurring(true);
+      // if event is recurring then I might have clicked on a "fake" event renderized by fullcalendar, so I need to check
+      // the event.id and get the actual event from the database.
+      fetch(`/api/getSingleEvent/${currentId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data)
+          event = data;
+          console.log(event)
+        })
+        .catch(error => console.error('Error fetching event:', error));
+
+
+
       if (event.extendedProps.daysOfWeek !== null) {
         console.log(getDayOfWeek(event.start, event.end))
         setRecurringDays(getDayOfWeek(event.start, event.end));
         console.log(recurringDays)
       }
     }
-    setCurrentId(event.id);
+    setSelectedCalendars(event._def.extendedProps.calendar);
+    if (event.end !== null) {
+      setEndDate(dateToUsable(event.end.getFullYear(), event.end.getMonth(), event.end.getDate()));
+    } else {
+      setEndDate(null)
+    }
     setAllDay(event.allDay);
     if (!event.allDay) {
       // mi serve timeToUsable perche getHours() e getMinutes() mi ritornano tipo 2 se e' sono le 02:00, invece mi serve 02
@@ -437,7 +470,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     if (event.start !== null) {
       setStartDate(dateToUsable(event.start.getFullYear(), event.start.getMonth(), event.start.getDate()));
     } else {
-      setStartDate('')
+      setStartDate(null)
     }
     if (event.extendedProps.timesToRepeat !== null) {
       setTimesToRepeat(event.extendedProps.timesToRepeat);
@@ -498,6 +531,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     let eventsAndTasks = [];
     for (let i = 0; i < events.length; i++) {
       eventsAndTasks.push(events[i]);
+    }
     //  if(events[i].isStudyEvent){
     //    
     //}
@@ -521,6 +555,9 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
   }*/
 
   const validateDates = () => {
+    if (endDate === null) {
+      return true;
+    }
     if (new Date(startDate) > new Date(endDate)) {
       alert("End date must be after the start date.");
       return false;
@@ -537,6 +574,12 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
   };
 
 
+  const handleGetEvents = () => {
+    const calendarApi = calendarRef.current.getApi();
+    const events = calendarApi.getEvents();
+    console.log(events);
+  };
+
   return (
     <>
       <FullCalendar
@@ -549,6 +592,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
         initialView="dayGridMonth"
         selectable={true}
         events={displayEventsAndTasks()}
+        ref={calendarRef}
         select={(e) => addEvent(e)}
         editable={true}
         eventClick={(e) => modifyEvent(e.event)}
@@ -684,7 +728,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
                   labelId="recurring-day-label"
                   id="recurring-day"
                   multiple
-                  value={recurringDays}
+                  value={convertIntegersToDays(recurringDays)}
                   onChange={(e) => {
                     setRecurringDays(e.target.value);
 
@@ -801,11 +845,11 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
             </Select>
           </FormControl>
           <FormControlLabel
-            control={<Checkbox checked={isStudyEvent} onChange={(e) => setIsStudyEvent(e.target.checked)} />} 
+            control={<Checkbox checked={isStudyEvent} onChange={(e) => setIsStudyEvent(e.target.checked)} />}
             label="Study ?"
           />
-          {isStudyEvent && 
-          <StudyComponent studyTime={studyTime} setStudyTime={setStudyTime} breakTime={breakTime} setBreakTime={setBreakTime} cycles={cycles} setCycles={setCycles} totalMinutes={totalMinutes} setTotalMinutes={setTotalMinutes} />}
+          {isStudyEvent &&
+            <StudyComponent studyTime={studyTime} setStudyTime={setStudyTime} breakTime={breakTime} setBreakTime={setBreakTime} cycles={cycles} setCycles={setCycles} totalMinutes={totalMinutes} setTotalMinutes={setTotalMinutes} />}
           <TextField
             margin="dense"
             id="username"
@@ -870,6 +914,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
       </IconButton>
       <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer(false)}>
         <Box p={2} width="250px" role="presentation">
+          <button onClick={handleGetEvents}>Get Events</button>
           <Tasks tasksToSend={handleTasksFromTasks} tasksDialog={tasksDialogOpen} taskToModify={taskToModify} taskFinish={handleTaskFinish} />
         </Box>
       </Drawer>
@@ -877,3 +922,4 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
 
   );
 }
+

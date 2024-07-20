@@ -9,6 +9,8 @@ import 'react-quill/dist/quill.snow.css';
 import Quill from 'quill';
 import MarkdownShortcuts from 'quill-markdown-shortcuts';
 import useTokenChecker from '../../../utils/useTokenChecker';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
 
 // Register the Markdown module with Quill
 Quill.register('modules/markdownShortcuts', MarkdownShortcuts);
@@ -142,7 +144,7 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
     const modules = {
         toolbar: [
             [{ 'header': '1' }, { 'header': '2' }, { 'font': [] }],
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
             ['bold', 'italic', 'underline'],
             ['link', 'image'],
             ['clean'],
@@ -161,14 +163,18 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                     sx={styles.textField}
                     fullWidth
                 />
-                <div style={styles.quill}>
-                    <ReactQuill theme="snow" value={noteInput} onChange={setNoteInput} modules={modules}/>
-                </div>
-                {noteToModify ? <Button sx={styles.modifyButton} onClick={handleModifyNote} variant="contained" color="primary">
-                    Modifica Appunto
-                </Button> : <Button sx={styles.addButton} onClick={handleAddNote} variant="contained" color="primary">
-                    Aggiungi Appunto
-                </Button>}
+                <Grid container direction="column">
+                    <Box display="flex" style={styles.quill}>
+                        <ReactQuill theme="snow" value={noteInput} onChange={setNoteInput} modules={modules} style={{ width: "100%" }} />
+                    </Box>
+                    <Box display="flex" sx={{ marginTop: '30px' }}>
+                        {noteToModify ? <Button sx={styles.modifyButton} onClick={handleModifyNote} variant="contained" color="primary">
+                            Modifica Appunto
+                        </Button> : <Button sx={styles.addButton} onClick={handleAddNote} variant="contained" color="primary">
+                            Aggiungi Appunto
+                        </Button>}
+                    </Box>
+                </Grid>
             </Paper>
         </Container>
     );

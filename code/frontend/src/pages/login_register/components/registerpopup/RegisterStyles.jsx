@@ -17,9 +17,10 @@ const styles = {
         padding: '6px 12px',
         border: '1px solid',
         lineHeight: 1.5,
-        backgroundColor: '#000000',
+        backgroundColor: '#7d5ffc',
         borderColor: '#000000',
         borderBlockColor: '#000000',
+        color: '#53ddf0',
         '&:hover': {
             backgroundColor: '#000000',
             borderColor: '#000000',
@@ -51,7 +52,7 @@ const styles = {
       top: 0,
       left: 0,
       zIndex: 1000,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      backgroundColor: 'rgba(, 0, 0, 0.5)',
       justifyContent: 'center',
       alignItems: 'center',
     },
@@ -60,6 +61,7 @@ const styles = {
       margin: '20px auto',
       borderRadius: '12px',
       padding: '5',
+      backgroundColor: '#000000'
     },
     
   usernameHelperText: "Imposta un username",

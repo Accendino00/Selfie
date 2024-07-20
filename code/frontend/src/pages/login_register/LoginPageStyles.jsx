@@ -1,16 +1,18 @@
 const styles = {
     container: {
         padding: 0,
-        marginTop: '1vh',
+        height: '100vh',
         width: '100%',
-        position: 'relative',
+        position: 'flex',
+        backgroundColor: '#000000',
     },
     grid: {
+        
         height: '100%',
         overflow: 'hidden'
     },
     imageGrid: {
-        backgroundImage: 'url(/image-login.jpeg)',
+        backgroundImage: 'url(/dallelogin.png)',
         backgroundRepeat: 'no-repeat',
         backgroundSize: 'cover',
         backgroundPosition: 'center',

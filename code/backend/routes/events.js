@@ -5,6 +5,24 @@ const { authenticateJWT } = require('../middleware/authorization');
 const { clientMDB } = require('../utils/dbmanagement');
 const { ObjectId } = require('mongodb');
 
+router.get('/getSingleEvent/:id', authenticateJWT, (req, res) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const id = req.query.id;
+      const calendarCollection = clientMDB.db("SelfieGD").collection('Events');
+      calendarCollection.findOne({ _id: new ObjectId(id) }).then((event) => {
+        //event.id = event.id.toString();
+        res.json(event);
+      }).catch((err) => {
+        console.log(err);
+        res.status(500).send('Error getting event');
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
+});
+
 router.get('/getEventsGeneric', authenticateJWT, (req, res) => {
   return new Promise((resolve, reject) => {
     try {

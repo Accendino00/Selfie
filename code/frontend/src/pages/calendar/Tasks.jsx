@@ -208,6 +208,9 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish }) => {
 
 
     const combineDateAndTime = (date, time) => {
+        console.log('im in tasks')
+        console.log(date)
+        console.log(time)
         let [year, month, day] = date.split('-').map(num => parseInt(num, 10));
         if (time !== '') {
             let [hours, minutes] = time.split(':').map(num => parseInt(num, 10));

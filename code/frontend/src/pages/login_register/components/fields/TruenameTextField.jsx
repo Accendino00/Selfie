@@ -17,7 +17,7 @@ export default function TruenameTextField({truename, setTruename}) {
             InputProps={{
                 startAdornment: (
                     <InputAdornment position="start">
-                        <AccountCircle />
+                        <AccountCircle sx={{color:'#7d5ffc'}} />
                     </InputAdornment>
                     ),
               }}

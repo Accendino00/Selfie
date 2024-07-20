@@ -141,12 +141,6 @@ function NotesPage() {
             <Container sx={styles.container}>
                 {isDesktop ? (
                     <>
-                        <Tooltip title="New Note">
-                            <Button onClick={() => {toggleEditor()}} sx={styles.newNoteDesktop}>
-                                <AddIcon />
-                                Nuovo
-                            </Button>
-                        </Tooltip>
                         <NotesList 
                             notes={notes} 
                             setNotes={setNotes} 

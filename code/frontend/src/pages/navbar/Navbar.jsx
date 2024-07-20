@@ -304,7 +304,7 @@ const Navbar = () => {
 
   if (loginStatus) {
     return (
-      <AppBar position="static" sx={{ height: '8vh' }}>
+      <AppBar position="static" sx={{ height: '8vh', backgroundColor:'#7d5ffc'}}>
         <Toolbar>
           <IconButton
             color="inherit"
@@ -312,11 +312,11 @@ const Navbar = () => {
             onClick={() => navigate('/home/')}
           >
             <img
-              src="../../public/image-logo2.png"
+              src="../../public/selfie.png"
               alt="Home"
-              style={{ width: 48, height: 48 }}
+              style={{ width: 100, height: 48, marginRight: 15 }}
             />
-            <Typography sx={{ marginRight: '1rem' }}>Selfie</Typography>
+            
           </IconButton>
           <IconButton
             edge="start"
@@ -328,17 +328,17 @@ const Navbar = () => {
           </IconButton>
           <IconButton
             color="inherit"
-            aria-label="notes"
-            onClick={() => navigate('/notes/')}
-          >
-            <NotesIcon />
-          </IconButton>
-          <IconButton
-            color="inherit"
             aria-label="timer"
             onClick={() => navigate('/timer/')}
           >
             <TimerIcon />
+          </IconButton>
+          <IconButton
+            color="inherit"
+            aria-label="notes"
+            onClick={() => navigate('/notes/')}
+          >
+            <NotesIcon />
           </IconButton>
           <IconButton
             color="inherit"

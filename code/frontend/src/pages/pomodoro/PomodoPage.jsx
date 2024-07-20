@@ -3,6 +3,7 @@ import { Container, Button, Typography, TextField } from '@mui/material';
 import styles from "./PomodoroPageStyles";
 import ProgressBarComponent from './components/ProgressBarComponent';
 import useTokenChecker from '../../utils/useTokenChecker';
+import { Box } from '@mui/material';
 
 const PomodoroPage = () => {
     const [studyTime, setStudyTime] = useState(30); // tempo di studio in minuti
@@ -179,7 +180,7 @@ const PomodoroPage = () => {
     
     if(loginStatus) {
         return (
-            <Container sx={styles.container}>
+            <Box sx={styles.container}>
                 <Typography variant="h5" sx={styles.heading}>Timer Pomodoro</Typography>
                 <TextField
                     label="Tempo di Studio (in minuti)"
@@ -230,7 +231,7 @@ const PomodoroPage = () => {
                 <Button onClick={handleStartCycle} sx={styles.button}>Inizia Ciclo</Button>
                 <Button onClick={handleResetCycle} sx={styles.button}>Ricomincia Ciclo</Button>
                 <Button onClick={handleEndCycle} sx={styles.button}>Fine Ciclo</Button>
-            </Container>
+            </Box>
         );    
     }
 };

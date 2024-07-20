@@ -4,17 +4,20 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+
     },
     paper: {
         padding: '20px',
         width: '100%',
         maxWidth: '800px',
+        height: '84vh'
     },
     textField: {
         marginBottom: '20px',
     },
     quill: {
-        height: '400px', // Adjust the height as needed
+        height: '60vh', // Adjust the height as needed
+        width: '100%',
         marginBottom: '20px',
     },
     addButton: {

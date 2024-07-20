@@ -23,7 +23,7 @@ export default function ConfirmPasswordField({error, password, confirmPassword, 
 
   return (
       <TextField
-        sx = {styles.ConfirmPasswordTextField}
+        sx = {styles.confirmPasswordTextField}
         error={passwordsMatch == -1 || error}
         variant="filled"
         value={confirmPassword}

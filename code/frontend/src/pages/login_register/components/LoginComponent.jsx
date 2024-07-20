@@ -134,8 +134,9 @@ function LoginComponent(props) {
 
         <Grid item>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <img src="/image-logo2.png" alt="Selfie" style={{ maxWidth: '160px', height: 'auto', }} />
+            <img src="/dallecirclelogo.png" alt="Selfie" style={{ maxWidth: '160px', height: 'auto', }} />
           </Box>
+            <img src="/selfie.png" alt="Selfie" style={{ maxWidth: '160px', height: 'auto', }} />
         </Grid>
 
         <Grid item>

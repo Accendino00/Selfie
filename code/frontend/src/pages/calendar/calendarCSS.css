@@ -1,3 +1,14 @@
+.fc .fc-button-primary:not(:disabled):active {
+  padding: 0.01em 0.3em !important;
+  background-color: "#7d5ffc" !important;
+  
+}
+
+.fc .fc-button-primary:hover{
+  background-color: "#7d5ffc" !important;
+
+
+}
 .fc .fc-button {
     padding: 0.01em 0.3em !important;
     
@@ -10,4 +21,8 @@
   .fc .fc-toolbar.fc-header-toolbar{
     height: 1vh !important;
     padding: 0 0.5em 0 0.5em !important;
+  }
+
+  .parent-class a {
+    color: "#7d5ffc" !important;
   }
