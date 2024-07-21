@@ -5,7 +5,7 @@ const styles = {
     alignItems: 'center', // Allinea i figli al centro orizzontalmente
     justifyContent: 'space-around', // Distanzia i figli uniformemente
     backgroundColor: '#111119',
-    height: '92vh',
+    height: '93vh',
   },
   newNoteDesktop: {
     position: 'fixed', // Adjust based on your layout needs

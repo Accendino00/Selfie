@@ -5,6 +5,13 @@ import styles from "./PomodoroPageStyles";
 import ProgressBarComponent from './components/ProgressBarComponent';
 import useTokenChecker from '../../utils/useTokenChecker';
 import { Box } from '@mui/material';
+import { Grid } from '@mui/material';
+import SkipNextIcon from '@mui/icons-material/SkipNext';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import PauseIcon from '@mui/icons-material/Pause';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import StopIcon from '@mui/icons-material/Stop';
+import PlayCircleFilledWhiteIcon from '@mui/icons-material/PlayCircleFilledWhite';
 
 const PomodoroPage = () => {
     const params = useParams();
@@ -27,15 +34,15 @@ const PomodoroPage = () => {
     const [hours, setHours] = useState(0);
     const [minutes, setMinutes] = useState(0);
     const [seconds, setSeconds] = useState(0);
-    const [isPaused, setIsPaused] = useState(false);    
+    const [isPaused, setIsPaused] = useState(false);
 
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
 
     useEffect(() => {
         if (!isTokenLoading) {
-          if (!loginStatus) {
-            navigate("/login");
-          }
+            if (!loginStatus) {
+                navigate("/login");
+            }
         }
     }, [loginStatus, isTokenLoading]);
 
@@ -71,10 +78,10 @@ const PomodoroPage = () => {
                 }
             }, 1000);
         }
-    
+
         return () => clearInterval(interval);
     }, [isActive, oneCycle, hours, minutes, seconds]);
-    
+
     const handleEndOfCycle = () => {
         alert('Ciclo completato');
         setIsActive(false);
@@ -89,7 +96,7 @@ const PomodoroPage = () => {
         resetTime();
         setoneCycle(0);
     };
-    
+
     const handleSetStudyTime = (e) => {
         setStudyTime(Number(e.target.value));
         resetTime();
@@ -105,7 +112,7 @@ const PomodoroPage = () => {
         setRemainingCycles(Number(e.target.value));
         resetTime();
     };
-    
+
     const resetTime = () => {
         setHours(Math.floor((isStudyTime ? studyTime : breakTime) / 60));
         setMinutes((isStudyTime ? studyTime : breakTime) % 60);
@@ -119,23 +126,23 @@ const PomodoroPage = () => {
         setStudyTime(optimalStudyTime);
         setBreakTime(optimalBreakTime);
     };
-    
+
     const handleTotalTimeChange = (e) => {
         setTotalMinutes(e.target.value);
         setTotalSeconds(e.target.value * 60);
     };
 
     const handleStartCycle = () => {
-        if(totalSeconds == 0 || totalMinutes == 0) {
+        if (totalSeconds == 0 || totalMinutes == 0) {
             alert('Inserire un tempo valido');
             return;
-        } else if(remainingCycles == 0) {
+        } else if (remainingCycles == 0) {
             alert('Tutti i cicli sono stati completati');
             return;
-        } else if(isActive) {
+        } else if (isActive) {
             alert('Il ciclo è già in corso');
             return;
-        } else if(isPaused) {
+        } else if (isPaused) {
             alert('Il ciclo è in pausa');
             return;
         } else {
@@ -156,14 +163,14 @@ const PomodoroPage = () => {
 
     const handleResetCycle = () => {
         setIsActive(false);
-        if(studyTime == 0 || breakTime == 0 || cycles == 0 || totalMinutes == 0) {
+        if (studyTime == 0 || breakTime == 0 || cycles == 0 || totalMinutes == 0) {
             alert('Inserire un tempo valido');
             return;
         }
         setIsStudyTime(true);
         resetTime();
         setoneCycle(0);
-        if(remainingCycles == cycles) {
+        if (remainingCycles == cycles) {
             setTotalSeconds(totalMinutes * 60);
         } else {
             setTotalSeconds(remainingCycles * (studyTime * 60 + breakTime * 60));
@@ -172,7 +179,7 @@ const PomodoroPage = () => {
 
     const handleEndCycle = () => {
         setIsActive(false);
-        if(studyTime == 0 || breakTime == 0 || cycles == 0 || totalMinutes == 0) {
+        if (studyTime == 0 || breakTime == 0 || cycles == 0 || totalMinutes == 0) {
             alert('Inserire un tempo valido');
             return;
         }
@@ -186,7 +193,7 @@ const PomodoroPage = () => {
 
     const handleNextTime = () => {
         setIsActive(false);
-        if(studyTime == 0 || breakTime == 0 || cycles == 0 || totalMinutes == 0) {
+        if (studyTime == 0 || breakTime == 0 || cycles == 0 || totalMinutes == 0) {
             alert('Inserire un tempo valido');
             return;
         }
@@ -213,23 +220,23 @@ const PomodoroPage = () => {
     console.log('seconds', seconds);
     console.log('isStudyTime', isStudyTime);
 
-    
-    if(loginStatus) {
+
+    if (loginStatus) {
         return (
-            <Box sx={styles.container}>
-                <Typography variant="h5" sx={styles.heading}>Timer Pomodoro</Typography>
+            <Grid container direction="column" sx={styles.grid}>
+                <Typography variant="h4" sx={styles.heading}>Timer Pomodoro</Typography>
                 <TextField
                     label="Tempo di Studio (in minuti)"
-                    variant="outlined"
+                    variant="standard"
                     type="number"
                     value={studyTime}
                     onChange={handleSetStudyTime}
                     sx={styles.textField}
-                    
+
                 />
                 <TextField
                     label="Durata Pausa (in minuti)"
-                    variant="outlined"
+                    variant="standard"
                     type="number"
                     value={breakTime}
                     onChange={handleSetBreakTime}
@@ -237,15 +244,15 @@ const PomodoroPage = () => {
                 />
                 <TextField
                     label="Numero di Cicli"
-                    variant="outlined"
+                    variant="standard"
                     type="number"
                     value={cycles}
-                    onChange={handleSetCycles}   
+                    onChange={handleSetCycles}
                     sx={styles.textField}
                 />
                 <TextField
                     label="Tempo Totale (in minuti)"
-                    variant="outlined"
+                    variant="standard"
                     type="number"
                     value={totalMinutes}
                     onChange={handleTotalTimeChange}
@@ -255,8 +262,10 @@ const PomodoroPage = () => {
                     Cicli rimanenti: {remainingCycles}
                 </Typography>
                 <Typography variant="subtitle1">
-                    Tempo rimanente: {totalSeconds / 3600 > 10 ? `${Math.floor(totalSeconds / 3600)}` : '0'+ Math.floor(totalSeconds / 3600)} : {totalSeconds % 3600 / 60 > 10 ? `${Math.floor(totalSeconds % 3600 / 60)}` : '0'+ Math.floor(totalSeconds % 3600 / 60)} : {totalSeconds % 60 > 10 ? `${totalSeconds % 60}` : '0'+ totalSeconds % 60}
+                    Tempo rimanente: {totalSeconds / 3600 > 10 ? `${Math.floor(totalSeconds / 3600)}` : '0' + Math.floor(totalSeconds / 3600)} : {totalSeconds % 3600 / 60 > 10 ? `${Math.floor(totalSeconds % 3600 / 60)}` : '0' + Math.floor(totalSeconds % 3600 / 60)} : {totalSeconds % 60 > 10 ? `${totalSeconds % 60}` : '0' + totalSeconds % 60}
                 </Typography>
+
+
                 <ProgressBarComponent
                     hours={hours > 10 ? hours : '0' + hours}
                     minutes={minutes > 10 ? minutes : '0' + minutes}
@@ -264,13 +273,33 @@ const PomodoroPage = () => {
                     inputValue={isStudyTime ? studyTime : breakTime}
                     label={isStudyTime ? 'Studio' : 'Pausa'}
                 />
-                <Button onClick={handleNextTime} sx={styles.button}>Skip</Button>
-                <Button onClick={handleStartCycle} sx={styles.button}>Start</Button>
-                {isPaused ? <Button onClick={handleResumeCycle} sx={styles.button}>Resume</Button> : <Button onClick={handlePauseCycle} sx={styles.button}>Pause</Button>}
-                <Button onClick={handleResetCycle} sx={styles.button}>Restart Cycle</Button>
-                <Button onClick={handleEndCycle} sx={styles.button}>End Cycle</Button>
-            </Box>
-        );    
+
+                <Grid container direction="row" justifyContent="center" alignItems="center">
+                    <Button onClick={handleNextTime} sx={styles.button}>
+                        <SkipNextIcon />
+                    </Button>
+                    <Button onClick={handleStartCycle} sx={styles.button}>
+                        <PlayArrowIcon />
+                    </Button>
+                    {isPaused ? (
+                        <Button onClick={handleResumeCycle} sx={styles.button}>
+                            <PlayCircleFilledWhiteIcon />
+                        </Button>
+                    ) : (
+                        <Button onClick={handlePauseCycle} sx={styles.button}>
+                            <PauseIcon />
+                        </Button>
+                    )}
+                    <Button onClick={handleResetCycle} sx={styles.button}>
+                        <RestartAltIcon />
+                    </Button>
+                    <Button onClick={handleEndCycle} sx={styles.button}>
+                        <StopIcon />
+                    </Button>
+                </Grid>
+
+            </Grid>
+        );
     }
 };
 

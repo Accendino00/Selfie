@@ -167,9 +167,7 @@ function NotesPage() {
                             setNoteToModify={setNoteToModify} 
                             setVisualizeEditor={setVisualizeEditor} 
                         />
-                        <Button variant="contained" color="primary" onClick={handleNewNote} style={{ marginBottom: '10px' }}>
-                            Nuovo Appunto
-                        </Button>
+                        
                     </>
                 ) : (
                     visualizeEditor ? (

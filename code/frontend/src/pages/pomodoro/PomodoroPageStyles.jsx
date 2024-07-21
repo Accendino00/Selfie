@@ -1,41 +1,38 @@
 import { Height } from "@mui/icons-material";
 
 const styles = {
-    container: {
+    grid: {
         display: 'flex',
-        flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px',
         backgroundColor: '#111119',
-        height: '100vh'
+        height: '93vh',
+        overflow: 'hidden'
     },
     heading: {
-        marginBottom: '20px'
+        marginTop: '1vh',
+        marginBottom: '1vh'
     },
     textField: {
-        margin: '10px 0',
+        height: '6vh',
+        margin: '1vh 0',
         '& label': {
-            color: '#53ddf0', // Base label color
+            color: '#7d5ffc',
         },
         '& label.Mui-focused': {
-            color: '#53ddf0', // Focused label color
+            color: '#7d5ffc',
         },
-        '& .MuiOutlinedInput-root': {
-            '& fieldset': {
-                borderColor: '#53ddf0', // Base border color
-            },
-            '&:hover fieldset': {
-                borderColor: '#53ddf0', // Hover border color
-            },
-            '&.Mui-focused fieldset': {
-                borderColor: '#53ddf0', // Focused border color
-            },
+        '& .MuiFilledInput-underline:after': {
+            borderBottomColor: '#7d5ffc',
         },
+        '& .MuiFilledInput-underline:before': {
+            borderBottomColor: '#53ddf0',
+        },
+        '& .MuiInputBase-input': {
+            color: '#53ddf0',
+        }
     },
     button: {
-        margin: '5px',
-        width: '200px'
+        margin: '0'
     }
 };
 

@@ -24,7 +24,7 @@ function ProgressBarComponent({ hours, minutes, seconds, inputValue, label }) {
             <CircularProgress
                 variant="determinate"
                 value={100} // Usato come sfondo pieno di colore
-                size={300}
+                size={'25vh'}
                 thickness={4}
                 sx={{
                     color: 'rgba(0, 0, 0, 0.1)', // Sfondo grigio leggero
@@ -34,7 +34,7 @@ function ProgressBarComponent({ hours, minutes, seconds, inputValue, label }) {
             <CircularProgress
                 variant="determinate"
                 value={100 - progress} // Calcola il valore da sottrarre per fare il decremento
-                size={300}
+                size={'25vh'}
                 thickness={4}
                 sx={{
                     position: 'absolute',

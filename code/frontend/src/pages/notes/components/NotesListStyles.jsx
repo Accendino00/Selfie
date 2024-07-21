@@ -11,21 +11,18 @@ const styles = {
     },
     textField: {
         margin: '10px 0',
-        '& label': {
-            color: '#53ddf0', // Base label color
-        },
-        '& label.Mui-focused': {
-            color: '#53ddf0', // Focused label color
+        '& .MuiOutlinedInput-input': {
+            color: '#53ddf0',
         },
         '& .MuiOutlinedInput-root': {
             '& fieldset': {
-                borderColor: '#53ddf0', // Base border color
+                borderColor: '#7d5ffc', 
             },
             '&:hover fieldset': {
-                borderColor: '#53ddf0', // Hover border color
+                borderColor: '#5e4bcc', // Border color on hover
             },
             '&.Mui-focused fieldset': {
-                borderColor: '#53ddf0', // Focused border color
+                borderColor: '#4a3db8', // Border color when focused
             },
         },
     },

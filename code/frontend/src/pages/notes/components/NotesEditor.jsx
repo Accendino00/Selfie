@@ -11,6 +11,7 @@ import MarkdownShortcuts from 'quill-markdown-shortcuts';
 import useTokenChecker from '../../../utils/useTokenChecker';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import './styles.css';
 
 // Register the Markdown module with Quill
 Quill.register('modules/markdownShortcuts', MarkdownShortcuts);
@@ -162,15 +163,25 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                     onChange={handleTitleChange}
                     sx={styles.textField}
                     fullWidth
+                    InputProps={{
+                        style: {
+                            color: '#53ddf0', // Change this to your desired color
+                    }}}
+                    InputLabelProps={{
+                        style: {
+                            color: '#7d5ffc',
+
+                        }
+                    }}
                 />
                 <Grid container direction="column">
                     <Box display="flex" style={styles.quill}>
-                        <ReactQuill theme="snow" value={noteInput} onChange={setNoteInput} modules={modules} style={{ width: "100%" }} />
+                        <ReactQuill theme="snow" value={noteInput} onChange={setNoteInput} modules={modules} style={styles.actualQuill} />
                     </Box>
                     <Box display="flex" sx={{ marginTop: '30px' }}>
-                        {noteToModify ? <Button sx={styles.modifyButton} onClick={handleModifyNote} variant="contained" color="primary">
+                        {noteToModify ? <Button sx={styles.modifyButton} onClick={handleModifyNote} variant="contained">
                             Modifica Appunto
-                        </Button> : <Button sx={styles.addButton} onClick={handleAddNote} variant="contained" color="primary">
+                        </Button> : <Button sx={styles.addButton} onClick={handleAddNote} variant="contained">
                             Aggiungi Appunto
                         </Button>}
                     </Box>

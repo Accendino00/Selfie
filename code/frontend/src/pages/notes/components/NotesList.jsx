@@ -110,12 +110,40 @@ function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote,
         <div>
             {isDesktop ? (
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <TextField label="Search Notes" variant="outlined" fullWidth onChange={e => setSearchTerm(e.target.value)} style = {styles.textField}/>
+                    <TextField label="Search Notes" variant="outlined" fullWidth onChange={e => setSearchTerm(e.target.value)} style = {styles.textField}
+                        InputProps={{
+                            style: {
+                                color: '#53ddf0', 
+                        }}}
+                        InputLabelProps={{
+                            style: {
+                                color: '#7d5ffc',
+                                
+                            }
+                        }}/>
+                        
                     <Select
                         value={order}
                         onChange={handleOrderChange}
                         displayEmpty
                         inputProps={{ 'aria-label': 'Without label' }}
+                        
+                        MenuProps={{
+                            PaperProps: {
+                                style: {
+                                    color: '#53ddf0',
+                                    backgroundColor: '#111119', // Change this to your desired background color
+                                    fontSize: '1.2rem', // Change this to your desired font size
+                                    fontWeight: 'bold' // Change this to your desired font weight
+                                }
+                            }
+                        }}
+                        sx={{
+                            '& .MuiSelect-select': {
+                                color: '#7d5ffc', 
+                                
+                            }
+                        }}
                     >
                         <MenuItem value="title-asc">Titolo Crescente</MenuItem>
                         <MenuItem value="title-desc">Titolo Decrescente</MenuItem>
@@ -130,10 +158,10 @@ function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote,
                                 <Typography variant="h5" onClick={() => onNoteModified(note.id)} style={{ cursor: 'pointer' }}>
                                     {note.title}
                                 </Typography>
-                                <IconButton aria-label="copy" onClick={() => handleCopyNote(note.id)}>
+                                <IconButton aria-label="copy" onClick={() => handleCopyNote(note.id)} style ={{color: '#53ddf0'}}>
                                     <FileCopyIcon />
                                 </IconButton>
-                                <IconButton aria-label="delete" onClick={() => handleDeleteNote(note.id)}>
+                                <IconButton aria-label="delete" onClick={() => handleDeleteNote(note.id)} style ={{color: '#53ddf0'}}>
                                     <DeleteIcon />
                                 </IconButton>
                             </li>
