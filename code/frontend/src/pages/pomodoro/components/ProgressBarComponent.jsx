@@ -2,9 +2,14 @@ import React from 'react';
 import { Box, CircularProgress, Typography } from '@mui/material';
 
 function interpolateColor(progress) {
-    const red = Math.min(255, Math.floor(255 * (1 - progress / 100)));
-    const green = Math.max(0, Math.floor(255 * (progress / 100)));
-    return `rgb(${red}, ${green}, 0)`;
+    const startColor = [255, 255, 255]; // Bianco
+    const endColor = [66, 133, 244]; // Blu della palette Vapor
+
+    const r = Math.round(startColor[0] + (endColor[0] - startColor[0]) * (progress / 100));
+    const g = Math.round(startColor[1] + (endColor[1] - startColor[1]) * (progress / 100));
+    const b = Math.round(startColor[2] + (endColor[2] - startColor[2]) * (progress / 100));
+
+    return `rgb(${r}, ${g}, ${b})`;
 }
 
 function ProgressBarComponent({ hours, minutes, seconds, inputValue, label }) {
@@ -12,7 +17,7 @@ function ProgressBarComponent({ hours, minutes, seconds, inputValue, label }) {
     const initialSeconds = inputValue * 60;
     let progress = (totalSeconds / initialSeconds) * 100; // Calcola il progresso basato sul tempo rimanente
 
-    const color = interpolateColor(progress); // Inverti il calcolo del colore per mantenere il verde pieno all'inizio
+    const color = interpolateColor(progress); // Calcola il colore in base al progresso
 
     return (
         <Box position="relative" display="inline-flex" alignItems="center" justifyContent="center">
