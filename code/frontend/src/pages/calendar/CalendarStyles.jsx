@@ -19,6 +19,19 @@
     { name: 'Pink', hex: '#FFC0CB' },
   ];
 
+  const cyberpunkColors = [
+    { name: 'Neon Pink', hex: '#FF007F' },
+    { name: 'Electric Blue', hex: '#7DF9FF' },
+    { name: 'Neon Green', hex: '#39FF14' },
+    { name: 'Bright Purple', hex: '#B200FF' },
+    { name: 'Acid Orange', hex: '#FF5500' },
+    { name: 'Highlighter Yellow', hex: '#CCFF00' },
+    { name: 'Hot Magenta', hex: '#FF1DCE' },
+    { name: 'Cyber Grape', hex: '#58427C' },
+    { name: 'Toxic Green', hex: '#61DE2A' },
+    { name: 'Ultra Violet', hex: '#3F00FF' }
+];
+
   
 
-export default commonColors;
+export default cyberpunkColors;

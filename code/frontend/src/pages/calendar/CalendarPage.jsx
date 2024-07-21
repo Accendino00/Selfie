@@ -41,7 +41,7 @@ const CalendarPage = () => {
   const { loginStatus, isTokenLoading, username } = useTokenChecker();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [checkboxState, setCheckboxState] = useState({});
-  
+
 
   useEffect(() => {
     if (!isTokenLoading) {
@@ -55,7 +55,7 @@ const CalendarPage = () => {
   useEffect(() => {
     const savedCheckboxState = JSON.parse(localStorage.getItem('checkboxState')) || {};
     const savedChosenCalendars = JSON.parse(localStorage.getItem('chosenCalendars')) || [];
-  
+
     setCheckboxState(savedCheckboxState);
     setChosenCalendars(savedChosenCalendars);
   }, []);
@@ -82,7 +82,7 @@ const CalendarPage = () => {
     // Start polling on component mount
     const intervalId = setInterval(fetchCalendars, 1000);
     fetchCalendars();
-     
+
     // Cleanup: stop polling on component unmount
     return () => clearInterval(intervalId);
   }, [token, username]);
@@ -284,7 +284,7 @@ const CalendarPage = () => {
 
   if (loginStatus) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', height: '93vh', width: '100%', overflow: 'hidden', backgroundColor:'#111119'}}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: '93vh', width: '100%', overflow: 'hidden', backgroundColor: '#111119' }}>
         <Box sx={{ display: 'flex', height: '100vh', width: '100%' }}>
           <IconButton
             sx={{
@@ -292,10 +292,10 @@ const CalendarPage = () => {
               bottom: 16,
               right: 16,
               zIndex: 1000,
-              backgroundColor: 'primary.main',
+              backgroundColor: '#7d5ffc',
               color: 'white',
               '&:hover': {
-                backgroundColor: 'primary.dark',
+                backgroundColor: '#53ddf0',
               },
             }}
             onClick={() => setDrawerOpen(true)}
@@ -307,7 +307,7 @@ const CalendarPage = () => {
             open={drawerOpen}
             onClose={() => setDrawerOpen(false)}
           >
-            <List>
+            <List sx={{ height: '100vh' }}>
               <ListItem disablePadding>
                 <ListItemButton onMouseDown={() => setCreate(true)} onMouseUp={() => setCreate(false)} onMouseLeave={() => setCreate(false)}>
                   <ListItemText primary="Create Event" />
