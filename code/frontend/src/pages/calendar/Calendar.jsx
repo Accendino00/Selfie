@@ -536,7 +536,6 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     }
     //  if(events[i].isStudyEvent){
     //    
-    }
     for (let i = 0; i < tasks.length; i++) {
       if (tasks[i].completed === false) {
         eventsAndTasks.push(tasks[i]);

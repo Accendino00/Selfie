@@ -127,10 +127,9 @@ function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote,
                     <ul>
                         {filteredNotes.map((note) => (
                             <li key={note.id}>
-                                {note.title}
-                                <IconButton onClick={() => onNoteModified(note.id)} aria-label="edit">
-                                    <AddIcon />
-                                </IconButton>
+                                <Typography variant="h5" onClick={() => onNoteModified(note.id)} style={{ cursor: 'pointer' }}>
+                                    {note.title}
+                                </Typography>
                                 <IconButton aria-label="copy" onClick={() => handleCopyNote(note.id)}>
                                     <FileCopyIcon />
                                 </IconButton>
@@ -160,7 +159,7 @@ function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote,
                     <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around' }}>
                         {filteredNotes.map((note) => (
                             <Card key={note.id} sx={{ maxWidth: '300px', margin: '10px' }}>
-                                <CardContent>
+                                <CardContent onClick={() => onNoteModified(note.id)} style={{ cursor: 'pointer' }}>
                                     <Typography variant="h5">{note.title}</Typography>
                                 </CardContent>
                                 <CardActions disableSpacing>
@@ -177,9 +176,6 @@ function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote,
                                         <MenuItem onClick={() => handleCopyNote(note.id)}>Copy</MenuItem>
                                         <MenuItem onClick={() => handleDeleteNote(note.id)}>Delete</MenuItem>
                                     </Menu>
-                                    <IconButton onClick={() => onNoteModified(note.id)}>
-                                        <AddIcon />
-                                    </IconButton>
                                 </CardActions>
                             </Card>
                         ))}
@@ -188,7 +184,6 @@ function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote,
             )}
         </div>
     );
-    
 }
 
 

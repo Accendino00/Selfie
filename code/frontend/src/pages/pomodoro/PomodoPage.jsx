@@ -13,7 +13,7 @@ const PomodoroPage = () => {
     const defaultStudyTime = 30;
     const defaultBreakTime = 5;
     const defaultCycles = 5;
-    const defaultTotalMinutes = 125;  // Assuming some default total minutes
+    const defaultTotalMinutes = 175;  // Assuming some default total minutes
 
     const [studyTime, setStudyTime] = useState(Number(params.studyTime) || defaultStudyTime);
     const [breakTime, setBreakTime] = useState(Number(params.breakTime) || defaultBreakTime);
@@ -21,12 +21,13 @@ const PomodoroPage = () => {
     const [remainingCycles, setRemainingCycles] = useState(Number(params.cycles) || defaultCycles);
     const [totalMinutes, setTotalMinutes] = useState(Number(params.totalMinutes) || defaultTotalMinutes);
     const [totalSeconds, setTotalSeconds] = useState(totalMinutes * 60);
-    const [currentCycle, setCurrentCycle] = useState(0);
+    const [oneCycle, setoneCycle] = useState(0);
     const [isActive, setIsActive] = useState(false);
+    const [isStudyTime, setIsStudyTime] = useState(true);
     const [hours, setHours] = useState(0);
     const [minutes, setMinutes] = useState(0);
     const [seconds, setSeconds] = useState(0);
-    const [isStudyTime, setIsStudyTime] = useState(true);
+    const [isPaused, setIsPaused] = useState(false);    
 
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
 
@@ -47,145 +48,171 @@ const PomodoroPage = () => {
         if (isActive) {
             interval = setInterval(() => {
                 if (seconds > 0) {
-                    setSeconds(seconds - 1);
-                    setTotalSeconds(totalSeconds - 1);
+                    setSeconds(prev => prev - 1);
+                    setTotalSeconds(prev => prev - 1);
                 } else if (minutes > 0) {
-                    setMinutes(minutes - 1);
+                    setMinutes(prev => prev - 1);
                     setSeconds(59);
-                    setTotalSeconds(totalSeconds - 1);
+                    setTotalSeconds(prev => prev - 1);
                 } else if (hours > 0) {
-                    setHours(hours - 1);
+                    setHours(prev => prev - 1);
                     setMinutes(59);
                     setSeconds(59);
-                    setTotalSeconds(totalSeconds - 1);
+                    setTotalSeconds(prev => prev - 1);
                 } else {
-                    setCurrentCycle(currentCycle + 1);
-                    resetTime();
-                    setIsStudyTime(!isStudyTime);
+                    if (oneCycle >= 2) {
+                        clearInterval(interval);
+                        handleEndOfCycle();
+                    } else {
+                        setoneCycle(prev => prev + 1);
+                        setIsStudyTime(prev => !prev);
+                        resetTime();
+                    }
                 }
             }, 1000);
-
-            if (currentCycle >= cycles * 2) {
-                alert('Ciclo completato');
-                setIsActive(false);
-                setTotalSeconds(totalSeconds - 1);
-                clearInterval(interval);
-                if(remainingCycles > 0) {
-                    setRemainingCycles(remainingCycles - 1);
-                } else {
-                    alert('Tutti i cicli sono stati completati');
-                    setRemainingCycles(0);
-                    setCurrentCycle(0);
-                }
-            }
-        } else {
-            clearInterval(interval);
         }
+    
         return () => clearInterval(interval);
-    }, [isActive, currentCycle, hours, minutes, seconds]);
-
-    const handleStartCycle = () => {
-        setIsActive(true);
-        resetTime(true); 
-    };
+    }, [isActive, oneCycle, hours, minutes, seconds]);
     
-    const resetTime = (initial = false) => {
-        const time = (initial || currentCycle % 2 === 0) ? studyTime : breakTime;
-        setIsStudyTime(initial || currentCycle % 2 === 0);  
-        setHours(Math.floor(time / 60));
-        setMinutes(time % 60);
-        setSeconds(0);
-    };
-    
-
-    const handleResetCycle = () => {
+    const handleEndOfCycle = () => {
+        alert('Ciclo completato');
         setIsActive(false);
-        setCurrentCycle(0);
-        setIsStudyTime(true);
-        if(remainingCycles == cycles) {
-            setTotalSeconds(totalMinutes * 60);
+        if (remainingCycles > 0) {
+            setRemainingCycles(prev => prev - 1);
         } else {
-            setTotalSeconds(remainingCycles * (studyTime * 60 + breakTime * 60));
+            alert('Tutti i cicli sono stati completati');
+            setRemainingCycles(0);
         }
+        setTotalSeconds(remainingCycles * (studyTime * 60 + breakTime * 60));
+        setIsStudyTime(true);
+        resetTime();
+        setoneCycle(0);
+    };
+    
+    const handleSetStudyTime = (e) => {
+        setStudyTime(Number(e.target.value));
         resetTime();
     };
 
-    const handleEndCycle = () => {
-        setIsActive(false);
-        alert('Ciclo terminato anticipatamente');
-        setRemainingCycles(remainingCycles - 1);
-        setTotalSeconds(totalSeconds - (hours * 3600 + minutes * 60 + seconds) - (!isStudyTime ? studyTime : breakTime) * 60);
+    const handleSetBreakTime = (e) => {
+        setBreakTime(Number(e.target.value));
         resetTime();
+    };
+
+    const handleSetCycles = (e) => {
+        setCycles(Number(e.target.value));
+        setRemainingCycles(Number(e.target.value));
+        resetTime();
+    };
+    
+    const resetTime = () => {
+        setHours(Math.floor((isStudyTime ? studyTime : breakTime) / 60));
+        setMinutes((isStudyTime ? studyTime : breakTime) % 60);
+        setSeconds(0);
     };
 
     const calculateCycleSettings = (minutes) => {
-        const optimalStudyTime = Math.floor(minutes / (cycles + cycles * (breakTime / studyTime)));
+        const optimaltime = minutes / cycles;
+        const optimalStudyTime = Math.floor(optimaltime * 0.8);
+        const optimalBreakTime = Math.floor(optimaltime * 0.2);
         setStudyTime(optimalStudyTime);
-        setBreakTime(breakTime);
+        setBreakTime(optimalBreakTime);
     };
-
+    
     const handleTotalTimeChange = (e) => {
         setTotalMinutes(e.target.value);
         setTotalSeconds(e.target.value * 60);
     };
 
-    const handleNextTime = () => {
-        setTotalSeconds(totalSeconds - (hours * 3600 + minutes * 60 + seconds));
-        setIsStudyTime(!isStudyTime);
-        resetTime();
+    const handleStartCycle = () => {
+        if(totalSeconds == 0 || totalMinutes == 0) {
+            alert('Inserire un tempo valido');
+            return;
+        } else if(remainingCycles == 0) {
+            alert('Tutti i cicli sono stati completati');
+            return;
+        } else if(isActive) {
+            alert('Il ciclo è già in corso');
+            return;
+        } else if(isPaused) {
+            alert('Il ciclo è in pausa');
+            return;
+        } else {
+            setIsActive(true);
+            resetTime();
+        }
     };
 
+    const handlePauseCycle = () => {
+        setIsActive(false);
+        setIsPaused(true);
+    };
 
-    //da rivedere la funzione resettime
-    
-    //da rivedere la funzione resettime
+    const handleResumeCycle = () => {
+        setIsActive(true);
+        setIsPaused(false);
+    };
 
-    //da rivedere la funzione resettime
+    const handleResetCycle = () => {
+        setIsActive(false);
+        if(studyTime == 0 || breakTime == 0 || cycles == 0 || totalMinutes == 0) {
+            alert('Inserire un tempo valido');
+            return;
+        }
+        setIsStudyTime(true);
+        resetTime();
+        setoneCycle(0);
+        if(remainingCycles == cycles) {
+            setTotalSeconds(totalMinutes * 60);
+        } else {
+            setTotalSeconds(remainingCycles * (studyTime * 60 + breakTime * 60));
+        }
+    };
 
-    //da rivedere la funzione resettime
+    const handleEndCycle = () => {
+        setIsActive(false);
+        if(studyTime == 0 || breakTime == 0 || cycles == 0 || totalMinutes == 0) {
+            alert('Inserire un tempo valido');
+            return;
+        }
+        setIsStudyTime(true);
+        resetTime();
+        setoneCycle(0);
+        alert('Ciclo terminato anticipatamente');
+        setRemainingCycles(remainingCycles - 1);
+        setTotalSeconds(remainingCycles * (studyTime * 60 + breakTime * 60));
+    };
 
-    //da rivedere la funzione resettime
+    const handleNextTime = () => {
+        setIsActive(false);
+        if(studyTime == 0 || breakTime == 0 || cycles == 0 || totalMinutes == 0) {
+            alert('Inserire un tempo valido');
+            return;
+        }
+        setIsStudyTime(!isStudyTime);
+        resetTime();
+        if (oneCycle >= 2) {
+            handleEndOfCycle();
+        } else {
+            setTotalSeconds(totalSeconds - (isStudyTime ? studyTime : breakTime) * 60);
+            setoneCycle(prev => prev + 1);
+        }
+    };
 
-    //da rivedere la funzione resettime
-
-    //da rivedere la funzione resettime
-
-    //da rivedere la funzione resettime
-
-    //da rivedere la funzione resettime
-
-    //da rivedere la funzione resettime
-
-    //da rivedere la funzione resettime
-
-    //da rivedere la funzione resettime
-
-    //da rivedere la funzione resettime
-
-    //da rivedere la funzione resettime
-
-    //da rivedere la funzione resettime
-
-    //da rivedere la funzione resettime
-
-    //da rivedere la funzione resettime
-
-    //da rivedere la funzione resettime
-
-    //da rivedere la funzione resettime
-
-
+    console.log('studyTime', studyTime);
+    console.log('breakTime', breakTime);
+    console.log('cycles', cycles);
+    console.log('totalMinutes', totalMinutes);
+    console.log('remainingCycles', remainingCycles);
+    console.log('totalSeconds', totalSeconds);
+    console.log('oneCycle', oneCycle);
+    console.log('isActive', isActive);
     console.log('hours', hours);
     console.log('minutes', minutes);
     console.log('seconds', seconds);
-    console.log('Total minutes', totalMinutes);
-    console.log('Total seconds', totalSeconds);
-    console.log('Study time', studyTime);
-    console.log('Break time', breakTime);
-    console.log('Cycles', cycles);
-    console.log('Remaining cycles', remainingCycles);
-    console.log('Current cycle', currentCycle);
-    console.log('Is active', isActive);
+    console.log('isStudyTime', isStudyTime);
+
     
     if(loginStatus) {
         return (
@@ -196,7 +223,7 @@ const PomodoroPage = () => {
                     variant="outlined"
                     type="number"
                     value={studyTime}
-                    onChange={(e) => setStudyTime(Number(e.target.value))}
+                    onChange={handleSetStudyTime}
                     sx={styles.textField}
                 />
                 <TextField
@@ -204,7 +231,7 @@ const PomodoroPage = () => {
                     variant="outlined"
                     type="number"
                     value={breakTime}
-                    onChange={(e) => setBreakTime(Number(e.target.value))}
+                    onChange={handleSetBreakTime}
                     sx={styles.textField}
                 />
                 <TextField
@@ -212,7 +239,7 @@ const PomodoroPage = () => {
                     variant="outlined"
                     type="number"
                     value={cycles}
-                    onChange={(e) => setCycles(Number(e.target.value))}
+                    onChange={handleSetCycles}   
                     sx={styles.textField}
                 />
                 <TextField
@@ -236,10 +263,11 @@ const PomodoroPage = () => {
                     inputValue={isStudyTime ? studyTime : breakTime}
                     label={isStudyTime ? 'Studio' : 'Pausa'}
                 />
-                <Button onClick={handleNextTime} sx={styles.button}>Prossimo Tempo</Button>
-                <Button onClick={handleStartCycle} sx={styles.button}>Inizia Ciclo</Button>
-                <Button onClick={handleResetCycle} sx={styles.button}>Ricomincia Ciclo</Button>
-                <Button onClick={handleEndCycle} sx={styles.button}>Fine Ciclo</Button>
+                <Button onClick={handleNextTime} sx={styles.button}>Skip</Button>
+                <Button onClick={handleStartCycle} sx={styles.button}>Start</Button>
+                {isPaused ? <Button onClick={handleResumeCycle} sx={styles.button}>Resume</Button> : <Button onClick={handlePauseCycle} sx={styles.button}>Pause</Button>}
+                <Button onClick={handleResetCycle} sx={styles.button}>Restart Cycle</Button>
+                <Button onClick={handleEndCycle} sx={styles.button}>End Cycle</Button>
             </Box>
         );    
     }

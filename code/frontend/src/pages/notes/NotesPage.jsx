@@ -21,6 +21,7 @@ function NotesPage() {
     const [userId, setUserId] = useState('');
     const [visualizeEditor, setVisualizeEditor] = useState(false);
     const isDesktop = useMediaQuery('(min-width:600px)'); // Adjust 600px based on your breakpoint needs
+    const [boolToggle, setBoolToggle] = useState(false);
 
 
     useEffect(() => {
@@ -136,6 +137,17 @@ function NotesPage() {
         );
     }
 
+    const handleNewNote = () => {
+        if(noteToModify) {
+            if(window.confirm('Sei sicuro di voler creare un nuovo appunto? Le modifiche non salvate andranno perse.')) {
+                setNoteToModify(null);
+                setVisualizeEditor(true);
+            }
+        } else {
+            setVisualizeEditor(true);
+        }
+    }
+
     if (loginStatus) {
         return (
             <Container sx={styles.container}>
@@ -155,11 +167,22 @@ function NotesPage() {
                             setNoteToModify={setNoteToModify} 
                             setVisualizeEditor={setVisualizeEditor} 
                         />
+                        <Button variant="contained" color="primary" onClick={handleNewNote} style={{ marginBottom: '10px' }}>
+                            Nuovo Appunto
+                        </Button>
                     </>
                 ) : (
                     visualizeEditor ? (
                         <>
-                            <Fab color="primary" aria-label="back" onClick={() => {setVisualizeEditor(false)}} sx={styles.newNoteMobile}>
+                            <Fab color="primary" aria-label="back" onClick={() => {
+                                if(noteToModify) {
+                                    if(window.confirm('Sei sicuro di voler tornare indietro? Le modifiche non salvate andranno perse.')) {
+                                        setNoteToModify(null);
+                                        setVisualizeEditor(false);
+                                    }
+                                }
+                                setVisualizeEditor(false);
+                            }} sx={styles.newNoteMobile}>
                                 <ArrowBackIcon />
                             </Fab>
                             <NotesEditor 
@@ -171,7 +194,9 @@ function NotesPage() {
                         </>
                     ) : (
                         <>
-                            <Fab color="primary" aria-label="add" onClick={() => {toggleEditor()}} sx={styles.newNoteMobile}>
+                            <Fab color="primary" aria-label="add" onClick={() => {
+                                setNoteToModify(null);
+                                toggleEditor()}} sx={styles.newNoteMobile}>
                                 <AddIcon />
                             </Fab>
                             <NotesList 
