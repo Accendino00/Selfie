@@ -304,7 +304,7 @@ const Navbar = () => {
 
   if (loginStatus) {
     return (
-      <AppBar position="static" sx={{ height: '8vh', backgroundColor:'#7d5ffc'}}>
+      <AppBar position="static" sx={{ height: '8vh', color: '#000000', backgroundColor:'#7d5ffc'}}>
         <Toolbar>
           <IconButton
             color="inherit"

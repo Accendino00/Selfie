@@ -533,9 +533,8 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     let eventsAndTasks = [];
     for (let i = 0; i < events.length; i++) {
       eventsAndTasks.push(events[i]);
-    }
-    //  if(events[i].isStudyEvent){
-    //    
+      //  if(events[i].isStudyEvent){
+      //    
     }
     for (let i = 0; i < tasks.length; i++) {
       if (tasks[i].completed === false) {
@@ -583,7 +582,6 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
   const handleGetEvents = () => {
     const calendarApi = calendarRef.current.getApi();
     const events = calendarApi.getEvents();
-    console.log(events);
   };
 
   return (
@@ -878,7 +876,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
         </DialogContent>
         <DialogActions>
           {modifying && <Button onClick={deleteEvent}>Delete</Button>}
-          {modifying && isStudyEvent && <Button onClick={handleStudyNow}>Study Now</Button>} 
+          {modifying && isStudyEvent && <Button onClick={handleStudyNow}>Study Now</Button>}
           <Button onClick={handleClose}>Cancel</Button>
           <Button
             onClick={() => {

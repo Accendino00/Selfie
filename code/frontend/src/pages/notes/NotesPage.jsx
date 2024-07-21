@@ -138,7 +138,7 @@ function NotesPage() {
 
     if (loginStatus) {
         return (
-            <Container sx={styles.container}>
+            <Box sx={styles.container}>
                 {isDesktop ? (
                     <>
                         <NotesList 
@@ -185,7 +185,7 @@ function NotesPage() {
                         </>
                     )
                 )}
-            </Container>
+            </Box>
         );
     }
     

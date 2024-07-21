@@ -110,7 +110,7 @@ function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote,
         <div>
             {isDesktop ? (
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <TextField label="Search Notes" variant="outlined" fullWidth onChange={e => setSearchTerm(e.target.value)} />
+                    <TextField label="Search Notes" variant="outlined" fullWidth onChange={e => setSearchTerm(e.target.value)} style = {styles.textField}/>
                     <Select
                         value={order}
                         onChange={handleOrderChange}
@@ -150,7 +150,7 @@ function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote,
                         displayEmpty
                         inputProps={{ 'aria-label': 'Without label' }}
                     >
-                        <MenuItem value="title-asc">Titolo Crescente</MenuItem>
+                        <MenuItem value="title-asc" sx>Titolo Crescente</MenuItem>
                         <MenuItem value="title-desc">Titolo Decrescente</MenuItem>
                         <MenuItem value="creationDate-asc">Data di Creazione Crescente</MenuItem>
                         <MenuItem value="creationDate-desc">Data di Creazione Decrescente</MenuItem>

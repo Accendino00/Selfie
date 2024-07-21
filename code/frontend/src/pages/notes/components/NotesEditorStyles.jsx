@@ -10,7 +10,8 @@ const styles = {
         padding: '20px',
         width: '100%',
         maxWidth: '800px',
-        height: '84vh'
+        height: '84vh',
+        backgroundColor: 'black'
     },
     textField: {
         marginBottom: '20px',

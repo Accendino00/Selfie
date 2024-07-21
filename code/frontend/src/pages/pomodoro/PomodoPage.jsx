@@ -198,6 +198,7 @@ const PomodoroPage = () => {
                     value={studyTime}
                     onChange={(e) => setStudyTime(Number(e.target.value))}
                     sx={styles.textField}
+                    
                 />
                 <TextField
                     label="Durata Pausa (in minuti)"

@@ -210,7 +210,7 @@ const HomePage = () => {
           marginTop: "30px",
           textShadow: "0 0 9px #ffffffba"
         }}  >
-          Selfie
+           <img src="/selfie.png" alt="Selfie" style={{ maxWidth: '320px', height: 'auto', }} />
         </Typography>
         <Grid container spacing={7} sx={{ position: 'relative', zIndex: 1, alignItems: 'center', justifyContent: 'center', height: '85vh', alignContent: "center" }}>
 

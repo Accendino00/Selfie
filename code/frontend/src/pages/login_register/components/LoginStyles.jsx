@@ -54,6 +54,9 @@ const styles = {
     '& .MuiFilledInput-underline:before': {
       borderBottomColor: '#53ddf0',
     },
+    '& .MuiInputBase-input': {
+            color: '#53ddf0', 
+      }
   },
   passwordTextField: {
     '& label': {
@@ -68,6 +71,9 @@ const styles = {
     '& .MuiFilledInput-underline:before': {
       borderBottomColor: '#53ddf0',
     },
+    '& .MuiInputBase-input': {
+            color: '#53ddf0', 
+      }
 
 
 
@@ -86,6 +92,9 @@ const styles = {
     '& .MuiFilledInput-underline:before': {
       borderBottomColor: '#53ddf0',
     },
+    '& .MuiInputBase-input': {
+            color: '#53ddf0',
+      }
   },
 
   truenameTextField: {
@@ -98,7 +107,11 @@ const styles = {
     '& .MuiFilledInput-underline:before': {
       borderBottomColor: '#53ddf0',
     },
+    '& .MuiInputBase-input': {
+            color: '#53ddf0', 
+      }
   },
+
 
   birthdateTextField: {
     '& .MuiInputBase-input::placeholder': {
@@ -120,6 +133,9 @@ const styles = {
     '& .MuiFilledInput-underline:before': {
       borderBottomColor: '#53ddf0',
     },
+    '& .MuiInputBase-input': {
+            color: '#53ddf0',
+      }
   },
 
   registerButton: {

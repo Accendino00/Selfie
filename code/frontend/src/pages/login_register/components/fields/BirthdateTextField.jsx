@@ -15,16 +15,6 @@ export default function BirthdateTextField({birthdate, setBirthdate}) {
             type="date"
             autoComplete='off'
             name="birthdate"
-            label="Birthdate"
-            InputProps={{
-                endAdornment: (
-                    <InputAdornment position="end">
-                        <IconButton>
-                            <CalendarTodayIcon style={{ color: '#7d5ffc' }} />
-                        </IconButton>
-                    </InputAdornment>
-                ),
-            }}
         />
     );
 };
