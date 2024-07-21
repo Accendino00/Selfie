@@ -223,82 +223,83 @@ const PomodoroPage = () => {
 
     if (loginStatus) {
         return (
-            <Grid container direction="column" sx={styles.grid}>
-                <Typography variant="h4" sx={styles.heading}>Timer Pomodoro</Typography>
-                <TextField
-                    label="Tempo di Studio (in minuti)"
-                    variant="standard"
-                    type="number"
-                    value={studyTime}
-                    onChange={handleSetStudyTime}
-                    sx={styles.textField}
+                <Grid container direction="column" sx={styles.grid}>
+                    <Typography variant="h4" sx={styles.heading}>Timer Pomodoro</Typography>
+                    <TextField
+                        label="Tempo di Studio (in minuti)"
+                        variant="standard"
+                        type="number"
+                        value={studyTime}
+                        onChange={handleSetStudyTime}
+                        sx={styles.textField}
 
-                />
-                <TextField
-                    label="Durata Pausa (in minuti)"
-                    variant="standard"
-                    type="number"
-                    value={breakTime}
-                    onChange={handleSetBreakTime}
-                    sx={styles.textField}
-                />
-                <TextField
-                    label="Numero di Cicli"
-                    variant="standard"
-                    type="number"
-                    value={cycles}
-                    onChange={handleSetCycles}
-                    sx={styles.textField}
-                />
-                <TextField
-                    label="Tempo Totale (in minuti)"
-                    variant="standard"
-                    type="number"
-                    value={totalMinutes}
-                    onChange={handleTotalTimeChange}
-                    sx={styles.textField}
-                />
-                <Typography variant="subtitle1" sx={{ mt: 2 }}>
-                    Cicli rimanenti: {remainingCycles}
-                </Typography>
-                <Typography variant="subtitle1">
-                    Tempo rimanente: {totalSeconds / 3600 > 10 ? `${Math.floor(totalSeconds / 3600)}` : '0' + Math.floor(totalSeconds / 3600)} : {totalSeconds % 3600 / 60 > 10 ? `${Math.floor(totalSeconds % 3600 / 60)}` : '0' + Math.floor(totalSeconds % 3600 / 60)} : {totalSeconds % 60 > 10 ? `${totalSeconds % 60}` : '0' + totalSeconds % 60}
-                </Typography>
+                    />
+                    <TextField
+                        label="Durata Pausa (in minuti)"
+                        variant="standard"
+                        type="number"
+                        value={breakTime}
+                        onChange={handleSetBreakTime}
+                        sx={styles.textField}
+                    />
+                    <TextField
+                        label="Numero di Cicli"
+                        variant="standard"
+                        type="number"
+                        value={cycles}
+                        onChange={handleSetCycles}
+                        sx={styles.textField}
+                    />
+                    <TextField
+                        label="Tempo Totale (in minuti)"
+                        variant="standard"
+                        type="number"
+                        value={totalMinutes}
+                        onChange={handleTotalTimeChange}
+                        sx={styles.textField}
+                    />
+                    <Typography variant="subtitle1" sx={{ mt: 2 }}>
+                        Cicli rimanenti: {remainingCycles}
+                    </Typography>
+                    <Typography variant="subtitle1">
+                        Tempo rimanente: {totalSeconds / 3600 > 10 ? `${Math.floor(totalSeconds / 3600)}` : '0' + Math.floor(totalSeconds / 3600)} : {totalSeconds % 3600 / 60 > 10 ? `${Math.floor(totalSeconds % 3600 / 60)}` : '0' + Math.floor(totalSeconds % 3600 / 60)} : {totalSeconds % 60 > 10 ? `${totalSeconds % 60}` : '0' + totalSeconds % 60}
+                    </Typography>
 
 
-                <ProgressBarComponent
-                    hours={hours > 10 ? hours : '0' + hours}
-                    minutes={minutes > 10 ? minutes : '0' + minutes}
-                    seconds={seconds > 10 ? seconds : '0' + seconds}
-                    inputValue={isStudyTime ? studyTime : breakTime}
-                    label={isStudyTime ? 'Studio' : 'Pausa'}
-                />
+                    <ProgressBarComponent
+                        hours={hours > 10 ? hours : '0' + hours}
+                        minutes={minutes > 10 ? minutes : '0' + minutes}
+                        seconds={seconds > 10 ? seconds : '0' + seconds}
+                        inputValue={isStudyTime ? studyTime : breakTime}
+                        label={isStudyTime ? 'Studio' : 'Pausa'}
+                    />
 
-                <Grid container direction="row" justifyContent="center" alignItems="center">
-                    <Button onClick={handleNextTime} sx={styles.button}>
-                        <SkipNextIcon />
-                    </Button>
-                    <Button onClick={handleStartCycle} sx={styles.button}>
-                        <PlayArrowIcon />
-                    </Button>
-                    {isPaused ? (
-                        <Button onClick={handleResumeCycle} sx={styles.button}>
-                            <PlayCircleFilledWhiteIcon />
+                    <Grid container direction="row" justifyContent="center" alignItems="center">
+                        <Button onClick={handleNextTime} sx={styles.button}>
+                            <SkipNextIcon />
                         </Button>
-                    ) : (
-                        <Button onClick={handlePauseCycle} sx={styles.button}>
-                            <PauseIcon />
+                        <Button onClick={handleStartCycle} sx={styles.button}>
+                            <PlayArrowIcon />
                         </Button>
-                    )}
-                    <Button onClick={handleResetCycle} sx={styles.button}>
-                        <RestartAltIcon />
-                    </Button>
-                    <Button onClick={handleEndCycle} sx={styles.button}>
-                        <StopIcon />
-                    </Button>
+                        {isPaused ? (
+                            <Button onClick={handleResumeCycle} sx={styles.button}>
+                                <PlayCircleFilledWhiteIcon />
+                            </Button>
+                        ) : (
+                            <Button onClick={handlePauseCycle} sx={styles.button}>
+                                <PauseIcon />
+                            </Button>
+                        )}
+                        <Button onClick={handleResetCycle} sx={styles.button}>
+                            <RestartAltIcon />
+                        </Button>
+                        <Button onClick={handleEndCycle} sx={styles.button}>
+                            <StopIcon />
+                        </Button>
+                    </Grid>
+
                 </Grid>
-
-            </Grid>
+            
         );
     }
 };

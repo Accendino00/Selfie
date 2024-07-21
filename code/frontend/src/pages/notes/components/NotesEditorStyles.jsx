@@ -18,13 +18,13 @@ const styles = {
         marginBottom: '20px',
         '& .MuiOutlinedInput-root': {
             '& fieldset': {
-                borderColor: '#7d5ffc', // Default border color
+                borderColor: '#7d5ffc',
             },
             '&:hover fieldset': {
-                borderColor: '#5e4bcc', // Border color on hover
+                borderColor: '#5e4bcc',
             },
             '&.Mui-focused fieldset': {
-                borderColor: '#4a3db8', // Border color when focused
+                borderColor: '#4a3db8',
             },
         },
     },
@@ -40,13 +40,13 @@ const styles = {
     },
     addButton: {
         marginTop: '20px',
-        backgroundColor: "#53ddf0",
-        color: "#000000"
+        backgroundColor: "#7d5ffc",
+        color: "#53ddf0",
     },
     modifyButton: {
         marginTop: '20px',
-        backgroundColor: "#53ddf0",
-        color: "#000000"
+        backgroundColor: "#7d5ffc",
+        color: "#53ddf0"
     },
 
 };
