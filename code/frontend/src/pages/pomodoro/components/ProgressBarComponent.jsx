@@ -56,10 +56,10 @@ function ProgressBarComponent({ hours, minutes, seconds, inputValue, label }) {
                 flexDirection="column"
                 sx={{ textAlign: 'center' }}
             >
-                <Typography variant="caption" component="div" color="text.secondary" fontSize="1.3em" lineHeight="1em" fontWeight="bold">
+                <Typography variant="caption" component="div" fontSize="1.3em" lineHeight="1em" fontWeight="bold">
                     {label}
                 </Typography>
-                <Typography variant="caption" component="div" color="text.secondary">
+                <Typography variant="caption" component="div">
                     {`${hours}:${minutes}:${seconds}`}
                 </Typography>
             </Box>

@@ -1,16 +1,26 @@
-.fc .fc-button-primary:not(:disabled):active {
+.fc .fc-button-primary:not(:disabled).fc-button-active {
   padding: 0.01em 0.3em !important;
-  background-color: "#7d5ffc" !important;
+  background-color: #5844ad !important;
   
 }
 
 .fc .fc-button-primary:hover{
-  background-color: "#7d5ffc" !important;
-
+  background-color: #7d5ffc !important;
 
 }
+
+.fc .fc-button-primary{
+  --fc-button-border-color: #53ddf0 !important;
+  --fc-button-bg-color: #7d5ffc !important;
+  --fc-button-text-color: #53ddf0 !important;
+  
+  
+}
+
 .fc .fc-button {
     padding: 0.01em 0.3em !important;
+    
+    
     
   }
 

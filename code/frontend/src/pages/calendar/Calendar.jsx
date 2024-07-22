@@ -4,7 +4,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, FormControl, InputLabel, Box, FormControlLabel, Checkbox, ListItemText } from '@mui/material';
-import commonColors from './CalendarStyles';
+import cyberpunkColors from './CalendarStyles';
 import Cookies from 'js-cookie';
 import useTokenChecker from '../../utils/useTokenChecker';
 import { Typography } from '@mui/material';
@@ -846,7 +846,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
               onChange={(e) => setEventColor(e.target.value)}
               variant="standard"
             >
-              {commonColors.map((color) => (
+              {cyberpunkColors.map((color) => (
                 <MenuItem key={color.hex} value={color.hex}>
                   <Box display="flex" alignItems="center">
                     <Box width={14} height={14} marginRight={1} bgcolor={color.hex} style={{ display: 'inline-block' }}></Box>
@@ -919,7 +919,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
           height: '34px',
           zIndex: 1000,
           color: 'white',
-          backgroundColor: '#0d6efd',
+          backgroundColor: '#7d5ffc',
           boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.2)',
         }}
       >

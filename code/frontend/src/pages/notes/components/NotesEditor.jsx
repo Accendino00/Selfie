@@ -169,7 +169,7 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                     }}}
                     InputLabelProps={{
                         style: {
-                            color: '#7d5ffc',
+                            color: '#53ddf0',
 
                         }
                     }}
