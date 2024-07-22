@@ -22,6 +22,8 @@ import Navbar from './pages/navbar/Navbar.jsx'
 
 import PomodoroPage from './pages/pomodoro/PomodoPage.jsx'
 
+import TimeMachine from './pages/common/TimeMachine.jsx'
+
 import {
   createBrowserRouter,
   RouterProvider,
@@ -45,6 +47,10 @@ function App() {
     {
       path: "/home",
       element: <HomePage />
+    },
+    {
+      path: "/timemachine",
+      element: <TimeMachine />,
     },
     {
       element: <NavPage />,

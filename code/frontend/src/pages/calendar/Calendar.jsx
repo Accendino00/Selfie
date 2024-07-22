@@ -17,6 +17,7 @@ import StudyComponent from './components/StudyComponent';
 import { useRef } from 'react';
 import "bootswatch/dist/Vapor/bootstrap.min.css"
 import { useNavigate } from 'react-router-dom';
+import TimeMachine from '../common/TimeMachine';
 
 export default function Calendar({ createButton, chosenCalendars, calendars }) {
   const { loginStatus, isTokenLoading, username } = useTokenChecker();
@@ -584,8 +585,15 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     const events = calendarApi.getEvents();
   };
 
+  const handleDateChange = (newDate) => {
+    console.log(newDate);
+    const calendarApi = calendarRef.current.getApi();
+    calendarApi.gotoDate(newDate);
+  };
+
   return (
     <>
+      <TimeMachine onDateChange={handleDateChange} />
       <FullCalendar
         plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
         headerToolbar={{
