@@ -41,6 +41,7 @@ const CalendarPage = () => {
   const { loginStatus, isTokenLoading, username } = useTokenChecker();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [checkboxState, setCheckboxState] = useState({});
+  const [seed, setSeed] = useState(0);
 
 
   useEffect(() => {
@@ -366,7 +367,7 @@ const CalendarPage = () => {
             </List>
           </Drawer>
           <Box sx={{ width: '100%', marginTop: '4vh' }}>
-            <Calendar createButton={create} chosenCalendars={Object.keys(checkboxState).filter(key => checkboxState[key])} calendars={calendars} />
+            <Calendar createButton={create} chosenCalendars={Object.keys(checkboxState).filter(key => checkboxState[key])} calendars={calendars} seed={seed} setSeed={setSeed} key={seed} />
           </Box>
         </Box>
 

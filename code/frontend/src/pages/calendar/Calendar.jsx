@@ -18,9 +18,9 @@ import { useRef } from 'react';
 import "bootswatch/dist/Vapor/bootstrap.min.css"
 import { useNavigate } from 'react-router-dom';
 import TimeMachine from '../common/TimeMachine';
+import { CircularProgress }  from '@mui/material';
 
-
-export default function Calendar({ createButton, chosenCalendars, calendars}) {
+export default function Calendar({ createButton, chosenCalendars, calendars, setSeed }) {
   const { loginStatus, isTokenLoading, username } = useTokenChecker();
   const [events, setEvents] = useState([]);
   const [open, setOpen] = useState(false);
@@ -54,7 +54,6 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
   const [totalMinutes, setTotalMinutes] = useState(0);
   const [isStudyEvent, setIsStudyEvent] = useState(false);
   const calendarRef = useRef(null);
- 
 
 
   const token = Cookies.get('token');
@@ -71,10 +70,14 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
       })
         .then(response => response.json())
         .then(data => {
+          
           setEvents(data);
           console.log(calendarRef.current.getApi().getDate())
         })
-        .catch(error => console.error("Error fetching events:", error));
+        .catch(error => {
+          console.error("Error fetching events:", error)
+          
+    });
     }, 500);
 
     // Pulizia: interrompe il polling quando il componente viene smontato
@@ -589,37 +592,37 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
   };
 
   const handleDateChange = (newDate) => {
-    console.log(newDate);
+    //console.log(newDate);
     const calendarApi = calendarRef.current.getApi();
     calendarApi.gotoDate(newDate);
-    console.log(calendarApi.getDate());
+    //console.log(calendarApi.getDate());
   };
 
   return (
     <>
-      <TimeMachine onDateChange={handleDateChange} />
+      <TimeMachine onDateChange={handleDateChange} setSeed = {setSeed} />
       <FullCalendar
-        plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
-        headerToolbar={{
-          left: 'prev,next today',
-          center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay',
-        }}
-        initialView="dayGridMonth"
-        selectable={true}
-        events={displayEventsAndTasks()}
-        ref={calendarRef}
-        select={(e) => addEvent(e)}
-        editable={true}
-        eventClick={(e) => modifyEvent(e.event)}
-        eventStartEditable={true}
-        eventReceive={(e) => draggedEvents(e.event)}
-        eventDragStart={(e) => setDragVariable(true)}
-        eventDragStop={(e) => setDragVariable(false)}
-        //eventContent={handleEventContent}
-        themeSystem='bootstrap5'
-        height='100%'
-        aspectRatio={1}
+      plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
+      headerToolbar={{
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek,timeGridDay',
+      }}
+      initialView="dayGridMonth"
+      selectable={true}
+      events={displayEventsAndTasks()}
+      ref={calendarRef}
+      select={(e) => addEvent(e)}
+      editable={true}
+      eventClick={(e) => modifyEvent(e.event)}
+      eventStartEditable={true}
+      eventReceive={(e) => draggedEvents(e.event)}
+      eventDragStart={(e) => setDragVariable(true)}
+      eventDragStop={(e) => setDragVariable(false)}
+      //eventContent={handleEventContent}
+      themeSystem='bootstrap5'
+      height='100%'
+      aspectRatio={1}
       />
       <Dialog open={draggedOpen} onClose={handleDraggedClose}>
         <DialogTitle>Modify Event</DialogTitle>
@@ -635,7 +638,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
               saveEvent();
               handleDraggedClose();
             }}
-          >
+            >
             Save
           </Button>
         </DialogActions>
@@ -654,7 +657,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
               label="Select Calendars"
               variant="standard"
               renderValue={(selected) => selected.join(', ')}
-            >
+              >
               {calendars.map((calendar) => (
                 <MenuItem key={calendar.id} value={calendar.name}>
                   <Checkbox checked={selectedCalendars.indexOf(calendar.name) > -1} />
@@ -678,7 +681,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
             variant="standard"
             value={eventTitle}
             onChange={(e) => setEventTitle(e.target.value)}
-          />
+            />
           {!eventTitle && (
             <Typography color="error">Please insert a Title for your event.</Typography>
           )}
@@ -692,11 +695,11 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
             variant="standard"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-          />
+            />
           <FormControlLabel
             control={<Checkbox checked={allDay} onChange={handleAllDayChange} />}
             label="All Day Event"
-          />
+            />
           {!allDay && (
             <>
               <TextField
@@ -711,7 +714,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
                 }}
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-              />
+                />
               <TextField
                 margin="dense"
                 id="end-time"
@@ -729,13 +732,13 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
                     min: startDate === endDate ? startTime : undefined,
                   }
                 }}
-              />
+                />
             </>
           )}
           <FormControlLabel
             control={<Checkbox checked={isRecurring} onChange={(e) => setIsRecurring(e.target.checked)} />}
             label="Recurring"
-          />
+            />
           {isRecurring && (
             <>
               <FormControl fullWidth margin="dense">
@@ -747,7 +750,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
                   value={convertIntegersToDays(recurringDays)}
                   onChange={(e) => {
                     setRecurringDays(e.target.value);
-
+                    
                     // Automatically update start date based on recurring days
                     if (e.target.value.length > 0) {
                       const today = new Date();
@@ -758,7 +761,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
                         )
                       );
                       setStartDate(nextDay.toISOString().split('T')[0]);
-
+                      
                       // Reset end date if it doesn't make sense
                       if (new Date(endDate) < new Date(nextDay)) {
                         setEndDate('');
@@ -768,7 +771,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
                   label="Days of the Week"
                   variant="standard"
                   renderValue={(selected) => selected.join(', ')}
-                >
+                  >
                   {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day) => (
                     <MenuItem key={day} value={day}>
                       <Checkbox checked={recurringDays.indexOf(day) > -1} />
@@ -785,7 +788,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
                 value={timesToRepeat}
                 onChange={handleTimesToRepeatChange}
                 inputProps={{ min: 0 }}
-              />
+                />
             </>
           )}
 
@@ -802,7 +805,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             required
-          />
+            />
           {/* Error message for no start date selected */}
           {!startDate && (
             <Typography color="error">Please select a start date.</Typography>
@@ -825,7 +828,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
                 min: startDate
               }
             }}
-          />
+            />
           {/* Error message for no end date selected when not recurring */}
           {!endDate && !isRecurring && (
             <Typography color="error">Please select an end date.</Typography>
@@ -839,7 +842,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
             variant="standard"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-          />
+            />
           <FormControl fullWidth margin="dense">
             <InputLabel id="color-select-label">Event Color</InputLabel>
             <Select
@@ -849,7 +852,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
               label="Event Color"
               onChange={(e) => setEventColor(e.target.value)}
               variant="standard"
-            >
+              >
               {cyberpunkColors.map((color) => (
                 <MenuItem key={color.hex} value={color.hex}>
                   <Box display="flex" alignItems="center">
@@ -863,7 +866,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
           <FormControlLabel
             control={<Checkbox checked={isStudyEvent} onChange={(e) => setIsStudyEvent(e.target.checked)} />}
             label="Study ?"
-          />
+            />
           {isStudyEvent &&
             <StudyComponent studyTime={studyTime} setStudyTime={setStudyTime} breakTime={breakTime} setBreakTime={setBreakTime} cycles={cycles} setCycles={setCycles} totalMinutes={totalMinutes} setTotalMinutes={setTotalMinutes} />}
           <TextField
@@ -875,7 +878,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
             variant="standard"
             value={inviteUser}
             onChange={(e) => setInviteUser(e.target.value)}
-          />
+            />
           <Button onClick={addInvitedUser}>Add User</Button>
           <div>
             {invitedUsers.map((user, index) => (
@@ -905,7 +908,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
               }
               saveEvent()
             }}
-          >
+            >
             Save
           </Button>
         </DialogActions>
@@ -914,18 +917,18 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
       <Tasks tasksToSend={handleTasksFromTasks} tasksDialog={tasksDialogOpen} taskToModify={taskToModify} taskFinish={handleTaskFinish} />
 
       <IconButton
-        onClick={toggleDrawer(true)}
-        style={{
-          position: 'fixed',
-          right: '-15px',
-          top: 'calc(45% - 24px)',
-          width: '34px',
-          height: '34px',
-          zIndex: 1000,
-          color: 'white',
-          backgroundColor: '#7d5ffc',
-          boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.2)',
-        }}
+      onClick={toggleDrawer(true)}
+      style={{
+        position: 'fixed',
+        right: '-15px',
+        top: 'calc(45% - 24px)',
+        width: '34px',
+        height: '34px',
+        zIndex: 1000,
+        color: 'white',
+        backgroundColor: '#7d5ffc',
+        boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.2)',
+      }}
       >
         <ArrowBackIosIcon />
       </IconButton>

@@ -123,7 +123,7 @@ const Navbar = () => {
   
       // Update badge count if there are multiple notifications
       if (count > 0) {
-        navigator.setAppBadge(count).catch(error => console.error("Failed to set app badge: ", error));
+        //navigator.setAppBadge(count).catch(error => console.error("Failed to set app badge: ", error));
       }
     }
   };

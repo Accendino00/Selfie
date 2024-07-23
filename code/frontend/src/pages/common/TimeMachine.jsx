@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import { useRef } from 'react';
 import { setBaseDate } from './overrideDate'; // import the method to set the base date
 
-const TimeMachine = ({ onDateChange }) => {
+const TimeMachine = ({ onDateChange, setSeed }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const boxRef = useRef(null);
   
@@ -23,6 +23,7 @@ const TimeMachine = ({ onDateChange }) => {
     setCurrentDate(newDate);
     onDateChange(newDate);
     setBaseDate(newDate); // Update the base date in the CustomDate
+    setSeed((prev) => prev + 1);
     console.log('ciao2')
   };
 
@@ -60,7 +61,7 @@ const TimeMachine = ({ onDateChange }) => {
           type="time"
           name="time"
           value={format(currentDate, 'HH:mm')}
-          onChange={handleDateChange}
+          
           fullWidth
           margin="normal"
         />
@@ -73,6 +74,15 @@ const TimeMachine = ({ onDateChange }) => {
         >
           Reset to System Time
         </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleDateChange}
+          fullWidth
+          sx={{ mt: 2 }}
+        >
+          Set New Date        
+          </Button>
       </Box>
     </Draggable>
   );

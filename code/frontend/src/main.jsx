@@ -33,9 +33,9 @@ import {
 } from "react-router-dom";
 
 
-function App() {
+function App() { 
   
-  window.Date = CustomDate;
+  window.Date = CustomDate; 
 
   const router = createBrowserRouter([
     // Landing page
@@ -97,7 +97,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   
 
     <App />
-  
 
 
   </React.StrictMode>,
