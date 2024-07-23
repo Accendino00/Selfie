@@ -47,9 +47,23 @@ const Navbar = () => {
   };
 
   useEffect(() => {
+    if (!window.Notification) {
+      alert("This browser does not support desktop notifications");
+    } else if (Notification.permission === "default") {
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          console.log("Notification permission granted.");
+        } else {
+          console.log("Notification permission denied.");
+        }
+      });
+    }
+  }, []);
+  
+  
+  useEffect(() => {
     const fetchEvents = async () => {
       try {
-        // Adjust the URL with any needed parameters for fetching next day's events
         const response = await fetch(`/api/getEventsGeneric?username=${username}`, {
           method: 'GET',
           headers: {
@@ -57,28 +71,34 @@ const Navbar = () => {
             'Content-Type': 'application/json'
           }
         });
-
+  
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-
+  
         const data = await response.json();
-        if (JSON.stringify(data) !== JSON.stringify(events)) {  // Simple deep equality check
+        if (JSON.stringify(data) !== JSON.stringify(events)) {
           setEvents(data);
+          const newNotifications = data.filter(isNotifiable).length - shownNotifications;
+          if (newNotifications > 0) {
+            data.filter(isNotifiable).forEach(event => {
+              showBrowserNotification(event, newNotifications);
+              playNotificationSound();
+            });
+          }
           setShownNotifications(data.filter(isNotifiable).length);
         }
-        setError(null);  // Reset error state if data fetch is successful
+        setError(null);
       } catch (error) {
         console.error('Error fetching events:', error);
         setError('Error fetching events');
-        setEvents([]);  // Reset events if there's an error
+        setEvents([]);
       }
     };
-
+  
     fetchEvents();
   }, [token, username, selectedNotification, events]);
-
-
+  
   // carica tempo di preavviso per le notifiche degli eventi selezionato
   useEffect(() => {
     const savedSelectedNotification = localStorage.getItem('notificationCount');
@@ -86,6 +106,28 @@ const Navbar = () => {
       setSelectedNotification(savedSelectedNotification);
     }
   }, []);
+
+  const playNotificationSound = () => {
+    const audio = new Audio('../../public/notification-sound.mp3');
+    audio.play();
+  };
+
+  const showBrowserNotification = (event, count) => {
+    console.log('showBrowserNotification');
+    if (Notification.permission === "granted") {
+      console.log('Showing notification');
+      new Notification(event.title, {
+        body: `${event.start ? new Date(event.start).toLocaleString() : ''} to ${event.end ? new Date(event.end).toLocaleString() : ''}`,
+        badge: '../../public/icon-browser.png',
+      });
+  
+      // Update badge count if there are multiple notifications
+      if (count > 0) {
+        navigator.setAppBadge(count).catch(error => console.error("Failed to set app badge: ", error));
+      }
+    }
+  };
+  
 
   const handleNotificationClick = (event) => {
     setAnchorEl(event.currentTarget);
