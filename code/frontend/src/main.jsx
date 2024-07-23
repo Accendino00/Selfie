@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 import ReactDOM from 'react-dom/client'
 
@@ -24,15 +24,18 @@ import PomodoroPage from './pages/pomodoro/PomodoPage.jsx'
 
 import TimeMachine from './pages/common/TimeMachine.jsx'
 
+import CustomDate from './pages/common/overrideDate';
+
+
 import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
 
 
-
-
 function App() {
+  
+  window.Date = CustomDate;
 
   const router = createBrowserRouter([
     // Landing page
@@ -91,6 +94,11 @@ function App() {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
+  
+
     <App />
+  
+
+
   </React.StrictMode>,
 )

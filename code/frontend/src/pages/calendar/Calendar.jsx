@@ -19,7 +19,8 @@ import "bootswatch/dist/Vapor/bootstrap.min.css"
 import { useNavigate } from 'react-router-dom';
 import TimeMachine from '../common/TimeMachine';
 
-export default function Calendar({ createButton, chosenCalendars, calendars }) {
+
+export default function Calendar({ createButton, chosenCalendars, calendars}) {
   const { loginStatus, isTokenLoading, username } = useTokenChecker();
   const [events, setEvents] = useState([]);
   const [open, setOpen] = useState(false);
@@ -53,10 +54,11 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
   const [totalMinutes, setTotalMinutes] = useState(0);
   const [isStudyEvent, setIsStudyEvent] = useState(false);
   const calendarRef = useRef(null);
+ 
+
 
   const token = Cookies.get('token');
   const navigate = useNavigate();
-
 
 
   useEffect(() => {
@@ -70,6 +72,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
         .then(response => response.json())
         .then(data => {
           setEvents(data);
+          console.log(calendarRef.current.getApi().getDate())
         })
         .catch(error => console.error("Error fetching events:", error));
     }, 500);
@@ -589,6 +592,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
     console.log(newDate);
     const calendarApi = calendarRef.current.getApi();
     calendarApi.gotoDate(newDate);
+    console.log(calendarApi.getDate());
   };
 
   return (

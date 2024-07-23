@@ -2,9 +2,13 @@ import React, { useState } from 'react';
 import Draggable from 'react-draggable';
 import { TextField, Button, Box, Typography } from '@mui/material';
 import { format } from 'date-fns';
+import { useRef } from 'react';
+import { setBaseDate } from './overrideDate'; // import the method to set the base date
 
 const TimeMachine = ({ onDateChange }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const boxRef = useRef(null);
+  
 
   const handleDateChange = (event) => {
     const { name, value } = event.target;
@@ -18,26 +22,29 @@ const TimeMachine = ({ onDateChange }) => {
     }
     setCurrentDate(newDate);
     onDateChange(newDate);
+    setBaseDate(newDate); // Update the base date in the CustomDate
+    console.log('ciao2')
   };
 
   const resetToSystemTime = () => {
-    setCurrentDate(new Date());
-    onDateChange(new Date());
+    const systemDate = new OriginalDate(); // Assuming OriginalDate is accessible or import it appropriately
+    setCurrentDate(systemDate);
+    onDateChange(systemDate);
+    setBaseDate(systemDate);
+    console.log('ciao')
   };
 
   return (
     <Draggable>
-      <Box
-        sx={{
-          padding: 2,
-          border: '2px solid',
-          borderColor: 'primary.main',
-          backgroundColor: 'background.paper',
-          position: 'absolute', // Use 'absolute' positioning to enable dragging
-          zIndex: 1000,
-          width: 300
-        }}
-      >
+      <Box ref={boxRef} sx={{
+        padding: 2,
+        border: '2px solid',
+        borderColor: 'primary.main',
+        backgroundColor: 'background.paper',
+        position: 'absolute',
+        zIndex: 1000,
+        width: 300
+      }}>
         <Typography variant="h6" color="primary">Time Machine</Typography>
         <TextField
           label="Date"
