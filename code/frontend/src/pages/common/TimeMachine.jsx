@@ -17,12 +17,13 @@ const TimeMachine = ({ onDateChange }) => {
       newDate.setHours(hours, minutes);
     }
     setCurrentDate(newDate);
-    onDateChange(newDate);
+    onDateChange(newDate); // Assicurati che questa riga chiami la funzione di callback correttamente.
   };
 
   const resetToSystemTime = () => {
-    setCurrentDate(new Date());
-    onDateChange(new Date());
+    const systemTime = new Date();
+    setCurrentDate(systemTime);
+    onDateChange(systemTime); // Invoca il callback quando si reimposta l'orologio.
   };
 
   return (
@@ -33,7 +34,7 @@ const TimeMachine = ({ onDateChange }) => {
           border: '2px solid',
           borderColor: 'primary.main',
           backgroundColor: 'background.paper',
-          position: 'absolute', // Use 'absolute' positioning to enable dragging
+          position: 'absolute', // Usa 'absolute' per abilitare il drag
           zIndex: 1000,
           width: 300
         }}

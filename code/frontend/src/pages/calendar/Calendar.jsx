@@ -586,10 +586,20 @@ export default function Calendar({ createButton, chosenCalendars, calendars }) {
   };
 
   const handleDateChange = (newDate) => {
-    console.log(newDate);
-    const calendarApi = calendarRef.current.getApi();
-    calendarApi.gotoDate(newDate);
-  };
+    console.log(newDate); // Verifica che la data sia corretta
+    console.log(calendarRef.current);
+    if (calendarRef.current) {
+        const calendarApi = calendarRef.current.getApi();
+        if (calendarApi) {
+            calendarApi.gotoDate(newDate); // Vai alla nuova data
+        } else {
+            console.log("calendarApi is not available");
+        }
+    } else {
+        console.log("calendarRef.current is undefined");
+    }
+};
+
 
   return (
     <>
