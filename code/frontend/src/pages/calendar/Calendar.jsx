@@ -20,7 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import TimeMachine from '../common/TimeMachine';
 import { CircularProgress }  from '@mui/material';
 
-export default function Calendar({ createButton, chosenCalendars, calendars, setSeed }) {
+export default function Calendar({ createButton, chosenCalendars, calendars}) {
   const { loginStatus, isTokenLoading, username } = useTokenChecker();
   const [events, setEvents] = useState([]);
   const [open, setOpen] = useState(false);
@@ -591,16 +591,8 @@ export default function Calendar({ createButton, chosenCalendars, calendars, set
     const events = calendarApi.getEvents();
   };
 
-  const handleDateChange = (newDate) => {
-    //console.log(newDate);
-    const calendarApi = calendarRef.current.getApi();
-    calendarApi.gotoDate(newDate);
-    //console.log(calendarApi.getDate());
-  };
-
   return (
     <>
-      <TimeMachine onDateChange={handleDateChange} setSeed = {setSeed} />
       <FullCalendar
       plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
       headerToolbar={{

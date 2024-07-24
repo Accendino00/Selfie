@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import Draggable from 'react-draggable';
 import { TextField, Button, Box, Typography } from '@mui/material';
-import { format } from 'date-fns';
+import { format, set } from 'date-fns';
 import { useRef } from 'react';
 import { setBaseDate } from './overrideDate'; // import the method to set the base date
 
-const TimeMachine = ({ onDateChange, setSeed }) => {
+const TimeMachine = ({ onDateChange, setSeed, originalDate }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const boxRef = useRef(null);
 
@@ -27,10 +27,11 @@ const TimeMachine = ({ onDateChange, setSeed }) => {
   };
 
   const resetToSystemTime = () => {
-    const systemDate = new OriginalDate(); // Assuming OriginalDate is accessible or import it appropriately
+    const systemDate = originalDate;
     setCurrentDate(systemDate);
     onDateChange(systemDate);
     setBaseDate(systemDate);
+    setSeed((prev) => prev + 1);
   };
 
   return (
@@ -71,15 +72,6 @@ const TimeMachine = ({ onDateChange, setSeed }) => {
           sx={{ mt: 2 }}
         >
           Reset to System Time
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleDateChange}
-          fullWidth
-          sx={{ mt: 2 }}
-        >
-          Set New Date
         </Button>
       </Box>
     </Draggable>

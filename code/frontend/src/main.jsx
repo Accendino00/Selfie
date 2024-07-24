@@ -34,6 +34,8 @@ import {
 
 
 function App() { 
+
+  const originalDate = new Date();
   
   window.Date = CustomDate; 
 
@@ -56,7 +58,7 @@ function App() {
       element: <TimeMachine />,
     },
     {
-      element: <NavPage />,
+      element: <NavPage originalDate={originalDate}/>,
       children: [
         {
           path: "/calendar",

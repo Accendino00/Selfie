@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from '../navbar/Navbar.jsx';
 import useTokenChecker from '../../utils/useTokenChecker.jsx';
@@ -6,9 +6,22 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import HomePage from './Homepage.jsx';
 import NavPagesBackground from './NavPagesBackground.jsx';
+import TimeMachine from './TimeMachine.jsx';
 
-function NavPage() {
+function NavPage({originalDate}) {
     const { loginStatus, isTokenLoading } = useTokenChecker();
+    const [seed, setSeed] = React.useState(0);
+    const [seedTwo, setSeedTwo] = React.useState(0);
+    const [date, setDate] = React.useState(new Date());
+
+    const handleDateChange = (newDate) => {
+        setDate(newDate);
+    };   
+
+    useEffect(() => {
+        setSeedTwo((prev) => prev + 1);
+    }, [loginStatus]);
+
 
     const location = useLocation();
     const isChildRoute = location.pathname
@@ -24,8 +37,9 @@ function NavPage() {
 
     return (
         <>
-            <Navbar loginStatus={loginStatus} />
-            {isChildRoute ? <Outlet /> : <HomePage />}
+            <Navbar key={seedTwo} setSeedTwo={setSeedTwo} loginStatus={loginStatus}/>
+            <TimeMachine onDateChange={handleDateChange} setSeed={setSeed} originalDate={originalDate}/>
+            {isChildRoute ? <Outlet key={seed}/> : <HomePage />}
         </>
     );
 }

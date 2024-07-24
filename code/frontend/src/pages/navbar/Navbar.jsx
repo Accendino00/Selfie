@@ -24,7 +24,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import { Grid } from '@mui/material';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 
-const Navbar = () => {
+const Navbar = ({ setSeedTwo }) => {
   const navigate = useNavigate();
   const { loginStatus, isTokenLoading, username } = useTokenChecker();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -167,6 +167,7 @@ const Navbar = () => {
 
 
   const handleNotificationChange = (event) => {
+    setSeedTwo((prev) => prev + 1);
     const value = event.target.value;
     localStorage.setItem('notificationCount', value);
     setSelectedNotification(value);
