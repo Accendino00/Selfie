@@ -38,7 +38,7 @@ function NavPage({originalDate}) {
     return (
         <>
             <Navbar key={seedTwo} setSeedTwo={setSeedTwo} loginStatus={loginStatus}/>
-            <TimeMachine onDateChange={handleDateChange} setSeed={setSeed} originalDate={originalDate}/>
+            <TimeMachine onDateChange={handleDateChange} setSeed={setSeed} originalDate={originalDate} setSeedTwo={setSeedTwo}/>
             {isChildRoute ? <Outlet key={seed}/> : <HomePage />}
         </>
     );

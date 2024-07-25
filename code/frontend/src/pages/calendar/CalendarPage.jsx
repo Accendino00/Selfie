@@ -23,6 +23,7 @@ import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useNavigate } from 'react-router-dom';
+import StudyEvent from './StudyEvents.jsx';
 
 
 const CalendarPage = () => {
@@ -41,6 +42,7 @@ const CalendarPage = () => {
   const { loginStatus, isTokenLoading, username } = useTokenChecker();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [checkboxState, setCheckboxState] = useState({});
+  const [studyEventCreate, setStudyEventCreate] = useState(false);
 
 
   useEffect(() => {
@@ -315,6 +317,15 @@ const CalendarPage = () => {
                 <ListItemButton onMouseDown={() => setCreateCalendarButton(true)} onMouseUp={() => setCreate(false)} onMouseLeave={() => setCreate(false)}>
                   <ListItemText primary="Create Calendar" />
                 </ListItemButton>
+                <ListItemButton
+                  onMouseDown={() => setStudyEventCreate(true)}
+                  onMouseUp={() => setStudyEventCreate(false)}
+                  onMouseLeave={() => setStudyEventCreate(false)}>
+
+                  <ListItemText primary="Create Study Event" />
+
+                </ListItemButton>
+
               </ListItem>
               <ListItem disablePadding>
                 <ListItemButton onClick={toggleCalendars}>
@@ -366,7 +377,7 @@ const CalendarPage = () => {
             </List>
           </Drawer>
           <Box sx={{ width: '100%', marginTop: '4vh' }}>
-            <Calendar createButton={create} chosenCalendars={Object.keys(checkboxState).filter(key => checkboxState[key])} calendars={calendars} />
+            <Calendar createButton={create} chosenCalendars={Object.keys(checkboxState).filter(key => checkboxState[key])} calendars={calendars} studyEventCreateButton={studyEventCreate} />
           </Box>
         </Box>
 

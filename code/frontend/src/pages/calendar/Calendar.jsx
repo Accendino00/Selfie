@@ -18,10 +18,12 @@ import { useRef } from 'react';
 import "bootswatch/dist/Vapor/bootstrap.min.css"
 import { useNavigate } from 'react-router-dom';
 import TimeMachine from '../common/TimeMachine';
-import { CircularProgress }  from '@mui/material';
+import { CircularProgress } from '@mui/material';
+import StudyEvent from './StudyEvents';
 
-export default function Calendar({ createButton, chosenCalendars, calendars}) {
-  const { loginStatus, isTokenLoading, username } = useTokenChecker();
+export default function Calendar({ createButton, chosenCalendars, calendars, studyEventCreateButton }) {
+
+  // events
   const [events, setEvents] = useState([]);
   const [open, setOpen] = useState(false);
   const [eventTitle, setEventTitle] = useState('');
@@ -45,19 +47,33 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
   const [draggedOpen, setDraggedOpen] = useState(false);
   const [dragVariable, setDragVariable] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+
+  // tasks
   const [tasks, setTasks] = useState([]);
   const [tasksDialogOpen, setTasksDialogOpen] = useState(false);
   const [taskToModify, setTaskToModify] = useState('');
+  const [taskToDrag, setTaskToDrag] = useState('');
+  const [draggedTasksDialogOpen, setDraggedTasksDialogOpen] = useState(false);
+
+  // studyevents
+  const [isStudyEvent, setIsStudyEvent] = useState(false);
   const [studyTime, setStudyTime] = useState(0);
   const [breakTime, setBreakTime] = useState(0);
   const [cycles, setCycles] = useState(0);
   const [totalMinutes, setTotalMinutes] = useState(0);
-  const [isStudyEvent, setIsStudyEvent] = useState(false);
-  const calendarRef = useRef(null);
 
+  const [studyEvents, setStudyEvents] = useState([]);
+  const [draggedStudyEventsDialogOpen, setDraggedStudyEventsDialogOpen] = useState(false);
+  const [studyEventsDialogOpen, setStudyEventsDialogOpen] = useState(false);
+  const [studyEventToModify, setStudyEventToModify] = useState('');
+  const [studyEventToDrag, setStudyEventToDrag] = useState('');
 
+  // misc
+  const { loginStatus, isTokenLoading, username } = useTokenChecker();
   const token = Cookies.get('token');
   const navigate = useNavigate();
+  const calendarRef = useRef(null);
 
 
   useEffect(() => {
@@ -70,14 +86,14 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
       })
         .then(response => response.json())
         .then(data => {
-          
+
           setEvents(data);
-          console.log(calendarRef.current.getApi().getDate())
+
         })
         .catch(error => {
           console.error("Error fetching events:", error)
-          
-    });
+
+        });
     }, 500);
 
     // Pulizia: interrompe il polling quando il componente viene smontato
@@ -91,8 +107,11 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
   useEffect(() => {
     if (createButton) {
       addEvent(null);
+    } else if (studyEventCreateButton) {
+      console.log('ciaone')
+      setStudyEventsDialogOpen(true);
     }
-  }, [createButton])
+  }, [createButton, studyEventCreateButton]);
 
 
   const addEvent = (info) => {
@@ -359,6 +378,25 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
 
   const modifyEvent = (event) => {
 
+    if (event.extendedProps.isStudyEvent) {
+      setStudyEventsDialogOpen(true);
+      setStudyEventToModify({
+        title: event.title,
+        description: event.extendedProps.description,
+        start: event.start,
+        end: event.start,
+        color: event.backgroundColor,
+        allDay: event.allDay,
+        isStudyEvent: event.extendedProps.isStudyEvent,
+        name: event.extendedProps.name,
+        isRecurring: event.extendedProps.isRecurring,
+        timesToRepeat: event.extendedProps.timesToRepeat,
+        _id: event.id
+      });
+
+      return;
+    }
+
     if (event.extendedProps.isTask) {
 
       setTasksDialogOpen(true);
@@ -425,6 +463,44 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
   }
 
   const draggedEvents = (event) => {
+    if (event.extendedProps.isStudyEvent) {
+      setDraggedStudyEventsDialogOpen(true);
+      setStudyEventToDrag({
+        title: event.title,
+        description: event.extendedProps.description,
+        start: event.start,
+        end: event.start,
+        color: event.backgroundColor,
+        allDay: event.allDay,
+        isStudyEvent: event.extendedProps.isStudyEvent,
+        name: event.extendedProps.name,
+        isRecurring: event.extendedProps.isRecurring,
+        timesToRepeat: event.extendedProps.timesToRepeat,
+        _id: event.id
+      });
+
+      return;
+    }
+
+    if (event.extendedProps.isTask) {
+
+      setDraggedTasksDialogOpen(true);
+      setTaskToDrag({
+        title: event.title,
+        description: event.extendedProps.description,
+        start: event.start,
+        end: event.start,
+        color: event.backgroundColor,
+        allDay: event.allDay,
+        isTask: event.extendedProps.isTask,
+        name: event.extendedProps.name,
+        isRecurring: event.extendedProps.isRecurring,
+        timesToRepeat: event.extendedProps.timesToRepeat,
+        _id: event.id
+      });
+
+      return;
+    }
 
     setCurrentId(event.id);
     console.log(event.id)
@@ -514,6 +590,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
     setModifying(false);
     setCurrentId('');
     setShared([]);
+    setIsStudyEvent(false);
   };
 
   const addInvitedUser = () => {
@@ -529,26 +606,49 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
     setTasks(tasks);
   }
 
-  const handleTaskFinish = (tasksDialogOpen, taskToModify) => {
+  const handleStudyEventsFromStudyEvents = (studyEvents) => {
+    setStudyEvents(studyEvents);
+  }
+
+  const handleTaskFinish = (tasksDialogOpen, taskToModify, taskToDrag) => {
     setTasksDialogOpen(false)
-    if (taskToModify) {
+    setDraggedTasksDialogOpen(false)
+    if (taskToModify != '') {
       setTaskToModify('');
+    }
+    if (taskToDrag != '') {
+      setTaskToDrag('');
     }
   }
 
-  const displayEventsAndTasks = () => {
-    let eventsAndTasks = [];
+  const handleStudyEventFinish = (studyEventsDialogOpen, studyEventToModify, studyEventToDrag) => {
+    setStudyEventsDialogOpen(false)
+    setDraggedStudyEventsDialogOpen(false)
+    if (studyEventToModify != '') {
+      setStudyEventToModify('');
+    }
+    if (studyEventToDrag != '') {
+      setStudyEventToDrag('');
+    }
+  }
+
+  const allEventsToDisplay = () => {
+    let allEvents = [];
     for (let i = 0; i < events.length; i++) {
-      eventsAndTasks.push(events[i]);
+      allEvents.push(events[i]);
       //  if(events[i].isStudyEvent){
       //    
     }
     for (let i = 0; i < tasks.length; i++) {
       if (tasks[i].completed === false) {
-        eventsAndTasks.push(tasks[i]);
+        allEvents.push(tasks[i]);
       }
     }
-    return eventsAndTasks
+    for (let i = 0; i < studyEvents.length; i++) {
+      allEvents.push(studyEvents[i]);
+    }
+
+    return allEvents
   }
 
   const handleStudyNow = () => {
@@ -591,31 +691,45 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
     const events = calendarApi.getEvents();
   };
 
+  useEffect(() => {
+    if (isStudyEvent) {
+      setStudyEventsDialogOpen(true);
+      handleClose();
+    }
+  }, [isStudyEvent]);
+
   return (
     <>
       <FullCalendar
-      plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
-      headerToolbar={{
-        left: 'prev,next today',
-        center: 'title',
-        right: 'dayGridMonth,timeGridWeek,timeGridDay',
-      }}
-      initialView="dayGridMonth"
-      selectable={true}
-      events={displayEventsAndTasks()}
-      ref={calendarRef}
-      select={(e) => addEvent(e)}
-      editable={true}
-      eventClick={(e) => modifyEvent(e.event)}
-      eventStartEditable={true}
-      eventReceive={(e) => draggedEvents(e.event)}
-      eventDragStart={(e) => setDragVariable(true)}
-      eventDragStop={(e) => setDragVariable(false)}
-      //eventContent={handleEventContent}
-      themeSystem='bootstrap5'
-      height='100%'
-      aspectRatio={1}
+        plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
+        headerToolbar={{
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay',
+        }}
+        initialView="dayGridMonth"
+        selectable={true}
+        events={allEventsToDisplay()}
+        ref={calendarRef}
+        select={(e) => addEvent(e)}
+        editable={true}
+        eventClick={(e) => modifyEvent(e.event)}
+        eventStartEditable={true}
+        eventReceive={(e) => draggedEvents(e.event)}
+        eventDragStart={(e) => setDragVariable(true)}
+        eventDragStop={(e) => setDragVariable(false)}
+        //eventContent={handleEventContent}
+        themeSystem='bootstrap5'
+        height='100%'
+        aspectRatio={1}
       />
+
+      <StudyEvent StudyEventsToSend={handleStudyEventsFromStudyEvents} StudyEventsDialog={studyEventsDialogOpen} StudyEventToModify={studyEventToModify} StudyEventFinish={handleStudyEventFinish} StudyEventToDrag={studyEventToDrag} draggedStudyEventsDialog={draggedStudyEventsDialogOpen} />
+      {isStudyEvent &&
+        /*<StudyComponent studyTime={studyTime} setStudyTime={setStudyTime} breakTime={breakTime} setBreakTime={setBreakTime} cycles={cycles} setCycles={setCycles} totalMinutes={totalMinutes} setTotalMinutes={setTotalMinutes}/> */
+        <StudyEvent StudyEventsToSend={handleStudyEventsFromStudyEvents} StudyEventsDialog={studyEventsDialogOpen} StudyEventToModify={studyEventToModify} StudyEventFinish={handleStudyEventFinish} StudyEventToDrag={studyEventToDrag} draggedStudyEventsDialog={draggedStudyEventsDialogOpen} />
+      }
+
       <Dialog open={draggedOpen} onClose={handleDraggedClose}>
         <DialogTitle>Modify Event</DialogTitle>
         <DialogContent>
@@ -630,7 +744,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
               saveEvent();
               handleDraggedClose();
             }}
-            >
+          >
             Save
           </Button>
         </DialogActions>
@@ -638,6 +752,10 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Add New Event</DialogTitle>
         <DialogContent>
+          <FormControlLabel
+            control={<Checkbox checked={isStudyEvent} onChange={(e) => setIsStudyEvent(e.target.checked)} />}
+            label="Study ?"
+          />
           <FormControl fullWidth margin="dense">
             <InputLabel id="calendar-select-label">Select Calendars</InputLabel>
             <Select
@@ -649,7 +767,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
               label="Select Calendars"
               variant="standard"
               renderValue={(selected) => selected.join(', ')}
-              >
+            >
               {calendars.map((calendar) => (
                 <MenuItem key={calendar.id} value={calendar.name}>
                   <Checkbox checked={selectedCalendars.indexOf(calendar.name) > -1} />
@@ -673,7 +791,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
             variant="standard"
             value={eventTitle}
             onChange={(e) => setEventTitle(e.target.value)}
-            />
+          />
           {!eventTitle && (
             <Typography color="error">Please insert a Title for your event.</Typography>
           )}
@@ -687,11 +805,11 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
             variant="standard"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            />
+          />
           <FormControlLabel
             control={<Checkbox checked={allDay} onChange={handleAllDayChange} />}
             label="All Day Event"
-            />
+          />
           {!allDay && (
             <>
               <TextField
@@ -706,7 +824,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
                 }}
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                />
+              />
               <TextField
                 margin="dense"
                 id="end-time"
@@ -724,13 +842,13 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
                     min: startDate === endDate ? startTime : undefined,
                   }
                 }}
-                />
+              />
             </>
           )}
           <FormControlLabel
             control={<Checkbox checked={isRecurring} onChange={(e) => setIsRecurring(e.target.checked)} />}
             label="Recurring"
-            />
+          />
           {isRecurring && (
             <>
               <FormControl fullWidth margin="dense">
@@ -742,7 +860,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
                   value={convertIntegersToDays(recurringDays)}
                   onChange={(e) => {
                     setRecurringDays(e.target.value);
-                    
+
                     // Automatically update start date based on recurring days
                     if (e.target.value.length > 0) {
                       const today = new Date();
@@ -753,7 +871,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
                         )
                       );
                       setStartDate(nextDay.toISOString().split('T')[0]);
-                      
+
                       // Reset end date if it doesn't make sense
                       if (new Date(endDate) < new Date(nextDay)) {
                         setEndDate('');
@@ -763,7 +881,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
                   label="Days of the Week"
                   variant="standard"
                   renderValue={(selected) => selected.join(', ')}
-                  >
+                >
                   {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day) => (
                     <MenuItem key={day} value={day}>
                       <Checkbox checked={recurringDays.indexOf(day) > -1} />
@@ -780,7 +898,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
                 value={timesToRepeat}
                 onChange={handleTimesToRepeatChange}
                 inputProps={{ min: 0 }}
-                />
+              />
             </>
           )}
 
@@ -797,7 +915,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             required
-            />
+          />
           {/* Error message for no start date selected */}
           {!startDate && (
             <Typography color="error">Please select a start date.</Typography>
@@ -820,7 +938,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
                 min: startDate
               }
             }}
-            />
+          />
           {/* Error message for no end date selected when not recurring */}
           {!endDate && !isRecurring && (
             <Typography color="error">Please select an end date.</Typography>
@@ -834,7 +952,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
             variant="standard"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            />
+          />
           <FormControl fullWidth margin="dense">
             <InputLabel id="color-select-label">Event Color</InputLabel>
             <Select
@@ -844,7 +962,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
               label="Event Color"
               onChange={(e) => setEventColor(e.target.value)}
               variant="standard"
-              >
+            >
               {cyberpunkColors.map((color) => (
                 <MenuItem key={color.hex} value={color.hex}>
                   <Box display="flex" alignItems="center">
@@ -855,12 +973,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
               ))}
             </Select>
           </FormControl>
-          <FormControlLabel
-            control={<Checkbox checked={isStudyEvent} onChange={(e) => setIsStudyEvent(e.target.checked)} />}
-            label="Study ?"
-            />
-          {isStudyEvent &&
-            <StudyComponent studyTime={studyTime} setStudyTime={setStudyTime} breakTime={breakTime} setBreakTime={setBreakTime} cycles={cycles} setCycles={setCycles} totalMinutes={totalMinutes} setTotalMinutes={setTotalMinutes} />}
+
           <TextField
             margin="dense"
             id="username"
@@ -870,7 +983,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
             variant="standard"
             value={inviteUser}
             onChange={(e) => setInviteUser(e.target.value)}
-            />
+          />
           <Button onClick={addInvitedUser}>Add User</Button>
           <div>
             {invitedUsers.map((user, index) => (
@@ -900,34 +1013,34 @@ export default function Calendar({ createButton, chosenCalendars, calendars}) {
               }
               saveEvent()
             }}
-            >
+          >
             Save
           </Button>
         </DialogActions>
       </Dialog>
       {/* Lo metto anche qua perche i dati vengono passati lo stesso senza aspettare che il Drawer venga aperto */}
-      <Tasks tasksToSend={handleTasksFromTasks} tasksDialog={tasksDialogOpen} taskToModify={taskToModify} taskFinish={handleTaskFinish} />
-
+      <Tasks tasksToSend={handleTasksFromTasks} tasksDialog={tasksDialogOpen} taskToModify={taskToModify} taskFinish={handleTaskFinish} taskToDrag={taskToDrag} draggedTasksDialog={draggedTasksDialogOpen} />
       <IconButton
-      onClick={toggleDrawer(true)}
-      style={{
-        position: 'fixed',
-        right: '-15px',
-        top: 'calc(45% - 24px)',
-        width: '34px',
-        height: '34px',
-        zIndex: 1000,
-        color: 'white',
-        backgroundColor: '#7d5ffc',
-        boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.2)',
-      }}
+        onClick={toggleDrawer(true)}
+        style={{
+          position: 'fixed',
+          right: '-15px',
+          top: 'calc(45% - 24px)',
+          width: '34px',
+          height: '34px',
+          zIndex: 1000,
+          color: 'white',
+          backgroundColor: '#7d5ffc',
+          boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.2)',
+        }}
       >
         <ArrowBackIosIcon />
       </IconButton>
       <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer(false)}>
         <Box p={2} width="250px" role="presentation">
           <button onClick={handleGetEvents}>Get Events</button>
-          <Tasks tasksToSend={handleTasksFromTasks} tasksDialog={tasksDialogOpen} taskToModify={taskToModify} taskFinish={handleTaskFinish} />
+          <Tasks tasksToSend={handleTasksFromTasks} tasksDialog={tasksDialogOpen} taskToModify={taskToModify} taskFinish={handleTaskFinish} taskToDrag={taskToDrag} draggedTasksDialog={draggedTasksDialogOpen} />
+
         </Box>
       </Drawer>
     </>

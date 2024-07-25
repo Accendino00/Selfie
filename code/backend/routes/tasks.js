@@ -6,6 +6,53 @@ const { clientMDB } = require('../utils/dbmanagement');
 const { ObjectId } = require('mongodb');
 
 
+router.get('/getSingleTask/:id', authenticateJWT, (req, res) => {
+    return new Promise((resolve, reject) => {
+        try {
+            const id = req.query.id;
+            const tasksCollection = clientMDB.db("SelfieGD").collection('Tasks');
+            tasksCollection.findOne({ _id: new ObjectId(id) }).then((task) => {
+                //task.id = task._id.toString();
+                res.json(task);
+            }).catch((err) => {
+                console.log(err);
+                res.status(500).send('Error getting task');
+            });
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+);
+
+router.get('/getTasksGeneric', authenticateJWT, (req, res) => {
+    return new Promise((resolve, reject) => {
+        try {
+            const username = req.query.username;
+            const tasksCollection = clientMDB.db("SelfieGD").collection('Tasks');
+
+            tasksCollection.find({
+                name: username,
+            }).toArray().then((tasks) => {
+                // Converti _id in stringa per ogni evento
+                const tasksWithCorrectId = tasks.map((task) => {
+                    //task.id = task._id.toString();
+                    return task;
+                });
+
+                res.json(tasksWithCorrectId);
+            }).catch((err) => {
+                console.log(err);
+                res.status(500).send('Error getting tasks');
+            });
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+);
+
+
 router.get('/getTasks', authenticateJWT, (req, res) => {
     return new Promise((resolve, reject) => {
         try {

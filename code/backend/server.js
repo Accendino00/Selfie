@@ -68,6 +68,7 @@ app.use("/api", require(config.ROUTESERVIZI + "/calendars"))
 app.use("/api", require(config.ROUTESERVIZI + "/events"))
 app.use("/api", require(config.ROUTESERVIZI + "/account"))
 app.use("/api", require(config.ROUTESERVIZI + "/tasks"))
+app.use("/api", require(config.ROUTESERVIZI + "/studyevents"))
 
 
 // Setup per mandare le richieste di "/" a "routes/webpages" package

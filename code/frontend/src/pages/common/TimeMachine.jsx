@@ -5,7 +5,7 @@ import { format, set } from 'date-fns';
 import { useRef } from 'react';
 import { setBaseDate } from './overrideDate'; // import the method to set the base date
 
-const TimeMachine = ({ onDateChange, setSeed, originalDate }) => {
+const TimeMachine = ({ onDateChange, setSeed, originalDate, setSeedTwo }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const boxRef = useRef(null);
 
@@ -24,6 +24,7 @@ const TimeMachine = ({ onDateChange, setSeed, originalDate }) => {
     onDateChange(newDate);
     setBaseDate(newDate); // Update the base date in the CustomDate
     setSeed((prev) => prev + 1);
+    setSeedTwo((prev) => prev + 1);
   };
 
   const resetToSystemTime = () => {
