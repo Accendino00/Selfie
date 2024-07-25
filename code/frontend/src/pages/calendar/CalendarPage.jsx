@@ -24,6 +24,8 @@ import MenuIcon from '@mui/icons-material/Menu';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useNavigate } from 'react-router-dom';
 import StudyEvent from './StudyEvents.jsx';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
 
 const CalendarPage = () => {
@@ -43,6 +45,7 @@ const CalendarPage = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [checkboxState, setCheckboxState] = useState({});
   const [studyEventCreate, setStudyEventCreate] = useState(false);
+  const [taskCreate, setTaskCreate] = useState(false);
 
 
   useEffect(() => {
@@ -276,6 +279,7 @@ const CalendarPage = () => {
       .catch(error => console.error('Error declining event:', error));
   }
 
+
   if (isTokenLoading || loginStatus === undefined) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
@@ -310,13 +314,17 @@ const CalendarPage = () => {
             onClose={() => setDrawerOpen(false)}
           >
             <List sx={{ height: '100vh' }}>
+                <ListItem disablePadding>
+                <ListItemButton onMouseDown={() => setCreateCalendarButton(true)} onMouseUp={() => setCreate(false)} onMouseLeave={() => setCreate(false)}>
+                  <ListItemText primary="Create Calendar" />
+                </ListItemButton>
+                </ListItem>
               <ListItem disablePadding>
                 <ListItemButton onMouseDown={() => setCreate(true)} onMouseUp={() => setCreate(false)} onMouseLeave={() => setCreate(false)}>
                   <ListItemText primary="Create Event" />
                 </ListItemButton>
-                <ListItemButton onMouseDown={() => setCreateCalendarButton(true)} onMouseUp={() => setCreate(false)} onMouseLeave={() => setCreate(false)}>
-                  <ListItemText primary="Create Calendar" />
-                </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
                 <ListItemButton
                   onMouseDown={() => setStudyEventCreate(true)}
                   onMouseUp={() => setStudyEventCreate(false)}
@@ -325,11 +333,22 @@ const CalendarPage = () => {
                   <ListItemText primary="Create Study Event" />
 
                 </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
+                <ListItemButton
+                  onMouseDown={() => setTaskCreate(true)}
+                  onMouseUp={() => setTaskCreate(false)}
+                  onMouseLeave={() => setTaskCreate(false)}>
+
+                  <ListItemText primary="Create Task" />
+
+                </ListItemButton>
 
               </ListItem>
               <ListItem disablePadding>
                 <ListItemButton onClick={toggleCalendars}>
                   <ListItemText primary="My Calendars" />
+                  {openCalendars ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                 </ListItemButton>
               </ListItem>
               <Collapse in={openCalendars} timeout="auto" unmountOnExit>
@@ -357,6 +376,7 @@ const CalendarPage = () => {
               <ListItem disablePadding>
                 <ListItemButton onClick={toggleInvitedEvents}>
                   <ListItemText primary="Invited Events" />
+                  {openInvitedEvents ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                 </ListItemButton>
               </ListItem>
               <Collapse in={openInvitedEvents} timeout="auto" unmountOnExit>
@@ -376,8 +396,10 @@ const CalendarPage = () => {
               </Collapse>
             </List>
           </Drawer>
+
+          {/* Calendario */}
           <Box sx={{ width: '100%', marginTop: '4vh' }}>
-            <Calendar createButton={create} chosenCalendars={Object.keys(checkboxState).filter(key => checkboxState[key])} calendars={calendars} studyEventCreateButton={studyEventCreate} />
+            <Calendar createButton={create} chosenCalendars={Object.keys(checkboxState).filter(key => checkboxState[key])} calendars={calendars} studyEventCreateButton={studyEventCreate} taskCreateButton = {taskCreate} />
           </Box>
         </Box>
 

@@ -29,16 +29,16 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
 
 
     useEffect(() => {
-        if (StudyEventsDialog && !StudyEventToModify) {
-            console.log("ciaetto")
-            handleOpenDialog();
-        }
         if (StudyEventsDialog && StudyEventToModify) {
             modifyStudyEvent(StudyEventToModify);
             StudyEventFinish();
         }
         if (draggedStudyEventsDialog && StudyEventToDrag) {
             draggedStudyEvents(StudyEventToDrag);
+            StudyEventFinish();
+        }
+        if (StudyEventsDialog) {
+            handleOpenDialog();
             StudyEventFinish();
         }
     }, [StudyEventsDialog, StudyEventToModify, StudyEventToDrag]);
@@ -80,6 +80,7 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
     };
 
     const addStudyEvent = () => {
+        const borderColor = '#FF007F';
         const StudyEventData = {
             title: title,
             description: description,
@@ -91,7 +92,8 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
             allDay: allDay,
             color: StudyEventColor,
             isStudyEvent: true,
-            completed: completed
+            completed: completed,
+            borderColor: allDay ? borderColor : taskColor,
         };
 
         if (isRecurring) {
@@ -205,7 +207,7 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
 
         if (StudyEvent.isRecurring) {
             setIsRecurring(true);
-            
+
             // if StudyEvent is recurring then I might have clicked on a "fake" StudyEvent renderized by fullcalendar, so I need to check
             // the StudyEvent.id and get the actual StudyEvent from the database.
             fetch(`/api/getSingleStudyEvent/${currentId}`, {
@@ -233,7 +235,7 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
                 setStartTime(timeToUsable(StudyEvent.start.getHours(), StudyEvent.start.getMinutes()));
             }
         }
-        
+
         setTitle(StudyEvent.title);
         setDescription(StudyEvent.description);
         // mi serve dateToUsable perche getMonth() mi ritorna 1 se e' gennaio, invece mi serve 01
@@ -247,10 +249,10 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
         }
         setStudyEventColor(StudyEvent.backgroundColor);
         setModifying(true);
-        
+
         handleDraggedOpen();
 
-        
+
     }
 
     const dateToUsable = (year, month, date) => {
@@ -322,8 +324,8 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
     }
 
     const handleAddStudyEvent = () => {
-        resetForm();
         addStudyEvent();
+        resetForm();
     }
 
     const handleDraggedOpen = () => {

@@ -39,6 +39,7 @@ const Navbar = ({ setSeedTwo }) => {
   const [totalNotifications, setTotalNotifications] = useState(0);
   const [shownEventNotifications, setShownEventNotifications] = useState(0);
   const [shownTaskNotifications, setShownTaskNotifications] = useState(0);
+  const [studyEvents, setStudyEvents] = useState([]);
 
   const notificationOptions = [
     '30 min', '1 hour', '6 hours', '12 hours', '1 day', '3 days',
@@ -50,21 +51,6 @@ const Navbar = ({ setSeedTwo }) => {
     Cookies.remove('token');
     navigate('/');
   };
-
-  useEffect(() => {
-    if (!window.Notification) {
-      alert("This browser does not support desktop notifications");
-    } else if (Notification.permission === "default") {
-      Notification.requestPermission().then(permission => {
-        if (permission === "granted") {
-          console.log("Notification permission granted.");
-        } else {
-          console.log("Notification permission denied.");
-        }
-      });
-    }
-  }, []);
-
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -84,10 +70,6 @@ const Navbar = ({ setSeedTwo }) => {
         const data = await response.json();
         if (JSON.stringify(data) !== JSON.stringify(events)) {
           setEvents(data);
-          const newEventNotifications = data.filter(isNotifiable).length;
-          setTotalNotifications(prev => prev + newEventNotifications - shownEventNotifications);
-          setShownEventNotifications(newEventNotifications);
-          console.log('Events:', data);
         }
         setError(null);
       } catch (error) {
@@ -114,10 +96,6 @@ const Navbar = ({ setSeedTwo }) => {
         const data = await response.json();
         if (JSON.stringify(data) !== JSON.stringify(tasks)) {
           setTasks(data);
-          console.log('Tasks:', data);
-          const newTaskNotifications = data.filter(isNotifiable).length;
-          setTotalNotifications(prev => prev + newTaskNotifications - shownTaskNotifications);
-          setShownTaskNotifications(newTaskNotifications);
         }
         setError(null);
       }
@@ -128,25 +106,45 @@ const Navbar = ({ setSeedTwo }) => {
       }
     };
 
+    const fetchStudyEvents = async () => {
+      try {
+        const response = await fetch(`/api/getStudyEventsGeneric?username=${username}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (JSON.stringify(data) !== JSON.stringify(studyEvents)) {
+          setStudyEvents(data);
+        }
+        setError(null);
+      } catch (error) {
+        console.error('Error fetching study events:', error);
+        setError('Error fetching study events');
+        setStudyEvents([]);
+      }
+    };
+
+
+    const combinedItems = [...events, ...tasks, ...studyEvents];
+
+    setTotalNotifications(combinedItems
+      .filter(isNotifiable)
+      .map(item => item.isRecurring ? convertRecurringEventToFirstUsefulDate(item) : item)
+      .sort((a, b) => new Date(a.startDate) - new Date(b.startDate)).length);
+
     fetchTasks();
     fetchEvents();
+    fetchStudyEvents();
   }, [token, username, selectedNotification, events, shownNotifications, tasks]);
 
-
-
-
-  const displayEventsAndTasks = () => {
-    let eventsAndTasks = [];
-    for (let i = 0; i < events.length; i++) {
-      eventsAndTasks.push(events[i]);
-    }
-    for (let i = 0; i < tasks.length; i++) {
-      if (tasks[i].completed === false) {
-        eventsAndTasks.push(tasks[i]);
-      }
-    }
-    return eventsAndTasks
-  }
 
   // carica tempo di preavviso per le notifiche degli eventi selezionato
   useEffect(() => {
@@ -232,7 +230,7 @@ const Navbar = ({ setSeedTwo }) => {
 
   const renderNotifications = () => {
     // Merge tasks and events into one array
-    const combinedItems = [...events, ...tasks];
+    const combinedItems = [...events, ...tasks, ...studyEvents];
 
     if (error) {
       return <Typography variant="body2" color="error" align="center">{error}</Typography>;
@@ -255,7 +253,7 @@ const Navbar = ({ setSeedTwo }) => {
             </Typography>
             <Typography align="center" sx={{ marginBottom: '5px' }}>
               {item.start && new Date(item.start).toLocaleDateString()}
-              {item.end && ` to ${new Date(item.end).toLocaleDateString()}`}
+              {!item.isTask ? (item.end && ` to ${new Date(item.end).toLocaleDateString()}`) : null}
             </Typography>
           </Grid>
         </MenuItem>
@@ -302,13 +300,13 @@ const Navbar = ({ setSeedTwo }) => {
 
   function calculateAllRecurrencies(event, finalDate) {
     const recurrencies = [];
-    console.log(event)
+
     let nextStartDate = new Date(event.start);
     let nextEndDate = null;
 
     if (event.end && !event.isTask) {
       nextEndDate = new Date(event.end);
-    } else if (event.endRecur && event.isTask) {
+    } else if (event.endRecur && event.isTask || event.isStudyEvent) {
       nextEndDate = new Date(event.endRecur);
     }
 
@@ -323,7 +321,7 @@ const Navbar = ({ setSeedTwo }) => {
       let endDate = nextEndDate ? formatDate(nextEndDate) : null
       let newEvent = {};
 
-      if(!event.isTask){
+      if (!event.isTask) {
         newEvent = {
           title: event.title,
           description: event.description,
@@ -356,7 +354,7 @@ const Navbar = ({ setSeedTwo }) => {
           endRecur: event.endRecur
         };
       }
-        
+
       recurrencies.push(newEvent);
       counter++; // Increment the repetition counter
 
@@ -388,7 +386,7 @@ const Navbar = ({ setSeedTwo }) => {
     const currentDate = new Date()
 
     if (event.isRecurring) {
-      if (event.isTask) {
+      if (event.isTask || event.isStudyEvent) {
         if (event.endRecur && (stringToDate(event.endRecur) < currentDate)) {
           return null
         }
@@ -396,7 +394,7 @@ const Navbar = ({ setSeedTwo }) => {
           return getFirstUsefulDate(event)
         }
       }
-      console.log(event)
+
       if (event.end && (stringToDate(event.end) < currentDate)) {
         return null
       }
@@ -413,7 +411,6 @@ const Navbar = ({ setSeedTwo }) => {
     const noticeDate = new Date(eventStartDate.getTime() - noticeTimeToMilliseconds());
 
     const currentDate = new Date();
-
 
     return (currentDate > noticeDate && eventStartDate > currentDate) || recurrenceMath(event);
   };

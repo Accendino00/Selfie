@@ -20,8 +20,14 @@ import { useNavigate } from 'react-router-dom';
 import TimeMachine from '../common/TimeMachine';
 import { CircularProgress } from '@mui/material';
 import StudyEvent from './StudyEvents';
+import { ListItem } from '@mui/material';
+import { ListItemIcon } from '@mui/material';
+import { List } from '@mui/material';
+import { Edit } from '@mui/icons-material';
+import { Delete } from '@mui/icons-material';
+import { set } from 'date-fns';
 
-export default function Calendar({ createButton, chosenCalendars, calendars, studyEventCreateButton }) {
+export default function Calendar({ createButton, chosenCalendars, calendars, studyEventCreateButton, taskCreateButton }) {
 
   // events
   const [events, setEvents] = useState([]);
@@ -55,6 +61,9 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
   const [taskToModify, setTaskToModify] = useState('');
   const [taskToDrag, setTaskToDrag] = useState('');
   const [draggedTasksDialogOpen, setDraggedTasksDialogOpen] = useState(false);
+  const [isTask, setIsTask] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState('');
+  const [isTaskCheckBox, setIsTaskCheckBox] = useState(false);
 
   // studyevents
   const [isStudyEvent, setIsStudyEvent] = useState(false);
@@ -68,6 +77,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
   const [studyEventsDialogOpen, setStudyEventsDialogOpen] = useState(false);
   const [studyEventToModify, setStudyEventToModify] = useState('');
   const [studyEventToDrag, setStudyEventToDrag] = useState('');
+  const [isStudyEventCheckBox, setIsStudyEventCheckBox] = useState(false);
 
   // misc
   const { loginStatus, isTokenLoading, username } = useTokenChecker();
@@ -108,14 +118,21 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     if (createButton) {
       addEvent(null);
     } else if (studyEventCreateButton) {
-      console.log('ciaone')
+      
+      setIsStudyEvent(true)
       setStudyEventsDialogOpen(true);
+      
+    } else if(taskCreateButton){
+      setIsTask(true);
+      setTasksDialogOpen(true);
     }
-  }, [createButton, studyEventCreateButton]);
+  }, [createButton, studyEventCreateButton, taskCreateButton]);
 
 
   const addEvent = (info) => {
     resetForm();
+    setIsTaskCheckBox(true);
+    setIsStudyEventCheckBox(true);
     if (info) {
       setStartDate(info.startStr);
       setEndDate(info.endStr);
@@ -170,12 +187,11 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     };
 
     if (isRecurring) {
-      console.log('ao')
+      
       if (recurringDays.length !== 0) {
-        console.log('ao2')
+        
         eventData.daysOfWeek = recurringDays;
-        console.log('recurringDays', recurringDays)
-        console.log(eventData.daysOfWeek)
+        
       } else {
         eventData.daysOfWeek = null;
       }
@@ -184,16 +200,14 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
       eventData.end = endDate;
       if (endDate !== '' && endDate !== null) {
         eventData.endRecur = endDate;
-        console.log('ciao2')
+        
       } else if (timesToRepeat !== "0" && eventData.daysOfWeek !== null) {
-        console.log('ciao')
-        console.log(eventData.start)
-        console.log(eventData.end)
+        
         eventData.endRecur = calculateRepeatEndDate(startDate, timesToRepeat);
       } else {
         eventData.endRecur = null;
         eventData.end = null;
-        console.log('ciao3')
+        
       }
       if (startTime !== '') {
         eventData.startTime = startTime;
@@ -206,14 +220,14 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
         eventData.endTime = null;
       }
       if (timesToRepeat !== "0" && eventData.daysOfWeek === null && eventData.endRecur === null && eventData.end === null) {
-        console.log('asdasd')
+        
         eventData.endRecur = calculateRepeatEndDate(startDate, timesToRepeat);
         eventData.timesToRepeat = timesToRepeat;
         eventData.daysOfWeek = getDayOfWeek(startDate, eventData.end);
       } else if (timesToRepeat === "0") {
         eventData.timesToRepeat = null;
       }
-      console.log(eventData.end)
+      
     } else {
       eventData.daysOfWeek = null;
       eventData.startTime = null;
@@ -223,7 +237,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     }
 
     if (modifying) {
-      console.log("modifying", eventData.daysOfWeek)
+      
       if (!validateDates()) {
         return;
       }
@@ -319,8 +333,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
   }
 
   const getDayOfWeek = (startDate, endDate) => {
-    console.log('imin');
-    console.log(startDate, endDate);
+    
 
     // Check if startDate is a Date object, if not convert from string
     let start = startDate instanceof Date ? startDate : new Date(startDate);
@@ -347,7 +360,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
 
 
   function convertDaysToIntegers(dayNames) {
-    console.log('dayNames', dayNames)
+    
 
     const dayMap = {
       'Sunday': 0,
@@ -377,6 +390,8 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
   }
 
   const modifyEvent = (event) => {
+
+
 
     if (event.extendedProps.isStudyEvent) {
       setStudyEventsDialogOpen(true);
@@ -416,6 +431,9 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
 
       return;
     }
+
+    setIsTaskCheckBox(false);
+    setIsStudyEventCheckBox(false);
 
     setSelectedCalendars(event._def.extendedProps.calendar);
     if (event.end !== null) {
@@ -502,8 +520,11 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
       return;
     }
 
+    setIsTaskCheckBox(false);
+    setIsStudyEventCheckBox(false);
+
     setCurrentId(event.id);
-    console.log(event.id)
+    
     if (event._def.extendedProps.isRecurring) {
       setIsRecurring(true);
       // if event is recurring then I might have clicked on a "fake" event renderized by fullcalendar, so I need to check
@@ -516,18 +537,18 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
       })
         .then(response => response.json())
         .then(data => {
-          console.log(data)
+          
           event = data;
-          console.log(event)
+          
         })
         .catch(error => console.error('Error fetching event:', error));
 
 
 
       if (event.extendedProps.daysOfWeek !== null) {
-        console.log(getDayOfWeek(event.start, event.end))
+        
         setRecurringDays(getDayOfWeek(event.start, event.end));
-        console.log(recurringDays)
+        
       }
     }
     setSelectedCalendars(event._def.extendedProps.calendar);
@@ -591,6 +612,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     setCurrentId('');
     setShared([]);
     setIsStudyEvent(false);
+    setIsTask(false);
   };
 
   const addInvitedUser = () => {
@@ -613,6 +635,8 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
   const handleTaskFinish = (tasksDialogOpen, taskToModify, taskToDrag) => {
     setTasksDialogOpen(false)
     setDraggedTasksDialogOpen(false)
+    setStudyEventsDialogOpen(false)
+    setDraggedStudyEventsDialogOpen(false)
     if (taskToModify != '') {
       setTaskToModify('');
     }
@@ -695,8 +719,15 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     if (isStudyEvent) {
       setStudyEventsDialogOpen(true);
       handleClose();
+    } else if (isTask) {
+      setTasksDialogOpen(true);
+      handleClose();
     }
-  }, [isStudyEvent]);
+  }, [isStudyEvent, isTask]);
+
+  const listItemStyle = (completed) => ({
+    textDecoration: completed ? 'line-through' : 'none',
+  });
 
   return (
     <>
@@ -724,7 +755,12 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
         aspectRatio={1}
       />
 
-      <StudyEvent StudyEventsToSend={handleStudyEventsFromStudyEvents} StudyEventsDialog={studyEventsDialogOpen} StudyEventToModify={studyEventToModify} StudyEventFinish={handleStudyEventFinish} StudyEventToDrag={studyEventToDrag} draggedStudyEventsDialog={draggedStudyEventsDialogOpen} />
+<Tasks tasksToSend={handleTasksFromTasks} tasksDialog={false} taskToModify={taskToModify} taskFinish={handleTaskFinish} taskToDrag={taskToDrag} draggedTasksDialog={draggedTasksDialogOpen} taskToDelete={taskToDelete} />
+<StudyEvent StudyEventsToSend={handleStudyEventsFromStudyEvents} StudyEventsDialog={false} StudyEventToModify={studyEventToModify} StudyEventFinish={handleStudyEventFinish} StudyEventToDrag={studyEventToDrag} draggedStudyEventsDialog={draggedStudyEventsDialogOpen} />
+
+      {isTask &&
+        <Tasks tasksToSend={handleTasksFromTasks} tasksDialog={tasksDialogOpen} taskToModify={taskToModify} taskFinish={handleTaskFinish} taskToDrag={taskToDrag} draggedTasksDialog={draggedTasksDialogOpen} taskToDelete={taskToDelete} />
+      }
       {isStudyEvent &&
         /*<StudyComponent studyTime={studyTime} setStudyTime={setStudyTime} breakTime={breakTime} setBreakTime={setBreakTime} cycles={cycles} setCycles={setCycles} totalMinutes={totalMinutes} setTotalMinutes={setTotalMinutes}/> */
         <StudyEvent StudyEventsToSend={handleStudyEventsFromStudyEvents} StudyEventsDialog={studyEventsDialogOpen} StudyEventToModify={studyEventToModify} StudyEventFinish={handleStudyEventFinish} StudyEventToDrag={studyEventToDrag} draggedStudyEventsDialog={draggedStudyEventsDialogOpen} />
@@ -752,10 +788,17 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Add New Event</DialogTitle>
         <DialogContent>
-          <FormControlLabel
+          {isTaskCheckBox &&
+            <FormControlLabel
+              control={<Checkbox checked={isTask} onChange={(e) => setIsTask(e.target.checked)} />}
+              label="Task"
+            />
+          }
+          {isStudyEventCheckBox && <FormControlLabel
             control={<Checkbox checked={isStudyEvent} onChange={(e) => setIsStudyEvent(e.target.checked)} />}
-            label="Study ?"
+            label="Study Event"
           />
+          }
           <FormControl fullWidth margin="dense">
             <InputLabel id="calendar-select-label">Select Calendars</InputLabel>
             <Select
@@ -1018,8 +1061,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
           </Button>
         </DialogActions>
       </Dialog>
-      {/* Lo metto anche qua perche i dati vengono passati lo stesso senza aspettare che il Drawer venga aperto */}
-      <Tasks tasksToSend={handleTasksFromTasks} tasksDialog={tasksDialogOpen} taskToModify={taskToModify} taskFinish={handleTaskFinish} taskToDrag={taskToDrag} draggedTasksDialog={draggedTasksDialogOpen} />
+
       <IconButton
         onClick={toggleDrawer(true)}
         style={{
@@ -1036,11 +1078,54 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
       >
         <ArrowBackIosIcon />
       </IconButton>
+
+      {/* Tasks */}
       <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer(false)}>
         <Box p={2} width="250px" role="presentation">
           <button onClick={handleGetEvents}>Get Events</button>
-          <Tasks tasksToSend={handleTasksFromTasks} tasksDialog={tasksDialogOpen} taskToModify={taskToModify} taskFinish={handleTaskFinish} taskToDrag={taskToDrag} draggedTasksDialog={draggedTasksDialogOpen} />
-
+          <Typography variant="h4" gutterBottom>Tasks</Typography>
+          <List>
+            {Array.isArray(tasks) && tasks.map(task => (
+              <ListItem key={task._id} alignItems="flex-start">
+                <div style={{
+                  width: '10px',
+                  height: '10px',
+                  backgroundColor: task.color,
+                  marginRight: '10px',
+                  marginTop: '13px',
+                }} />
+                <ListItemText
+                  primary={<span style={listItemStyle(task.completed)}>{task.title}</span>}
+                  secondary={
+                    <>
+                      {task.description && <>
+                        {task.description}
+                        <br />
+                      </>}
+                      {new Date(task.start).toLocaleDateString()}
+                    </>
+                  }
+                />
+                <IconButton edge="end" aria-label="edit" onClick={() => {
+                  setTaskToModify(task)
+                  setTasksDialogOpen(true)
+                }
+                }>
+                  <Edit />
+                </IconButton>
+                <IconButton edge="end" aria-label="delete" onClick={() => setTaskToDelete(task._id)}>
+                  <Delete />
+                </IconButton>
+              </ListItem>
+            ))}
+          </List>
+          <Tasks tasksToSend={handleTasksFromTasks} tasksDialog={false} taskToModify={taskToModify} taskFinish={handleTaskFinish} taskToDrag={taskToDrag} draggedTasksDialog={draggedTasksDialogOpen} taskToDelete={taskToDelete} />
+          <Button variant="contained" color="primary" onClick={() => {
+            setIsTask(true)
+            setTasksDialogOpen(true)
+          }}>
+            Add Task
+          </Button>
         </Box>
       </Drawer>
     </>

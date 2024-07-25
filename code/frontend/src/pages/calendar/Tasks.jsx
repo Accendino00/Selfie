@@ -7,7 +7,7 @@ import { Form } from 'react-router-dom';
 import { FormControl } from '@mui/material';
 
 
-const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag, draggedTasksDialog }) => {
+const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag, draggedTasksDialog, taskToDelete }) => {
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
     const [tasks, setTasks] = useState([]);
     const [openDialog, setOpenDialog] = useState(false);
@@ -29,6 +29,10 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
 
 
     useEffect(() => {
+        if(taskToDelete){
+            handleDeleteTask(taskToDelete);
+        }
+
         if (tasksDialog && taskToModify) {
             modifyTask(taskToModify);
             taskFinish();
@@ -37,7 +41,11 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
             draggedTasks(taskToDrag);
             taskFinish();
         }
-    }, [tasksDialog, taskToModify, taskToDrag]);
+        if (tasksDialog) {
+            handleOpenDialog();
+            taskFinish();
+        }
+    }, [tasksDialog, taskToModify, taskToDrag, taskToDelete]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -76,6 +84,7 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
     };
 
     const addTask = () => {
+        const borderColor = '#61DE2A'
         const taskData = {
             title: title,
             description: description,
@@ -87,7 +96,8 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
             allDay: allDay,
             color: taskColor,
             isTask: true,
-            completed: completed
+            completed: completed,
+            borderColor: allDay ? borderColor : taskColor,
         };
 
         if (isRecurring) {
@@ -312,8 +322,8 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
     }
 
     const handleAddTask = () => {
-        resetForm();
         addTask();
+        resetForm();
     }
 
     const handleDraggedOpen = () => {
@@ -363,41 +373,6 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
 
     return (
         <Box>
-            <Typography variant="h4" gutterBottom>Tasks</Typography>
-            <List>
-                {Array.isArray(tasks) && tasks.map(task => (
-                    <ListItem key={task._id} alignItems="flex-start">
-                        <div style={{
-                            width: '10px',
-                            height: '10px',
-                            backgroundColor: task.color,
-                            marginRight: '10px',
-                            marginTop: '13px',
-                        }} />
-                        <ListItemText
-                            primary={<span style={listItemStyle(task.completed)}>{task.title}</span>}
-                            secondary={
-                                <>
-                                    {task.description && <>
-                                        {task.description}
-                                        <br />
-                                    </>}
-                                    {new Date(task.start).toLocaleDateString()}
-                                </>
-                            }
-                        />
-                        <IconButton edge="end" aria-label="edit" onClick={() => modifyTask(task)}>
-                            <Edit />
-                        </IconButton>
-                        <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteTask(task._id)}>
-                            <Delete />
-                        </IconButton>
-                    </ListItem>
-                ))}
-            </List>
-            <Button variant="contained" color="primary" onClick={handleOpenDialog}>
-                Add Task
-            </Button>
             <Dialog open={draggedOpen} onClose={handleDraggedClose}>
                 <DialogTitle>Modify Event</DialogTitle>
                 <DialogContent>
