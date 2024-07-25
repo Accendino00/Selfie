@@ -9,6 +9,7 @@ import styles from './NotesListStyles.jsx';
 import Cookies from 'js-cookie';
 import { useEffect } from 'react';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
+import EmailShareButton from '../../components/EmailShareButton.jsx';
 
 
 function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote, isDesktop }) { // Aggiungi onNoteDeleted come prop per gestire la cancellazione
@@ -16,6 +17,7 @@ function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote,
     const [order, setOrder] = useState('title-asc');
     const [anchorEl, setAnchorEl] = useState({});
     const [searchTerm, setSearchTerm] = useState("");
+    const [email, setEmail] = useState('');
 
     NotesList.defaultProps = {
         notes: []
@@ -63,11 +65,11 @@ function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote,
                     note: copiedNote.note,
                     userId: copiedNote.userId,
                     creationDate: copiedNote.creationDate,
-                    modificationDate: copiedNote.modificationDate
+                    modificationDate: copiedNote.modificationDate,
+                    users: copiedNote.users.map(user => { return { ...user } }),
                 }),
             });
         }).then(responseCopy => {
-            console.log(responseCopy.json());
             if (responseCopy.ok) {
                 return responseCopy.json();
             }
@@ -79,12 +81,32 @@ function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote,
         });
     };
 
+    const handleShareNote = (id) => {
+        fetch(`/api/notes/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                email: email,
+            }),
+        }).then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Failed to share the note');
+        }).then(sharedNote => {
+            console.log(sharedNote);
+        }).catch(error => {
+            console.error('Failed to share the note', error);
+        });
+    };
+
 
     const handleOrderChange = (event) => {
         setOrder(event.target.value);
     };
-
-    console.log(notes);
 
 
     const sortedNotes = [...notes].sort((a, b) => {
@@ -95,6 +117,7 @@ function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote,
             return dir === 'asc' ? new Date(a[key]) - new Date(b[key]) : new Date(b[key]) - new Date(a[key]);
         }
     });
+
 
     const handleMenu = (event, id) => {
         setAnchorEl(prev => ({ ...prev, [id]: event.currentTarget }));
@@ -158,6 +181,9 @@ function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote,
                                 <Typography variant="h5" onClick={() => onNoteModified(note.id)} style={{ cursor: 'pointer' }}>
                                     {note.title}
                                 </Typography>
+                                <IconButton aria-label="share" onClick= {() => handleShareNote(note.id)} style ={{color: '#53ddf0'}}>
+                                    <EmailShareButton feature="notes" email={email} setEmail={setEmail}/>
+                                </IconButton>
                                 <IconButton aria-label="copy" onClick={() => handleCopyNote(note.id)} style ={{color: '#53ddf0'}}>
                                     <FileCopyIcon />
                                 </IconButton>

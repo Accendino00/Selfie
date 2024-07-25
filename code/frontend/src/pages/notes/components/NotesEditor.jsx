@@ -16,34 +16,46 @@ import './styles.css';
 // Register the Markdown module with Quill
 Quill.register('modules/markdownShortcuts', MarkdownShortcuts);
 
-function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeEditor }) {
+function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeEditor, clear, setClear }) {
     const [title, setTitle] = useState('');
     const [noteInput, setNoteInput] = useState('');
     const token = Cookies.get('token');
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
     const [userId, setUserId] = useState(null);
 
-    if (loginStatus) {
-        const fetchUserId = async () => {
-            try {
-                const response = await fetch(`/api/getUserId?username=${username}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
-                if (response.ok) {
-                    const fetchedUserId = await response.json();
-                    setUserId(fetchedUserId);
-                } else {
-                    console.error('Failed to fetch user id');
+    useEffect(() => {
+        if (clear) {
+            setTitle('');
+            setNoteInput('');
+            console.log('clearing');
+            setClear(false);
+        }
+    }, [clear, setClear]); // Make sure 'setClear' is stable, consider useCallback if needed
+    
+    // For setting userId based on login status
+    useEffect(() => {
+        if (loginStatus) {
+            const fetchUserId = async () => {
+                try {
+                    const response = await fetch(`/api/getUserId?username=${username}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                        },
+                    });
+                    if (response.ok) {
+                        const fetchedUserId = await response.json();
+                        setUserId(fetchedUserId);
+                    } else {
+                        console.error('Failed to fetch user id');
+                    }
+                }
+                catch (error) {
+                    console.error('Failed to fetch user id', error);
                 }
             }
-            catch (error) {
-                console.error('Failed to fetch user id', error);
-            }
+            fetchUserId();
         }
-        fetchUserId();
-    }
+    }, [loginStatus, username, token]); // Dependencies to fetch user ID
 
     const handleAddNote = async () => {
         const newNote = noteInput.trim();
@@ -61,7 +73,8 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                         note: newNote,
                         userId: userId,
                         creationDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
-                        modificationDate: new Date().toISOString().slice(0, 19).replace('T', ' ')
+                        modificationDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
+                        users: []
                     }),
                 });
                 if (response.ok) {
@@ -101,7 +114,8 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                         note: newNote,
                         userId: userId,
                         creationDate: noteToModify.creationDate,
-                        modificationDate: new Date().toISOString().slice(0, 19).replace('T', ' ')
+                        modificationDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
+                        users: noteToModify.users
                     }),
                 });
                 if (response.ok) {

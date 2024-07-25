@@ -23,8 +23,9 @@ import Radio from '@mui/material/Radio';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { Grid } from '@mui/material';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import TimeMachineIcon from '../common/components/TimeMachineIcon';
 
-const Navbar = ({ setSeedTwo }) => {
+const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
   const navigate = useNavigate();
   const { loginStatus, isTokenLoading, username } = useTokenChecker();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -383,6 +384,7 @@ const Navbar = ({ setSeedTwo }) => {
           >
             <NotesIcon />
           </IconButton>
+          {!showTimeMachine && <TimeMachineIcon setShowTimeMachine={setShowTimeMachine} />}
           <IconButton
             color="inherit"
             aria-label="notifications"

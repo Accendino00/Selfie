@@ -13,6 +13,7 @@ function NavPage({originalDate}) {
     const [seed, setSeed] = React.useState(0);
     const [seedTwo, setSeedTwo] = React.useState(0);
     const [date, setDate] = React.useState(new Date());
+    const [showTimeMachine, setShowTimeMachine] = React.useState(true);
 
     const handleDateChange = (newDate) => {
         setDate(newDate);
@@ -37,8 +38,9 @@ function NavPage({originalDate}) {
 
     return (
         <>
-            <Navbar key={seedTwo} setSeedTwo={setSeedTwo} loginStatus={loginStatus}/>
-            <TimeMachine onDateChange={handleDateChange} setSeed={setSeed} originalDate={originalDate}/>
+            {showTimeMachine ? <TimeMachine onDateChange={handleDateChange} setSeed={setSeed} originalDate={originalDate} setShowTimeMachine={setShowTimeMachine}/>
+            : ''}
+            <Navbar key={seedTwo} setSeedTwo={setSeedTwo} loginStatus={loginStatus} showTimeMachine={showTimeMachine} setShowTimeMachine={setShowTimeMachine}/>
             {isChildRoute ? <Outlet key={seed}/> : <HomePage />}
         </>
     );

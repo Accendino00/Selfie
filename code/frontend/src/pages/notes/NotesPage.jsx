@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { useMediaQuery, Fab, IconButton, Tooltip } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EmailShareButton from "../components/EmailShareButton";
 
 
 function NotesPage() {
@@ -22,6 +23,7 @@ function NotesPage() {
     const [visualizeEditor, setVisualizeEditor] = useState(false);
     const isDesktop = useMediaQuery('(min-width:600px)'); // Adjust 600px based on your breakpoint needs
     const [boolToggle, setBoolToggle] = useState(false);
+    const [clear, setClear] = useState(false);
 
 
     useEffect(() => {
@@ -142,6 +144,7 @@ function NotesPage() {
             if(window.confirm('Sei sicuro di voler creare un nuovo appunto? Le modifiche non salvate andranno perse.')) {
                 setNoteToModify(null);
                 setVisualizeEditor(true);
+                setClear(true);
             }
         } else {
             setVisualizeEditor(true);
@@ -153,6 +156,15 @@ function NotesPage() {
             <Box sx={styles.container}>
                 {isDesktop ? (
                     <>
+                        <IconButton color="inherit" onClick={handleNewNote} sx={styles.newNoteDesktop}>
+                            <AddIcon />
+                        </IconButton>
+                        <IconButton 
+                            color="inherit" 
+                            sx={{position: 'absolute', right: '16px', top: '85px'}}
+                        >
+                                <EmailShareButton feature="notes" />
+                        </IconButton>
                         <NotesList 
                             notes={notes} 
                             setNotes={setNotes} 
@@ -166,6 +178,8 @@ function NotesPage() {
                             noteToModify={noteToModify} 
                             setNoteToModify={setNoteToModify} 
                             setVisualizeEditor={setVisualizeEditor} 
+                            clear={clear}
+                            setClear={setClear}
                         />
                         
                     </>
