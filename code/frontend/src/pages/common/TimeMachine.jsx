@@ -5,7 +5,7 @@ import MinimizeIcon from '@mui/icons-material/Minimize';
 import { format } from 'date-fns';
 import { setBaseDate } from './overrideDate'; // import the method to set the base date
 
-const TimeMachine = ({ onDateChange, setSeed, originalDate, setShowTimeMachine }) => {
+const TimeMachine = ({ onDateChange, setSeed, originalDate, setShowTimeMachine, setSeedTwo }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const boxRef = useRef(null);
   const theme = useTheme();
@@ -25,6 +25,7 @@ const TimeMachine = ({ onDateChange, setSeed, originalDate, setShowTimeMachine }
     onDateChange(newDate);
     setBaseDate(newDate); // Update the base date in the CustomDate
     setSeed((prev) => prev + 1);
+    setSeedTwo((prev) => prev + 1);
   };
 
   const resetToSystemTime = () => {

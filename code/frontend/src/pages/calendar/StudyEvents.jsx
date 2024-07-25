@@ -7,9 +7,9 @@ import { Form } from 'react-router-dom';
 import { FormControl } from '@mui/material';
 
 
-const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag, draggedTasksDialog, taskToDelete }) => {
+const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify, StudyEventFinish, StudyEventToDrag, draggedStudyEventsDialog }) => {
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
-    const [tasks, setTasks] = useState([]);
+    const [StudyEvents, setStudyEvents] = useState([]);
     const [openDialog, setOpenDialog] = useState(false);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -17,7 +17,7 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
     const [modifying, setModifying] = useState(false);
     const [recurringDays, setRecurringDays] = useState([]);
     const [startTime, setStartTime] = useState('');
-    const [taskColor, setTaskColor] = useState('#000000');
+    const [StudyEventColor, setStudyEventColor] = useState('#000000');
     const [isRecurring, setIsRecurring] = useState(false);
     const [timesToRepeat, setTimesToRepeat] = useState(0);
     const [allDay, setAllDay] = useState(false);
@@ -29,27 +29,23 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
 
 
     useEffect(() => {
-        if(taskToDelete){
-            handleDeleteTask(taskToDelete);
+        if (StudyEventsDialog && StudyEventToModify) {
+            modifyStudyEvent(StudyEventToModify);
+            StudyEventFinish();
         }
-
-        if (tasksDialog && taskToModify) {
-            modifyTask(taskToModify);
-            taskFinish();
+        if (draggedStudyEventsDialog && StudyEventToDrag) {
+            draggedStudyEvents(StudyEventToDrag);
+            StudyEventFinish();
         }
-        if (draggedTasksDialog && taskToDrag) {
-            draggedTasks(taskToDrag);
-            taskFinish();
-        }
-        if (tasksDialog) {
+        if (StudyEventsDialog) {
             handleOpenDialog();
-            taskFinish();
+            StudyEventFinish();
         }
-    }, [tasksDialog, taskToModify, taskToDrag, taskToDelete]);
+    }, [StudyEventsDialog, StudyEventToModify, StudyEventToDrag]);
 
     useEffect(() => {
         const interval = setInterval(() => {
-            fetch(`/api/getTasks?username=${username}`, {
+            fetch(`/api/getStudyEvents?username=${username}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -57,17 +53,17 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
             })
                 .then(response => response.json())
                 .then(data => {
-                    tasksToSend(data)
-                    setTasks(data)
+                    StudyEventsToSend(data)
+                    setStudyEvents(data)
                 })
-                .catch(error => console.error("Error fetching tasks:", error));
+                .catch(error => console.error("Error fetching StudyEvents:", error));
         }, 500);
 
         return () => clearInterval(interval);
     }, [username, token]);
 
-    const handleDeleteTask = (currentId) => {
-        fetch(`/api/deleteTask/${currentId}`, {
+    const handleDeleteStudyEvent = (currentId) => {
+        fetch(`/api/deleteStudyEvent/${currentId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -76,16 +72,16 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
         })
             .then(response => response.json())
             .then(data => {
-                setTasks(data)
+                setStudyEvents(data)
                 resetForm();
                 handleCloseDialog();
             })
-            .catch(error => console.error("Error deleting task:", error));
+            .catch(error => console.error("Error deleting StudyEvent:", error));
     };
 
-    const addTask = () => {
-        const borderColor = '#61DE2A'
-        const taskData = {
+    const addStudyEvent = () => {
+        const borderColor = '#FF007F';
+        const StudyEventData = {
             title: title,
             description: description,
             start: combineDateAndTime(startDate, startTime),
@@ -94,125 +90,127 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
             timesToRepeat: timesToRepeat,
             isRecurring: isRecurring,
             allDay: allDay,
-            color: taskColor,
-            isTask: true,
+            color: StudyEventColor,
+            isStudyEvent: true,
             completed: completed,
             borderColor: allDay ? borderColor : taskColor,
         };
 
         if (isRecurring) {
-            taskData.startRecur = startDate;
-            taskData.start = startDate;
+            StudyEventData.startRecur = startDate;
+            StudyEventData.start = startDate;
             if (timesToRepeat > 0) {
-                taskData.timesToRepeat = timesToRepeat;
-                taskData.endRecur = calculateRepeatEndDate(startDate, timesToRepeat);
-                taskData.daysOfWeek = getDayOfWeek(startDate);
+                StudyEventData.timesToRepeat = timesToRepeat;
+                StudyEventData.endRecur = calculateRepeatEndDate(startDate, timesToRepeat);
+                StudyEventData.daysOfWeek = getDayOfWeek(startDate);
             }
         }
 
         if (modifying) {
-            fetch(`/api/modifyTask/${currentId}`, {
+            fetch(`/api/modifyStudyEvent/${currentId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(taskData),
+                body: JSON.stringify(StudyEventData),
             })
                 .then(response => response.json())
                 .then(data => {
 
-                    setTasks(data);
+                    setStudyEvents(data);
                     resetForm();
                     handleCloseDialog();
                 })
 
         } else {
-            fetch(`/api/addTask`, {
+            fetch(`/api/addStudyEvent`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(taskData)
+                body: JSON.stringify(StudyEventData)
             })
                 .then(response => response.json())
                 .then(data => {
-                    setTasks(data);
+                    setStudyEvents(data);
                     resetForm();
                     handleCloseDialog();
                 })
-                .catch(error => console.error("Error saving task:", error));
+                .catch(error => console.error("Error saving StudyEvent:", error));
         }
     };
 
-    const modifyTask = (task) => {
-        if (task.completed) {
+    const modifyStudyEvent = (StudyEvent) => {
+        if (StudyEvent.completed) {
             setCompleted(true);
         } else {
             setCompleted(false);
         }
-        if (task.isRecurring) {
+        if (StudyEvent.isRecurring) {
             setIsRecurring(true);
-            if (task.recurringDays) {
-                setRecurringDays(convertIntegersToDays(task.recurringDays));
+            if (StudyEvent.recurringDays) {
+                setRecurringDays(convertIntegersToDays(StudyEvent.recurringDays));
             }
         } else {
             setIsRecurring(false);
         }
 
-        setCurrentId(task._id);
-        setAllDay(task.allDay);
+        setCurrentId(StudyEvent._id);
+        setAllDay(StudyEvent.allDay);
 
-        if (!task.allDay) {
-            if (task.start === null) {
+        if (!StudyEvent.allDay) {
+            if (StudyEvent.start === null) {
                 setStartTime('');
             } else {
-                const startDate = new Date(task.start);
+                const startDate = new Date(StudyEvent.start);
                 setStartTime(timeToUsable(startDate.getHours(), startDate.getMinutes()));
             }
         }
 
-        setTitle(task.title);
-        setDescription(task.description);
+        setTitle(StudyEvent.title);
+        setDescription(StudyEvent.description);
 
-        if (task.start !== null) {
-            const startDate = new Date(task.start);
+        if (StudyEvent.start !== null) {
+            const startDate = new Date(StudyEvent.start);
             setStartDate(dateToUsable(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()));
         } else {
             setStartDate('');
         }
 
-        if (task.timesToRepeat !== null) {
-            setTimesToRepeat(task.timesToRepeat);
+        if (StudyEvent.timesToRepeat !== null) {
+            setTimesToRepeat(StudyEvent.timesToRepeat);
         } else {
             setTimesToRepeat(0);
         }
-        if (task.color) {
-            setTaskColor(task.color);
+        if (StudyEvent.color) {
+            setStudyEventColor(StudyEvent.color);
 
         } else {
-            setTaskColor('#000000');
+            setStudyEventColor('#000000');
         }
         setModifying(true);
         setOpenDialog(true);
     };
 
-    const draggedTasks = (task) => {
+    const draggedStudyEvents = (StudyEvent) => {
 
-        if (task.completed) {
+        if (StudyEvent.completed) {
             setCompleted(true);
         } else {
             setCompleted(false);
         }
 
-        setCurrentId(task._id);
-        console.log(task._id)
-        if (task.isRecurring) {
+        setCurrentId(StudyEvent._id);
+        console.log(StudyEvent._id)
+
+        if (StudyEvent.isRecurring) {
             setIsRecurring(true);
-            // if task is recurring then I might have clicked on a "fake" task renderized by fullcalendar, so I need to check
-            // the task.id and get the actual task from the database.
-            fetch(`/api/getSingleTask/${currentId}`, {
+
+            // if StudyEvent is recurring then I might have clicked on a "fake" StudyEvent renderized by fullcalendar, so I need to check
+            // the StudyEvent.id and get the actual StudyEvent from the database.
+            fetch(`/api/getSingleStudyEvent/${currentId}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -220,36 +218,40 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
             })
                 .then(response => response.json())
                 .then(data => {
+
                     console.log(data)
-                    task = data;
-                    console.log(task)
+                    StudyEvent = data;
+                    console.log(StudyEvent)
                 })
-                .catch(error => console.error('Error fetching task:', error));
+                .catch(error => console.error('Error fetching StudyEvent:', error));
         }
-        setAllDay(task.allDay);
-        if (!task.allDay) {
+        setAllDay(StudyEvent.allDay);
+        if (!StudyEvent.allDay) {
             // mi serve timeToUsable perche getHours() e getMinutes() mi ritornano tipo 2 se e' sono le 02:00, invece mi serve 02
-            if (task.start === null) {
+            if (StudyEvent.start === null) {
                 setStartTime('');
             } else {
 
-                setStartTime(timeToUsable(task.start.getHours(), task.start.getMinutes()));
+                setStartTime(timeToUsable(StudyEvent.start.getHours(), StudyEvent.start.getMinutes()));
             }
         }
-        setTitle(task.title);
-        setDescription(task.description);
+
+        setTitle(StudyEvent.title);
+        setDescription(StudyEvent.description);
         // mi serve dateToUsable perche getMonth() mi ritorna 1 se e' gennaio, invece mi serve 01
-        if (task.start !== null) {
-            setStartDate(dateToUsable(task.start.getFullYear(), task.start.getMonth(), task.start.getDate()));
+        if (StudyEvent.start !== null) {
+            setStartDate(dateToUsable(StudyEvent.start.getFullYear(), StudyEvent.start.getMonth(), StudyEvent.start.getDate()));
         } else {
             setStartDate(null)
         }
-        if (task.timesToRepeat !== null) {
-            setTimesToRepeat(task.timesToRepeat);
+        if (StudyEvent.timesToRepeat !== null) {
+            setTimesToRepeat(StudyEvent.timesToRepeat);
         }
-        setTaskColor(task.backgroundColor);
+        setStudyEventColor(StudyEvent.backgroundColor);
         setModifying(true);
+
         handleDraggedOpen();
+
 
     }
 
@@ -280,7 +282,7 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
 
 
     const combineDateAndTime = (date, time) => {
-        console.log('im in tasks')
+        console.log('im in StudyEvents')
         console.log(date)
         console.log(time)
         let [year, month, day] = date.split('-').map(num => parseInt(num, 10));
@@ -293,7 +295,7 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
 
     }
 
-    const handleOpenDialog = (task) => {
+    const handleOpenDialog = (StudyEvent) => {
         resetForm();
         setOpenDialog(true);
     };
@@ -312,7 +314,7 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
         setDescription('');
         setStartDate('');
         setStartTime('');
-        setTaskColor('#000000');
+        setStudyEventColor('#000000');
         setIsRecurring(false);
         setTimesToRepeat(0);
         setAllDay(false);
@@ -321,8 +323,8 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
         setCompleted(false);
     }
 
-    const handleAddTask = () => {
-        addTask();
+    const handleAddStudyEvent = () => {
+        addStudyEvent();
         resetForm();
     }
 
@@ -357,13 +359,13 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
 
     const handleToggleComplete = (id) => {
         setCompleted(!completed);
-        const newTasks = tasks.map(task => {
-            if (task._id === id) {
-                return { ...task, completed: !task.completed };
+        const newStudyEvents = StudyEvents.map(StudyEvent => {
+            if (StudyEvent._id === id) {
+                return { ...StudyEvent, completed: !StudyEvent.completed };
             }
-            return task;
+            return StudyEvent;
         });
-        setTasks(newTasks);
+        setStudyEvents(newStudyEvents);
     };
 
     const listItemStyle = (completed) => ({
@@ -377,14 +379,14 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
                 <DialogTitle>Modify Event</DialogTitle>
                 <DialogContent>
                     <FormControl fullWidth margin="dense">
-                        <Typography> Are you sure you want to modify this task?</Typography>
+                        <Typography> Are you sure you want to modify this StudyEvent?</Typography>
                     </FormControl>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleDraggedClose}>Cancel</Button>
                     <Button
                         onClick={() => {
-                            addTask();
+                            addStudyEvent();
                             handleDraggedClose();
                         }}
                     >
@@ -393,7 +395,7 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
                 </DialogActions>
             </Dialog>
             <Dialog open={openDialog} onClose={handleCloseDialog}>
-                <DialogTitle>{currentId ? "Edit Task" : "Add Task"}</DialogTitle>
+                <DialogTitle>{currentId ? "Edit StudyEvent" : "Add StudyEvent"}</DialogTitle>
                 <DialogContent>
                     <TextField
                         autoFocus
@@ -410,7 +412,7 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
                         required
                     />
                     {!title && (
-                        <Typography color="error">Please insert a Title for your task.</Typography>
+                        <Typography color="error">Please insert a Title for your StudyEvent.</Typography>
                     )}
                     <TextField
                         margin="dense"
@@ -438,7 +440,7 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
                         required
                     />
                     {!startDate && (
-                        <Typography color="error">Please insert a Date for your task.</Typography>
+                        <Typography color="error">Please insert a Date for your StudyEvent.</Typography>
                     )}
                     {!allDay && (
                         <TextField
@@ -463,8 +465,8 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
                         InputLabelProps={{
                             shrink: true,
                         }}
-                        value={taskColor}
-                        onChange={(e) => setTaskColor(e.target.value)}
+                        value={StudyEventColor}
+                        onChange={(e) => setStudyEventColor(e.target.value)}
                     />
                     <FormControlLabel
                         control={
@@ -474,7 +476,7 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
                                 color="primary"
                             />
                         }
-                        label="Recurring Task"
+                        label="Recurring StudyEvent"
                     />
                     {isRecurring && (
                         <TextField
@@ -498,7 +500,7 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
                                 color="primary"
                             />
                         }
-                        label="All Day Task"
+                        label="All Day StudyEvent"
                     />
                     {modifying &&
                         <FormControlLabel
@@ -512,13 +514,13 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
                     }
                 </DialogContent>
                 <DialogActions>
-                    {modifying && <Button onClick={() => handleDeleteTask(currentId)}>Delete</Button>}
+                    {modifying && <Button onClick={() => handleDeleteStudyEvent(currentId)}>Delete</Button>}
                     <Button onClick={handleCloseDialog} color="secondary">
                         Cancel
                     </Button>
                     <Button onClick={
 
-                        handleAddTask
+                        handleAddStudyEvent
                     } color="primary">
                         Save
                     </Button>
@@ -529,4 +531,4 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
     );
 };
 
-export default Tasks;
+export default StudyEvents;

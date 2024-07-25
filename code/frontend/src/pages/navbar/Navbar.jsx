@@ -24,6 +24,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import { Grid } from '@mui/material';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import TimeMachineIcon from '../common/components/TimeMachineIcon';
+import { set } from 'date-fns';
 
 const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
   const navigate = useNavigate();
@@ -35,6 +36,11 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
   const [shownNotifications, setShownNotifications] = useState(0);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState("");
+  const [tasks, setTasks] = useState([]);
+  const [totalNotifications, setTotalNotifications] = useState(0);
+  const [shownEventNotifications, setShownEventNotifications] = useState(0);
+  const [shownTaskNotifications, setShownTaskNotifications] = useState(0);
+  const [studyEvents, setStudyEvents] = useState([]);
 
   const notificationOptions = [
     '30 min', '1 hour', '6 hours', '12 hours', '1 day', '3 days',
@@ -48,21 +54,6 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
   };
 
   useEffect(() => {
-    if (!window.Notification) {
-      alert("This browser does not support desktop notifications");
-    } else if (Notification.permission === "default") {
-      Notification.requestPermission().then(permission => {
-        if (permission === "granted") {
-          console.log("Notification permission granted.");
-        } else {
-          console.log("Notification permission denied.");
-        }
-      });
-    }
-  }, []);
-  
-  
-  useEffect(() => {
     const fetchEvents = async () => {
       try {
         const response = await fetch(`/api/getEventsGeneric?username=${username}`, {
@@ -72,22 +63,14 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
             'Content-Type': 'application/json'
           }
         });
-  
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-  
+
         const data = await response.json();
         if (JSON.stringify(data) !== JSON.stringify(events)) {
           setEvents(data);
-          const newNotifications = data.filter(isNotifiable).length - shownNotifications;
-          if (newNotifications > 0) {
-            data.filter(isNotifiable).forEach(event => {
-              showBrowserNotification(event, newNotifications);
-              playNotificationSound();
-            });
-          }
-          setShownNotifications(data.filter(isNotifiable).length);
         }
         setError(null);
       } catch (error) {
@@ -96,10 +79,74 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
         setEvents([]);
       }
     };
-  
+
+    const fetchTasks = async () => {
+      try {
+        const response = await fetch(`/api/getTasksGeneric?username=${username}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (JSON.stringify(data) !== JSON.stringify(tasks)) {
+          setTasks(data);
+        }
+        setError(null);
+      }
+      catch (error) {
+        console.error('Error fetching tasks:', error);
+        setError('Error fetching tasks');
+        setTasks([]);
+      }
+    };
+
+    const fetchStudyEvents = async () => {
+      try {
+        const response = await fetch(`/api/getStudyEventsGeneric?username=${username}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (JSON.stringify(data) !== JSON.stringify(studyEvents)) {
+          setStudyEvents(data);
+        }
+        setError(null);
+      } catch (error) {
+        console.error('Error fetching study events:', error);
+        setError('Error fetching study events');
+        setStudyEvents([]);
+      }
+    };
+
+
+    const combinedItems = [...events, ...tasks, ...studyEvents];
+
+    setTotalNotifications(combinedItems
+      .filter(isNotifiable)
+      .map(item => item.isRecurring ? convertRecurringEventToFirstUsefulDate(item) : item)
+      .sort((a, b) => new Date(a.startDate) - new Date(b.startDate)).length);
+
+    fetchTasks();
     fetchEvents();
-  }, [token, username, selectedNotification, events]);
-  
+    fetchStudyEvents();
+  }, [token, username, selectedNotification, events, shownNotifications, tasks]);
+
+
   // carica tempo di preavviso per le notifiche degli eventi selezionato
   useEffect(() => {
     const savedSelectedNotification = localStorage.getItem('notificationCount');
@@ -121,14 +168,14 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
         body: `${event.start ? new Date(event.start).toLocaleString() : ''} to ${event.end ? new Date(event.end).toLocaleString() : ''}`,
         badge: '../../public/icon-browser.png',
       });
-  
+
       // Update badge count if there are multiple notifications
       if (count > 0) {
         //navigator.setAppBadge(count).catch(error => console.error("Failed to set app badge: ", error));
       }
     }
   };
-  
+
 
   const handleNotificationClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -183,27 +230,35 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
   }
 
   const renderNotifications = () => {
+    // Merge tasks and events into one array
+    const combinedItems = [...events, ...tasks, ...studyEvents];
+
     if (error) {
       return <Typography variant="body2" color="error" align="center">{error}</Typography>;
     }
-    if (events.length === 0) {
-      return <Typography variant="body2" color="text.secondary" align="center">No events found.</Typography>;
+    if (combinedItems.length === 0) {
+      return <Typography variant="body2" color="text.secondary" align="center">No tasks or events found.</Typography>;
     }
-    return events.filter(isNotifiable).map(event => convertRecurringEventToFirstUsefulDate(event)).sort((a, b) => a.startDate - b.startDate).map((event, index) => (
-      <MenuItem key={index}>
-        <Grid container direction="column" bgcolor={event.color} alignItems="center" justifyContent="center">
-          <Typography key={index} variant="body2" color="text.secondary" align="center" style={{ marginLeft: "5px", marginRight: "5px", borderRadius: "10px" }}>
-            {event.title}
-          </Typography>
-          <Typography align="center" sx={{ marginBottom: '5px' }}>
-            {event.start && new Date(event.start).toLocaleDateString()}
-            {event.end && ` to ${new Date(event.end).toLocaleDateString()}`}
-          </Typography>
-        </Grid>
-      </MenuItem>
-    )
 
-    );
+    return combinedItems
+      .filter(isNotifiable)
+      .map(item => {
+        return item.isRecurring ? convertRecurringEventToFirstUsefulDate(item) : item;
+      })
+      .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))  // Assuming startDate is a date string
+      .map((item, index) => (
+        <MenuItem key={index}>
+          <Grid container direction="column" bgcolor={item.color} alignItems="center" justifyContent="center">
+            <Typography variant="body2" color="text.secondary" align="center" style={{ marginLeft: "5px", marginRight: "5px", borderRadius: "10px" }}>
+              {item.title}
+            </Typography>
+            <Typography align="center" sx={{ marginBottom: '5px' }}>
+              {item.start && new Date(item.start).toLocaleDateString()}
+              {!item.isTask ? (item.end && ` to ${new Date(item.end).toLocaleDateString()}`) : null}
+            </Typography>
+          </Grid>
+        </MenuItem>
+      ));
   };
 
   const NotificationSettingsDialog = () => {
@@ -246,36 +301,63 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
 
   function calculateAllRecurrencies(event, finalDate) {
     const recurrencies = [];
+
     let nextStartDate = new Date(event.start);
     let nextEndDate = null;
-    if (event.end) {
+
+    if (event.end && !event.isTask) {
       nextEndDate = new Date(event.end);
+    } else if (event.endRecur && event.isTask || event.isStudyEvent) {
+      nextEndDate = new Date(event.endRecur);
     }
-    // We'll use this to control the recurrence loop
 
+    let counter = 0; // Counter to track the number of repetitions
 
-    while (nextStartDate.getFullYear() <= finalDate) {
+    // Determine the maximum number of recurrences, if specified
+    const maxRecurrences = event.timesToRepeat ? Math.min(event.timesToRepeat, 52) : 52; // Assuming a limit of 52 repetitions or one year
+
+    // Loop until the maximum repetitions are met or the date exceeds the finalDate
+    while ((event.timesToRepeat ? counter < maxRecurrences : true) && nextStartDate.getFullYear() <= finalDate) {
       let startDate = formatDate(nextStartDate)
       let endDate = nextEndDate ? formatDate(nextEndDate) : null
+      let newEvent = {};
 
-
-
-      const newEvent = {
-        title: event.title,
-        description: event.description,
-        color: event.color,
-        allDay: event.allDay,
-        start: startDate,
-        end: endDate,
-        calendar: event.calendar,
-        name: event.name,
-        location: event.location,
-        invitedUsers: event.invitedUsers,
-        shared: event.shared,
-        isRecurring: event.isRecurring
-      };
+      if (!event.isTask) {
+        newEvent = {
+          title: event.title,
+          description: event.description,
+          color: event.color,
+          allDay: event.allDay,
+          start: startDate,
+          end: endDate,
+          calendar: event.calendar,
+          name: event.name,
+          location: event.location,
+          invitedUsers: event.invitedUsers,
+          shared: event.shared,
+          isRecurring: event.isRecurring
+        };
+        // else da rivedere boh
+      } else {
+        newEvent = {
+          title: event.title,
+          description: event.description,
+          color: event.color,
+          allDay: event.allDay,
+          start: startDate,
+          end: endDate,
+          name: event.name,
+          location: event.location,
+          completed: event.completed,
+          isTask: event.isTask,
+          isRecurring: event.isRecurring,
+          timesToRepeat: event.timesToRepeat,
+          endRecur: event.endRecur
+        };
+      }
 
       recurrencies.push(newEvent);
+      counter++; // Increment the repetition counter
 
       // Increment the date by 1 week
       nextStartDate.setDate(nextStartDate.getDate() + 7);
@@ -284,7 +366,7 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
       }
     }
 
-    return recurrencies
+    return recurrencies;
   }
 
   function getFirstUsefulDate(event) {
@@ -305,7 +387,18 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
     const currentDate = new Date()
 
     if (event.isRecurring) {
-      if (event.end && (stringToDate(event.end) < currentDate)) return null
+      if (event.isTask || event.isStudyEvent) {
+        if (event.endRecur && (stringToDate(event.endRecur) < currentDate)) {
+          return null
+        }
+        else {
+          return getFirstUsefulDate(event)
+        }
+      }
+
+      if (event.end && (stringToDate(event.end) < currentDate)) {
+        return null
+      }
       else {
         return getFirstUsefulDate(event)
       }
@@ -319,7 +412,6 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
     const noticeDate = new Date(eventStartDate.getTime() - noticeTimeToMilliseconds());
 
     const currentDate = new Date();
-
 
     return (currentDate > noticeDate && eventStartDate > currentDate) || recurrenceMath(event);
   };
@@ -393,7 +485,7 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
             onClick={handleNotificationClick}
             sx={{ marginLeft: 'auto' }}
           >
-            <Badge badgeContent={shownNotifications} color="secondary">
+            <Badge badgeContent={totalNotifications} color="secondary">
               <NotificationsIcon />
             </Badge>
           </IconButton>

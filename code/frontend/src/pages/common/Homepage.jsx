@@ -1,16 +1,25 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Grid, Card, CardActionArea, CardContent, Typography } from '@mui/material';
+import { Box, Grid, Card, CardActionArea, CardContent, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import useTokenChecker from '../../utils/useTokenChecker.jsx';
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import CircularProgress from '@mui/material/CircularProgress';
+import SettingsIcon from '@mui/icons-material/Settings';
+
 
 const HomePage = () => {
   const navigate = useNavigate();
   const { loginStatus, isTokenLoading, username } = useTokenChecker();
   const token = Cookies.get('token');
   const [events, setEvents] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [studyEvents, setStudyEvents] = useState([]);
+  const [calendarSettings, setCalendarSettings] = useState(false);
+  const [eventsToDisplay, setEventsToDisplay] = useState(0);
+  const [tasksToDisplay, setTasksToDisplay] = useState(0);
+  const [studyEventsToDisplay, setStudyEventsToDisplay] = useState(0);
+
 
   useEffect(() => {
     if (!isTokenLoading) {
@@ -19,6 +28,22 @@ const HomePage = () => {
       }
     }
   }, [loginStatus, isTokenLoading]);
+
+  useEffect(() => {
+    const storedEventsToDisplay = localStorage.getItem('eventsToDisplay');
+    const storedTasksToDisplay = localStorage.getItem('tasksToDisplay');
+    const storedStudyEventsToDisplay = localStorage.getItem('studyEventsToDisplay');
+
+    if (storedEventsToDisplay) {
+      setEventsToDisplay(parseInt(storedEventsToDisplay));
+    }
+    if (storedTasksToDisplay) {
+      setTasksToDisplay(parseInt(storedTasksToDisplay));
+    }
+    if (storedStudyEventsToDisplay) {
+      setStudyEventsToDisplay(parseInt(storedStudyEventsToDisplay));
+    }
+  }, []);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -37,8 +62,42 @@ const HomePage = () => {
       }
     };
 
+    const fetchTasks = async () => {
+      try {
+        const response = await fetch(`/api/getTasksGeneric?username=${username}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        setTasks(data);
+
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+      }
+    };
+
+    const fetchStudyEvents = async () => {
+      try {
+        const response = await fetch(`/api/getStudyEventsGeneric?username=${username}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        setStudyEvents(data);
+
+      } catch (error) {
+        console.error('Error fetching study events:', error);
+      }
+    };
+
+    fetchTasks();
+    fetchStudyEvents();
     fetchEvents();
-  }, [events, token, username]);
+  }, [token, username, eventsToDisplay, tasksToDisplay, studyEventsToDisplay]);
 
 
   function getNextYear() {
@@ -62,36 +121,63 @@ const HomePage = () => {
 
   function calculateAllRecurrencies(event, finalDate) {
     const recurrencies = [];
+
     let nextStartDate = new Date(event.start);
     let nextEndDate = null;
-    if (event.end) {
+
+    if (event.end && !event.isTask) {
       nextEndDate = new Date(event.end);
+    } else if (event.endRecur && event.isTask || event.isStudyEvent) {
+      nextEndDate = new Date(event.endRecur);
     }
-    // We'll use this to control the recurrence loop
 
+    let counter = 0; // Counter to track the number of repetitions
 
-    while (nextStartDate.getFullYear() <= finalDate) {
+    // Determine the maximum number of recurrences, if specified
+    const maxRecurrences = event.timesToRepeat ? Math.min(event.timesToRepeat, 52) : 52; // Assuming a limit of 52 repetitions or one year
+
+    // Loop until the maximum repetitions are met or the date exceeds the finalDate
+    while ((event.timesToRepeat ? counter < maxRecurrences : true) && nextStartDate.getFullYear() <= finalDate) {
       let startDate = formatDate(nextStartDate)
       let endDate = nextEndDate ? formatDate(nextEndDate) : null
+      let newEvent = {};
 
-
-
-      const newEvent = {
-        title: event.title,
-        description: event.description,
-        color: event.color,
-        allDay: event.allDay,
-        start: startDate,
-        end: endDate,
-        calendar: event.calendar,
-        name: event.name,
-        location: event.location,
-        invitedUsers: event.invitedUsers,
-        shared: event.shared,
-        isRecurring: event.isRecurring
-      };
+      if (!event.isTask) {
+        newEvent = {
+          title: event.title,
+          description: event.description,
+          color: event.color,
+          allDay: event.allDay,
+          start: startDate,
+          end: endDate,
+          calendar: event.calendar,
+          name: event.name,
+          location: event.location,
+          invitedUsers: event.invitedUsers,
+          shared: event.shared,
+          isRecurring: event.isRecurring
+        };
+        // else da rivedere boh
+      } else {
+        newEvent = {
+          title: event.title,
+          description: event.description,
+          color: event.color,
+          allDay: event.allDay,
+          start: startDate,
+          end: endDate,
+          name: event.name,
+          location: event.location,
+          completed: event.completed,
+          isTask: event.isTask,
+          isRecurring: event.isRecurring,
+          timesToRepeat: event.timesToRepeat,
+          endRecur: event.endRecur
+        };
+      }
 
       recurrencies.push(newEvent);
+      counter++; // Increment the repetition counter
 
       // Increment the date by 1 week
       nextStartDate.setDate(nextStartDate.getDate() + 7);
@@ -100,7 +186,7 @@ const HomePage = () => {
       }
     }
 
-    return recurrencies
+    return recurrencies;
   }
 
   function getFirstUsefulDate(event) {
@@ -115,11 +201,26 @@ const HomePage = () => {
     const currentDate = new Date()
 
     if (event.isRecurring) {
+      if (event.isTask || event.isStudyEvent) {
+        if (event.endRecur && (stringToDate(event.endRecur) < currentDate)) {
+          return null
+        }
+        else {
+          return getFirstUsefulDate(event)
+        }
+      }
       if (event.end && (stringToDate(event.end) < currentDate)) return null
       else {
         return getFirstUsefulDate(event)
       }
     }
+
+  }
+
+  const handleCalendarSettingsClick = (event) => {
+    setCalendarSettings(true);
+    console.log('calendarSettings', calendarSettings)
+    event.stopPropagation()
 
   }
 
@@ -130,35 +231,82 @@ const HomePage = () => {
     return eventStartDate > currentDate || recurrenceMath(event);
   };
 
-  const renderEvents = (events) => {
-    if (!events || events.length === 0) {
-      return <Typography variant="body2" color="#ffffff5f" align="center">No events found.</Typography>;
+  function convertRecurringEventToFirstUsefulDate(event) {
+    if (!event.isRecurring) {
+      return event
     }
-    else {
-      // Filter events to only those that are notifiable
-      const notifiableEvents = events.filter(isNotifiable);
+    return recurrenceMath(event);
+  }
 
-      // Check if there are any notifiable events left after filtering
-      if (notifiableEvents.length === 0) {
-        return <Typography variant="body2" color="#ffffff5f" align="center">No current events.</Typography>;
+  const renderEvents = (events, tasks, studyEvents) => {
+    // Helper function to render each category of items
+    const renderItems = (items, title, noItemsMessage, number) => {
+
+      if (!items || items.length === 0) {
+        return <Typography variant="body2" color="#ffffff5f" align="center">{noItemsMessage}</Typography>;
+      }
+      if (number === 0) {
+        return <Typography variant="body2" color="#ffffff5f" align="center">Did you set your settings yet?</Typography>;
       }
 
-      // Display up to 3 notifiable events
-      return notifiableEvents.slice(0, 3).map((event, index) => (
-        <Grid container direction="row" alignItems="center" justifyContent="center">
+      const notifiableItems = items.filter(isNotifiable);
+      if (notifiableItems.length === 0) {
+        return <Typography variant="body2" color="#ffffff5f" align="center">No current {title.toLowerCase()}.</Typography>;
+      }
+
+
+      return notifiableItems.map(item => {
+        return item.isRecurring ? convertRecurringEventToFirstUsefulDate(item) : item;
+      }).sort((a, b) => new Date(a.startDate) - new Date(b.startDate)).slice(0, number).map((item, index) => (
+        <Grid container key={index} direction="row" alignItems="center" justifyContent="center">
           <div style={{
             width: '10px',
             height: '10px',
-            backgroundColor: event.color,
+            backgroundColor: item.color,
             marginRight: '10px',
           }} />
-          <Typography key={index} variant="body2" color="#ffffffbf" align="center">
-            {event.title} - {new Date(event.start).toLocaleDateString()} {event.end && ` to ${new Date(event.end).toLocaleDateString()}`}
+          <Typography variant="body2" color="#ffffffbf" align="center">
+            {item.title} - {new Date(item.start).toLocaleDateString()}
+            {item.end && ` to ${new Date(item.end).toLocaleDateString()}`}
           </Typography>
         </Grid>
       ));
-    }
+    };
+
+
+    return (
+      <Box sx={{ padding: "5px" }}>
+        <Typography variant="body2" color="#53ddf0" align="center">Events: </Typography>
+        {renderItems(events, 'Events', 'No events found.', eventsToDisplay)}
+        <Typography variant="body2" color="#53ddf0" align="center">Tasks: </Typography>
+        {renderItems(tasks, 'Tasks', 'No tasks found.', tasksToDisplay)}
+        <Typography variant="body2" color="#53ddf0" align="center">Study Events: </Typography>
+        {renderItems(studyEvents, 'Study Events', 'No study events found.', studyEventsToDisplay)}
+      </Box>
+    );
   };
+
+  const handleChange = (prop) => (event) => {
+    if (prop === 'eventsToDisplay') {
+      setEventsToDisplay(event.target.value);
+    } else if (prop === 'tasksToDisplay') {
+      setTasksToDisplay(event.target.value);
+    } else if (prop === 'studyEventsToDisplay') {
+      setStudyEventsToDisplay(event.target.value);
+    }
+  }
+
+  const handleCalendarSettingsClose = () => {
+    setCalendarSettings(false);
+  }
+
+  const handleCalendarSettingsSave = () => {
+    setCalendarSettings(false);
+    localStorage.setItem('eventsToDisplay', eventsToDisplay);
+    localStorage.setItem('tasksToDisplay', tasksToDisplay);
+    localStorage.setItem('studyEventsToDisplay', studyEventsToDisplay);
+  }
+
 
   if (isTokenLoading || loginStatus === undefined) {
     return (
@@ -170,7 +318,6 @@ const HomePage = () => {
 
   if (loginStatus) {
     return (
-
       <Box
         sx={{
           backgroundColor: 'rgba(0, 0, 40, 0.5)',
@@ -180,6 +327,43 @@ const HomePage = () => {
           overflow: 'hidden',
         }}
       >
+        <Dialog open={calendarSettings} onClose={handleCalendarSettingsClose}>
+          <DialogTitle>Configure Your Settings</DialogTitle>
+          <DialogContent>
+            <TextField
+              margin="dense"
+              label="Number of events to display"
+              type="number"
+              fullWidth
+              variant="outlined"
+              value={eventsToDisplay}
+              onChange={handleChange('eventsToDisplay')}
+            />
+            <TextField
+              margin="dense"
+              label="Number of tasks to display"
+              type="number"
+              fullWidth
+              variant="outlined"
+              value={tasksToDisplay}
+              onChange={handleChange('tasksToDisplay')}
+            />
+            <TextField
+              margin="dense"
+              label="Number of study events to display"
+              type="number"
+              fullWidth
+              variant="outlined"
+              value={studyEventsToDisplay}
+              onChange={handleChange('studyEventsToDisplay')}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCalendarSettingsClose}>Cancel</Button>
+            <Button onClick={handleCalendarSettingsSave} color="primary">Save</Button>
+          </DialogActions>
+        </Dialog>
+
         <Box
           sx={{
             backgroundColor: 'rgba(0, 0, 30, 0.99)',
@@ -199,23 +383,16 @@ const HomePage = () => {
             }}
           />
         </Box>
-        <Typography variant="h5" component="div" align="center" sx={{
-          fontSize: "85px",
-          background: "-webkit-linear-gradient(45deg, #60fff8, #bc6aff 80%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          fontFamily: "Roboto, Helvetica Neue, Helvetica, Helvetica, Arial, sans-serif",
-          fontWeight: "800",
-          filter: "brightness(1.5)",
-          marginTop: "30px",
-          textShadow: "0 0 9px #ffffffba"
-        }}  >
-           <img src="/selfie.png" alt="Selfie" style={{ maxWidth: '320px', height: 'auto', }} />
-        </Typography>
+        <Box align="center" marginTop="1vh">
+          <img src="/selfie.png" alt="Selfie" style={{ maxWidth: '320px', height: 'auto', }} />
+        </Box>
         <Grid container spacing={7} sx={{ position: 'relative', zIndex: 1, alignItems: 'center', justifyContent: 'center', height: '85vh', alignContent: "center" }}>
 
           <Grid item xs={10} md={3} >
             <Card variant="outlined" sx={{ backgroundColor: '#ffffff15', minHeight: "150px", display: "flex", align: "center", borderRadius: "24px", backdropFilter: "blur(10px)", boxShaodw: "0px 0px 10px 0px #00000006" }}>
+              <Button onClick={handleCalendarSettingsClick} sx={{position: 'absolute', padding: 0, marginTop:'1vh', zIndex: '1000'}}>
+                <SettingsIcon sx={{ color: "white" }} />
+              </Button>
               <CardActionArea onClick={() => navigate('/calendar/')}>
                 <CardContent >
                   <Typography variant="h5" component="div" align="center" sx={{
@@ -232,7 +409,7 @@ const HomePage = () => {
                   <Typography variant="body2" color="#ffffffdf" align="center">
                     View and manage your calendar events.
                   </Typography>
-                  {renderEvents(events)}
+                  {renderEvents(events, tasks, studyEvents)}
                 </CardContent>
               </CardActionArea>
             </Card>
