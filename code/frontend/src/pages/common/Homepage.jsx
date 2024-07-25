@@ -383,18 +383,25 @@ const HomePage = () => {
             }}
           />
         </Box>
-        <Box align="center" marginTop="1vh">
-          <img src="/selfie.png" alt="Selfie" style={{ maxWidth: '320px', height: 'auto', }} />
+        <Box display="flex" align="center" justifyContent="center" marginTop="1vh">
+          <img src="/selfie.png" alt="Selfie" style={{ width:'60vw', maxWidth: '320px', height: '15vh', minHeight:'10vh', maxHeight: '60vh' }} />
         </Box>
-        <Grid container spacing={7} sx={{ position: 'relative', zIndex: 1, alignItems: 'center', justifyContent: 'center', height: '85vh', alignContent: "center" }}>
-
-          <Grid item xs={10} md={3} >
-            <Card variant="outlined" sx={{ backgroundColor: '#ffffff15', minHeight: "150px", display: "flex", align: "center", borderRadius: "24px", backdropFilter: "blur(10px)", boxShaodw: "0px 0px 10px 0px #00000006" }}>
-              <Button onClick={handleCalendarSettingsClick} sx={{position: 'absolute', padding: 0, marginTop:'1vh', zIndex: '1000'}}>
-                <SettingsIcon sx={{ color: "white" }} />
-              </Button>
+        <Grid container sx={{ display: 'flex', position: 'relative', zIndex: 1, alignItems: 'center', justifyContent: 'center', height: '75vh', gap: "2vh"}}>
+          <Grid item xs={10} md={3}>
+            <Card variant="outlined" sx={{
+              backgroundColor: '#ffffff15',
+              minHeight: '20vh',
+              maxHeight: '60vh',
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              align: "center",
+              borderRadius: "24px",
+              backdropFilter: "blur(10px)",
+              boxShadow: "0px 0px 10px 0px #00000006"
+            }}>
               <CardActionArea onClick={() => navigate('/calendar/')}>
-                <CardContent >
+                <CardContent>
                   <Typography variant="h5" component="div" align="center" sx={{
                     fontSize: "45px",
                     background: "-webkit-linear-gradient(45deg, #333b96, #9f4f84 80%)",
@@ -403,7 +410,7 @@ const HomePage = () => {
                     fontFamily: "Work Sans, Helvetica Neue, Helvetica, Helvetica, Arial, sans-serif",
                     fontWeight: "800",
                     filter: "brightness(1.5)"
-                  }}  >
+                  }}>
                     Calendar
                   </Typography>
                   <Typography variant="body2" color="#ffffffdf" align="center">
@@ -415,7 +422,18 @@ const HomePage = () => {
             </Card>
           </Grid>
           <Grid item xs={10} md={3}>
-            <Card variant="outlined" sx={{ backgroundColor: '#ffffff15', minHeight: "150px", display: "flex", align: "center", borderRadius: "24px", backdropFilter: "blur(10px)", boxShaodw: "0px 0px 10px 0px #00000006" }}>
+            <Card variant="outlined" sx={{
+              backgroundColor: '#ffffff15',
+              minHeight: '20vh',
+              maxHeight: '60vh',
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              align: "center",
+              borderRadius: "24px",
+              backdropFilter: "blur(10px)",
+              boxShadow: "0px 0px 10px 0px #00000006"
+            }}>
               <CardActionArea onClick={() => navigate('/timer/')}>
                 <CardContent>
                   <Typography variant="h5" component="div" align="center" sx={{
@@ -436,8 +454,20 @@ const HomePage = () => {
               </CardActionArea>
             </Card>
           </Grid>
+
           <Grid item xs={10} md={3}>
-            <Card variant="outlined" sx={{ backgroundColor: '#ffffff15', minHeight: "150px", display: "flex", align: "center", borderRadius: "24px", backdropFilter: "blur(10px)", boxShaodw: "0px 0px 10px 0px #00000006" }}>
+            <Card variant="outlined" sx={{
+              backgroundColor: '#ffffff15',
+              minHeight: '20vh',
+              maxHeight: '60vh',
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              align: "center",
+              borderRadius: "24px",
+              backdropFilter: "blur(10px)",
+              boxShadow: "0px 0px 10px 0px #00000006"
+            }}>
               <CardActionArea onClick={() => navigate('/notes/')}>
                 <CardContent>
                   <Typography variant="h5" component="div" align="center" sx={{
