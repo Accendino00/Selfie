@@ -370,12 +370,23 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
   }
 
   function getFirstUsefulDate(event) {
-    const recurrencies = calculateAllRecurrencies(event, getNextYear())
-    const currentDate = new Date()
-    return recurrencies.filter(event => stringToDate(event.start) > currentDate)
-      .sort((a, b) => stringToDate(a.start) - stringToDate(b.start))[0] || null;
+    const recurrencies = calculateAllRecurrencies(event, getNextYear());
+    const currentDate = new Date();
 
+    // Calculate the upper boundary for event dates using the notice period
+    const maxNoticeDate = new Date(currentDate.getTime() + noticeTimeToMilliseconds());
+
+    // Filter events that are between the current date and the max notice date
+    const validEvents = recurrencies.filter(event => {
+      const eventDate = new Date(event.start);
+      return eventDate > currentDate && eventDate <= maxNoticeDate;
+    });
+
+    // Sort events by date and return the first one, or null if none are suitable
+    validEvents.sort((a, b) => new Date(a.start) - new Date(b.start));
+    return validEvents[0] || false;
   }
+
 
   function getNextYear() {
     const currentDate = new Date();
@@ -412,6 +423,7 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
     const noticeDate = new Date(eventStartDate.getTime() - noticeTimeToMilliseconds());
 
     const currentDate = new Date();
+
 
     return (currentDate > noticeDate && eventStartDate > currentDate) || recurrenceMath(event);
   };
