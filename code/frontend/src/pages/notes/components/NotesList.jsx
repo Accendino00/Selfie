@@ -10,6 +10,7 @@ import Cookies from 'js-cookie';
 import { useEffect } from 'react';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import EmailShareButton from '../../components/EmailShareButton.jsx';
+import { Box } from '@mui/material';
 
 
 function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote, isDesktop }) { // Aggiungi onNoteDeleted come prop per gestire la cancellazione
@@ -130,27 +131,28 @@ function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote,
     const filteredNotes = sortedNotes.filter(note => note.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
     return (
-        <div>
+        <Box sx={{ display: 'flex', height: '82vh', overflow: 'scroll' }}>
             {isDesktop ? (
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <TextField label="Search Notes" variant="outlined" fullWidth onChange={e => setSearchTerm(e.target.value)} style = {styles.textField}
+                <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    <TextField label="Search Notes" variant="outlined" fullWidth onChange={e => setSearchTerm(e.target.value)} style={styles.textField}
                         InputProps={{
                             style: {
-                                color: '#53ddf0', 
-                        }}}
+                                color: '#53ddf0',
+                            }
+                        }}
                         InputLabelProps={{
                             style: {
                                 color: '#7d5ffc',
-                                
+
                             }
-                        }}/>
-                        
+                        }} />
+
                     <Select
                         value={order}
                         onChange={handleOrderChange}
                         displayEmpty
                         inputProps={{ 'aria-label': 'Without label' }}
-                        
+
                         MenuProps={{
                             PaperProps: {
                                 style: {
@@ -163,8 +165,8 @@ function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote,
                         }}
                         sx={{
                             '& .MuiSelect-select': {
-                                color: '#7d5ffc', 
-                                
+                                color: '#7d5ffc',
+
                             }
                         }}
                     >
@@ -175,25 +177,27 @@ function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote,
                         <MenuItem value="modificationDate-asc">Data di Modifica Crescente</MenuItem>
                         <MenuItem value="modificationDate-desc">Data di Modifica Decrescente</MenuItem>
                     </Select>
-                    <ul>
+                    <ul style={{marginTop: '1em'}}>
                         {filteredNotes.map((note) => (
                             <li key={note.id}>
-                                <Typography variant="h5" onClick={() => onNoteModified(note.id)} style={{ cursor: 'pointer' }}>
+                                <Typography variant="h7" onClick={() => onNoteModified(note.id)} style={{ cursor: 'pointer' }}>
                                     {note.title}
                                 </Typography>
-                                <IconButton aria-label="share" onClick= {() => handleShareNote(note.id)} style ={{color: '#53ddf0'}}>
-                                    <EmailShareButton feature="notes" email={email} setEmail={setEmail}/>
-                                </IconButton>
-                                <IconButton aria-label="copy" onClick={() => handleCopyNote(note.id)} style ={{color: '#53ddf0'}}>
-                                    <FileCopyIcon />
-                                </IconButton>
-                                <IconButton aria-label="delete" onClick={() => handleDeleteNote(note.id)} style ={{color: '#53ddf0'}}>
-                                    <DeleteIcon />
-                                </IconButton>
+                                <Box style={{ display: 'flex', alignItems: 'center', marginLeft: '-2em' }}>
+                                    <IconButton aria-label="share" onClick={() => handleShareNote(note.id)} style={{ color: '#53ddf0', padding:'0px' }}>
+                                        <EmailShareButton feature="notes" email={email} setEmail={setEmail} />
+                                    </IconButton>
+                                    <IconButton aria-label="copy" onClick={() => handleCopyNote(note.id)} style={{ color: '#53ddf0', padding:'1px' }}>
+                                        <FileCopyIcon sx={{height:'0.83em'}}/>
+                                    </IconButton>
+                                    <IconButton aria-label="delete" onClick={() => handleDeleteNote(note.id)} style={{ color: '#53ddf0', padding:'1px' }}>
+                                        <DeleteIcon sx={{height:'0.88em'}}/>
+                                    </IconButton>
+                                </Box>
                             </li>
                         ))}
                     </ul>
-                </div>
+                </Box>
             ) : (
                 <div>
                     <TextField label="Search Notes" variant="outlined" fullWidth onChange={e => setSearchTerm(e.target.value)} />
@@ -236,7 +240,7 @@ function NotesList({ notes, setNotes, onNoteDeleted, onNoteModified, onCopyNote,
                     </div>
                 </div>
             )}
-        </div>
+        </Box>
     );
 }
 

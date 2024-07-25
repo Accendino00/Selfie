@@ -13,7 +13,7 @@ const EmailShareButton = ({ feature, email, setEmail }) => {
             onClick={() => setOpen(true)}
             color="inherit"
         >
-            <ShareIcon />
+            <ShareIcon sx={{height:'0.88em'}}/>
         </IconButton>
         <EmailShare feature={feature} open={open} setOpen={setOpen} email={email} setEmail={setEmail}/>
       </>
