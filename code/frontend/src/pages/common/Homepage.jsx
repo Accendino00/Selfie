@@ -6,7 +6,6 @@ import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import CircularProgress from '@mui/material/CircularProgress';
 import SettingsIcon from '@mui/icons-material/Settings';
-import SettingsDialog from './HomepageSettings.jsx';
 
 
 const HomePage = () => {
@@ -391,7 +390,7 @@ const HomePage = () => {
 
           <Grid item xs={10} md={3} >
             <Card variant="outlined" sx={{ backgroundColor: '#ffffff15', minHeight: "150px", display: "flex", align: "center", borderRadius: "24px", backdropFilter: "blur(10px)", boxShaodw: "0px 0px 10px 0px #00000006" }}>
-              <Button onClick={handleCalendarSettingsClick} sx={{position: 'absolute', padding: 0, marginTop:'1vh'}}>
+              <Button onClick={handleCalendarSettingsClick} sx={{position: 'absolute', padding: 0, marginTop:'1vh', zIndex: '1000'}}>
                 <SettingsIcon sx={{ color: "white" }} />
               </Button>
               <CardActionArea onClick={() => navigate('/calendar/')}>
