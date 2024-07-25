@@ -97,7 +97,7 @@ const HomePage = () => {
     fetchTasks();
     fetchStudyEvents();
     fetchEvents();
-  }, [events, token, username, tasks, studyEvents]);
+  }, [token, username, eventsToDisplay, tasksToDisplay, studyEventsToDisplay]);
 
 
   function getNextYear() {
