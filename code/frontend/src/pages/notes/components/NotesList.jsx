@@ -198,22 +198,23 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                         style={{ color: '#53ddf0' }}
                         label="Show Shared Notes"
                     />     
-                    <ul>
                     <ul style={{marginTop: '1em'}}>
                         {filteredNotes.map((note) => (
                             <li key={note.id}>
                                 <Typography variant="h7" onClick={() => onNoteModified(note.id)} style={{ cursor: 'pointer' }}>
                                     {note.title}
                                 </Typography>
-                                <IconButton aria-label="SetAccess" onClick={() => handleOpenDialog(note)} style={{ color: '#53ddf0' }}>
-                                    <AccessibilityIcon />
-                                </IconButton>
-                                <IconButton aria-label="copy" onClick={() => handleCopyNote(note.id)} style={{ color: '#53ddf0' }}>
-                                    <FileCopyIcon />
-                                </IconButton>
-                                <IconButton aria-label="delete" onClick={() => handleDeleteNote(note.id)} style={{ color: '#53ddf0' }}>
-                                    <DeleteIcon />
-                                </IconButton>
+                                <Box style={{ display: 'flex', alignItems: 'center', marginLeft: '-2em'}}>
+                                    <IconButton aria-label="SetAccess" onClick={() => handleOpenDialog(note)} style={{ color: '#53ddf0', padding: '0px' }}>
+                                        <AccessibilityIcon sx={{ height: '0.88em'}}/>
+                                    </IconButton>
+                                    <IconButton aria-label="copy" onClick={() => handleCopyNote(note.id)} style={{ color: '#53ddf0', padding: '1px' }}>
+                                        <FileCopyIcon sx={{ height: '0.83em'}}/>
+                                    </IconButton>
+                                    <IconButton aria-label="delete" onClick={() => handleDeleteNote(note.id)} style={{ color: '#53ddf0', padding: '1px' }}>
+                                        <DeleteIcon sx={{ height: '0.88em'}}/>
+                                    </IconButton>
+                                </Box>
                             </li>
                         ))}
                     </ul>
@@ -302,7 +303,6 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                 }}
             />
 
-        </div>
         </Box>
     );
 }
