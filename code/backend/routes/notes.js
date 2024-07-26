@@ -5,19 +5,20 @@ const { authenticateJWT } = require('../middleware/authorization');
 const { clientMDB } = require('../utils/dbmanagement');
 const { ObjectId } = require('mongodb');
 
-function saveNoteToDatabase(title, note, userId, creationDate, modificationDate) {
+function saveNoteToDatabase(title, note, userId, access, users, creationDate, modificationDate) {
     return new Promise((resolve, reject) => {
         try { 
             const notesCollection = clientMDB.db("SelfieGD").collection("Notes");
-            notesCollection.insertOne({ title: title, note: note, userId: userId, creationDate: creationDate, modificationDate: modificationDate, users: users }).then((result) => {
+            notesCollection.insertOne({ title: title, note: note, userId: userId, access: access, users: users, creationDate: creationDate, modificationDate: modificationDate }).then((result) => {
                 resolve({ 
                     id: result.insertedId.toString(), // Ottieni l'ID inserito e convertilo in stringa
                     title: title,
                     note: note,
                     userId: userId,
+                    access: access,
+                    users: users,
                     creationDate: creationDate,
                     modificationDate: modificationDate,
-                    users: users
                 });
             }).catch((error) => {
                 reject(error);
@@ -46,26 +47,52 @@ function deleteNoteFromDatabase(id) {
     });
 }
 
-function getNotesFromDatabase(userId) {
+function getNotesFromDatabase(userId, showSharedNotes, username) {
+    if(showSharedNotes === 'true') {
+        return new Promise((resolve, reject) => {
+            const notesCollection = clientMDB.db("SelfieGD").collection("Notes");
+            notesCollection.find({ users: username}).toArray().then((notes) => {
+                resolve(notes.map((note) => {
+                    return { 
+                        id: note._id.toString(), // Convert ObjectId to string
+                        title: note.title,
+                        note: note.note,
+                        userId: note.userId,
+                        access: note.access,
+                        users: note.users,
+                        creationDate: note.creationDate,
+                        modificationDate: note.modificationDate
+                    };
+                }));
+            }
+            ).catch((error) => {
+                reject(error);
+            });
+        }
+        );
+    }
     return new Promise((resolve, reject) => {
         const notesCollection = clientMDB.db("SelfieGD").collection("Notes");
-        notesCollection.find( { userId: userId } ).toArray() //non so se va messo new object
-        .then((notes) => {
-            const notesWithCorrectId = notes.map(note => ({ 
-                id: note._id.toString(), 
-                title: note.title,
-                note: note.note,
-                userId: note.userId,
-                creationDate: note.creationDate,
-                modificationDate: note.modificationDate,
-                users: note.users
+        notesCollection.find({ userId: userId }).toArray().then((notes) => {
+            resolve(notes.map((note) => {
+                return { 
+                    id: note._id.toString(), // Convert ObjectId to string
+                    title: note.title,
+                    note: note.note,
+                    userId: note.userId,
+                    access: note.access,
+                    users: note.users,
+                    creationDate: note.creationDate,
+                    modificationDate: note.modificationDate
+                };
             }));
-            resolve(notesWithCorrectId);
-        }).catch((error) => {
+        }
+        ).catch((error) => {
             reject(error);
         });
-    });
-}
+    }
+    );
+};
 
 router.post("/notes", authenticateJWT, function (req, res) {
     if (res.statusCode != 200) return;  // If the middleware didn't authenticate the user, return
@@ -73,16 +100,17 @@ router.post("/notes", authenticateJWT, function (req, res) {
     const title = req.body.title;
     const note = req.body.note;
     const userId = req.body.userId;
+    const access = req.body.access;
+    const users = req.body.users;
     const creationDate = req.body.creationDate;
     const modificationDate = req.body.modificationDate;
-    const users = req.body.users;
     if (!note) {
         res.status(400).send({ message: "Note is required" });
         return;
     }
 
         // Nel tuo endpoint POST
-    saveNoteToDatabase(title, note, userId, creationDate, modificationDate, users).then((savedNote) => {
+    saveNoteToDatabase(title, note, userId, access, users, creationDate, modificationDate).then((savedNote) => {
         console.log("Note saved successfully", savedNote);
         res.status(201).send(savedNote); 
     }).catch((error) => {
@@ -101,14 +129,14 @@ router.post("/notes/:id", authenticateJWT, function (req, res) {
         return;
     }
 
-    const email = req.body.email;
+    const userAdded = req.body.userAdded;
     if (!users) {
         res.status(400).send({ message: "Users are required" });
         return;
     }
 
     const notesCollection = clientMDB.db("SelfieGD").collection("Notes");
-    notesCollection.updateOne({ _id: new ObjectId(id) }, { $push: { users: email } })
+    notesCollection.updateOne({ _id: new ObjectId(id) }, { $push: { users: userAdded } })
     .then(result => {
         if (result.matchedCount === 0) {
             res.status(404).send({ message: "Note not found" });
@@ -124,9 +152,10 @@ router.post("/notes/:id", authenticateJWT, function (req, res) {
                         title: updatedNote.title,
                         note: updatedNote.note,
                         userId: updatedNote.userId,
+                        access: updatedNote.access,
+                        users: updatedNote.users,
                         creationDate: updatedNote.creationDate,
-                        modificationDate: updatedNote.modificationDate,
-                        users: updatedNote.users
+                        modificationDate: updatedNote.modificationDate
                     });
                 }
             })
@@ -164,7 +193,9 @@ router.delete("/notes/:id", authenticateJWT, function (req, res) {
 router.get("/notes", authenticateJWT, function (req, res) {
     if (res.statusCode != 200) return;  // If the middleware didn't authenticate the user, return
     const userId = req.query.userId;
-    getNotesFromDatabase(userId).then((notes) => {
+    const showSharedNotes = req.query.showSharedNotes;
+    const username = req.query.username;
+    getNotesFromDatabase(userId, showSharedNotes, username).then((notes) => {
         res.status(200).send(notes);
     }).catch((error) => {
         console.error("Failed to fetch notes", error);
@@ -192,6 +223,8 @@ router.get("/notes/:id", authenticateJWT, function (req, res) {
                 title: note.title,
                 note: note.note,
                 userId: note.userId,
+                access: note.access,
+                users: note.users,
                 creationDate: note.creationDate,
                 modificationDate: note.modificationDate
             });
@@ -215,16 +248,18 @@ router.put("/notes/:id", authenticateJWT, function (req, res) {
     const title = req.body.title;
     const note = req.body.note;
     const userId = req.body.userId;
+    const access = req.body.access;
+    const users = req.body.users;
     const creationDate = req.body.creationDate;
     const modificationDate = req.body.modificationDate;
-    const users = req.body.users;
+    
     if (!note) {
         res.status(400).send({ message: "Note is required" });
         return;
     }
 
     const notesCollection = clientMDB.db("SelfieGD").collection("Notes");
-    notesCollection.updateOne({ _id: new ObjectId(id) }, { $set: { title: title, note: note, userId: userId, creationDate: creationDate, modificationDate: modificationDate, users: users } })
+    notesCollection.updateOne({ _id: new ObjectId(id) }, { $set: { title: title, note: note, userId: userId, access: access, users: users, creationDate: creationDate, modificationDate: modificationDate} })
     .then(result => {
         if (result.matchedCount === 0) {
             res.status(404).send({ message: "Note not found" });
@@ -240,9 +275,11 @@ router.put("/notes/:id", authenticateJWT, function (req, res) {
                         title: updatedNote.title,
                         note: updatedNote.note,
                         userId: updatedNote.userId,
+                        access: updatedNote.access,
+                        users: updatedNote.users,
                         creationDate: updatedNote.creationDate,
                         modificationDate: updatedNote.modificationDate,
-                        users: updatedNote.users
+                        
                     });
                 }
             })
