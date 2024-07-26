@@ -26,6 +26,11 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
     const [users, setUsers] = useState([]);
     const [currentNote, setCurrentNote] = useState(null); // State to track the current note
 
+    const [open, setOpen] = useState(false);
+    const [access, setAccess] = useState('');
+    const [users, setUsers] = useState([]);
+    const [currentNote, setCurrentNote] = useState(null); // State to track the current note
+
 
     NotesList.defaultProps = {
         notes: []
@@ -73,6 +78,8 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                     userId: copiedNote.userId,
                     access: copiedNote.access,
                     users: [],
+                    access: copiedNote.access,
+                    users: [],
                     creationDate: copiedNote.creationDate,
                     modificationDate: copiedNote.modificationDate,
                 }),
@@ -89,6 +96,27 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
         });
     };
 
+    //const handleShareNote = (id) => {
+    //    fetch(`/api/notes/${id}`, {
+    //        method: 'POST',
+    //        headers: {
+    //            'Content-Type': 'application/json',
+    //            'Authorization': `Bearer ${token}`,
+    //        },
+    //        body: JSON.stringify({
+    //            email: email,
+    //        }),
+    //    }).then(response => {
+    //        if (response.ok) {
+    //            return response.json();
+    //        }
+    //        throw new Error('Failed to share the note');
+    //    }).then(sharedNote => {
+    //        console.log(sharedNote);
+    //    }).catch(error => {
+    //        console.error('Failed to share the note', error);
+    //    });
+    //};
     //const handleShareNote = (id) => {
     //    fetch(`/api/notes/${id}`, {
     //        method: 'POST',
@@ -142,6 +170,16 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
         setShowSharedNotes(event.target.checked);
     };
 
+    const handleOpenDialog = (note) => {
+        console.log('Opening dialog for note', note);
+        setCurrentNote(note);
+        setOpen(true);
+    };
+    
+    const handleCheckboxChange = (event) => {
+        setShowSharedNotes(event.target.checked);
+    };
+
     const filteredNotes = sortedNotes.filter(note => note.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
     return (
@@ -151,6 +189,9 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                     <TextField label="Search Notes" variant="outlined" fullWidth onChange={e => setSearchTerm(e.target.value)} style={styles.textField}
                         InputProps={{
                             style: {
+                                color: '#53ddf0',
+                            }
+                        }}
                                 color: '#53ddf0',
                             }
                         }}
@@ -171,6 +212,9 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                             PaperProps: {
                                 style: {
                                     color: '#53ddf0',
+                                    backgroundColor: '#111119',
+                                    fontSize: '1.2rem',
+                                    fontWeight: 'bold'
                                     backgroundColor: '#111119',
                                     fontSize: '1.2rem',
                                     fontWeight: 'bold'
@@ -255,6 +299,7 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                                         <MenuItem onClick={() => handleCopyNote(note.id)}>Copy</MenuItem>
                                         <MenuItem onClick={() => handleDeleteNote(note.id)}>Delete</MenuItem>
                                         <MenuItem onClick={() => handleOpenDialog(note)}>Set Access</MenuItem>
+                                        <MenuItem onClick={() => handleOpenDialog(note)}>Set Access</MenuItem>
                                     </Menu>
                                 </CardActions>
                             </Card>
@@ -308,3 +353,4 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
 }
 
 export default NotesList;
+
