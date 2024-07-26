@@ -26,11 +26,6 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
     const [users, setUsers] = useState([]);
     const [currentNote, setCurrentNote] = useState(null); // State to track the current note
 
-    const [open, setOpen] = useState(false);
-    const [access, setAccess] = useState('');
-    const [users, setUsers] = useState([]);
-    const [currentNote, setCurrentNote] = useState(null); // State to track the current note
-
 
     NotesList.defaultProps = {
         notes: []
@@ -170,16 +165,6 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
         setShowSharedNotes(event.target.checked);
     };
 
-    const handleOpenDialog = (note) => {
-        console.log('Opening dialog for note', note);
-        setCurrentNote(note);
-        setOpen(true);
-    };
-    
-    const handleCheckboxChange = (event) => {
-        setShowSharedNotes(event.target.checked);
-    };
-
     const filteredNotes = sortedNotes.filter(note => note.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
     return (
@@ -189,9 +174,6 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                     <TextField label="Search Notes" variant="outlined" fullWidth onChange={e => setSearchTerm(e.target.value)} style={styles.textField}
                         InputProps={{
                             style: {
-                                color: '#53ddf0',
-                            }
-                        }}
                                 color: '#53ddf0',
                             }
                         }}
@@ -214,7 +196,7 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                                     color: '#53ddf0',
                                     backgroundColor: '#111119',
                                     fontSize: '1.2rem',
-                                    fontWeight: 'bold'
+                                    fontWeight: 'bold',
                                     backgroundColor: '#111119',
                                     fontSize: '1.2rem',
                                     fontWeight: 'bold'
