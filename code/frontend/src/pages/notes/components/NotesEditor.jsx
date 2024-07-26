@@ -12,6 +12,7 @@ import useTokenChecker from '../../../utils/useTokenChecker';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import './styles.css';
+import AccessDialog from './AccessDialog.jsx';
 
 // Register the Markdown module with Quill
 Quill.register('modules/markdownShortcuts', MarkdownShortcuts);
@@ -22,6 +23,9 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
     const token = Cookies.get('token');
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
     const [userId, setUserId] = useState(null);
+    const [access, setAccess] = useState('');
+    const [users, setUsers] = useState([]);
+    const [open, setOpen] = useState(false);
 
     useEffect(() => {
         if (clear) {
@@ -57,10 +61,15 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
         }
     }, [loginStatus, username, token]); // Dependencies to fetch user ID
 
-    const handleAddNote = async () => {
+    const handleOpenDialog = () => {
+        setOpen(true);
+    };
+    
+    const handleAddNoteWithAccess = async (accessType, usersList) => {
+        console.log('Adding note with access', accessType, usersList);
         const newNote = noteInput.trim();
         const newTitle = title.trim();
-        if (newNote) { // Aggiunto controllo su entrambi i campi
+        if (newNote && newTitle) {
             try {
                 const response = await fetch('/api/notes', {
                     method: 'POST',
@@ -72,15 +81,18 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                         title: newTitle,
                         note: newNote,
                         userId: userId,
+                        access: accessType, // include access field
+                        users: usersList, // include users field
                         creationDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
                         modificationDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
-                        users: []
                     }),
                 });
                 if (response.ok) {
                     const addedNote = await response.json();
                     setTitle('');
                     setNoteInput('');
+                    setAccess('');
+                    setUsers([]);
                     if (onNoteAdded) {
                         onNoteAdded(addedNote);
                     }
@@ -91,10 +103,9 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                 console.error('Failed to save the note', error);
             }
         } else {
-            // Opzionalmente, gestisci il caso in cui uno dei campi è vuoto
             console.error('Title and note content are required');
         }
-    };// Ensure useEffect is imported
+    };
 
 
     const handleModifyNote = async () => {
@@ -113,9 +124,10 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                         title: newTitle,
                         note: newNote,
                         userId: userId,
+                        access: noteToModify.access, // include access field
+                        users: noteToModify.users, // include users field
                         creationDate: noteToModify.creationDate,
                         modificationDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
-                        users: noteToModify.users
                     }),
                 });
                 if (response.ok) {
@@ -179,12 +191,12 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                     fullWidth
                     InputProps={{
                         style: {
-                            color: '#53ddf0', // Change this to your desired color
-                    }}}
+                            color: '#53ddf0',
+                        }
+                    }}
                     InputLabelProps={{
                         style: {
                             color: '#53ddf0',
-
                         }
                     }}
                 />
@@ -193,14 +205,25 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                         <ReactQuill theme="snow" value={noteInput} onChange={setNoteInput} modules={modules} style={styles.actualQuill} />
                     </Box>
                     <Box display="flex" sx={{ marginTop: '30px' }}>
-                        {noteToModify ? <Button sx={styles.modifyButton} onClick={handleModifyNote} variant="contained">
-                            Modifica Appunto
-                        </Button> : <Button sx={styles.addButton} onClick={handleAddNote} variant="contained">
-                            Aggiungi Appunto
-                        </Button>}
+                        {noteToModify ? (
+                            <Button sx={styles.modifyButton} onClick={handleModifyNote} variant="contained">
+                                Modifica Appunto
+                            </Button>
+                        ) : (
+                            <Button sx={styles.addButton} onClick={handleOpenDialog} variant="contained">
+                                Aggiungi Appunto
+                            </Button>
+                        )}
                     </Box>
                 </Grid>
             </Paper>
+            <AccessDialog
+                open={open}
+                setOpen={setOpen}
+                setAccess={setAccess}
+                setUsers={setUsers}
+                onConfirm={handleAddNoteWithAccess} // Call this function when confirming the dialog
+            />
         </Container>
     );
 }

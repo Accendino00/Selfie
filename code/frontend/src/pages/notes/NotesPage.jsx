@@ -24,6 +24,7 @@ function NotesPage() {
     const isDesktop = useMediaQuery('(min-width:600px)'); // Adjust 600px based on your breakpoint needs
     const [boolToggle, setBoolToggle] = useState(false);
     const [clear, setClear] = useState(false);
+    const [showSharedNotes, setShowSharedNotes] = useState(false);
 
 
     useEffect(() => {
@@ -75,7 +76,7 @@ function NotesPage() {
     useEffect(() => {
         const fetchNotes = async (userId) => {
             try {
-                const response = await fetch(`/api/notes?userId=${userId}`, {
+                const response = await fetch(`/api/notes?userId=${userId}&showSharedNotes=${showSharedNotes}&username=${username}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                     },
@@ -159,15 +160,11 @@ function NotesPage() {
                         <IconButton color="inherit" onClick={handleNewNote} sx={styles.newNoteDesktop}>
                             <AddIcon />
                         </IconButton>
-                        <IconButton 
-                            color="inherit" 
-                            sx={{position: 'absolute', right: '16px', top: '85px'}}
-                        >
-                                <EmailShareButton feature="notes" />
-                        </IconButton>
                         <NotesList 
                             notes={notes} 
                             setNotes={setNotes} 
+                            showSharedNotes={showSharedNotes}
+                            setShowSharedNotes={setShowSharedNotes}
                             onNoteDeleted={handleNoteDeleted} 
                             onNoteModified={handleNoteModified} 
                             onCopyNote={handleNoteAdded} 
@@ -214,6 +211,8 @@ function NotesPage() {
                             <NotesList 
                                 notes={notes} 
                                 setNotes={setNotes} 
+                                showSharedNotes={showSharedNotes}
+                                setShowSharedNotes={setShowSharedNotes}
                                 onNoteDeleted={handleNoteDeleted} 
                                 onNoteModified={handleNoteModified} 
                                 onCopyNote={handleNoteAdded} 
