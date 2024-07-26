@@ -5,11 +5,20 @@ import useTokenChecker from '../../utils/useTokenChecker';
 import cookies from 'js-cookie';
 import { Form } from 'react-router-dom';
 import { FormControl } from '@mui/material';
+import { add } from 'date-fns';
 
 
 const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag, draggedTasksDialog, taskToDelete }) => {
+    // Utils
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
+
+    // Array di tutti i task ottenuti dal backend
     const [tasks, setTasks] = useState([]);
+
+    // Array di tutti i task in ritardo
+    const [lateTasks, setLateTasks] = useState([]);
+
+    // Stati per la gestione del dialog per creare un nuovo task
     const [openDialog, setOpenDialog] = useState(false);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -24,12 +33,13 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
     const [currentId, setCurrentId] = useState(null);
     const [completed, setCompleted] = useState(false);
     const [draggedOpen, setDraggedOpen] = useState(false);
+    const [isLate, setIsLate] = useState(false);
 
     const token = cookies.get('token');
 
 
     useEffect(() => {
-        if(taskToDelete){
+        if (taskToDelete) {
             handleDeleteTask(taskToDelete);
         }
 
@@ -41,11 +51,95 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
             draggedTasks(taskToDrag);
             taskFinish();
         }
-        if (tasksDialog) {
+        if (tasksDialog && !taskToModify) {
             handleOpenDialog();
             taskFinish();
         }
     }, [tasksDialog, taskToModify, taskToDrag, taskToDelete]);
+
+
+    useEffect(() => {
+        console.log("son montato")
+        console.log(new Date())
+        console.log(tasks)
+        for (let i = 0; i < tasks.length; i++) {
+            console.log('ciao')
+            console.log('task end', new Date(tasks[i].end))
+            if (new Date(tasks[i].end) <= new Date()) {
+                console.log('task in ritardo')
+                updateTask(tasks[i]);
+            } else if (tasks[i].isLate) {
+                updateTask(tasks[i]);
+            }
+        }
+
+    }, [tasks]);
+
+    // TODO list:
+    /**
+     * 1. Creare una funzione del tipo:
+     *      updateTask(task) 
+     * Prende come input un task ed esegue dei cocntrolli su cosa c'è
+     * dentro. Se deve cambiare dati, per esempio se il task è in ritardo,
+     * allora andrà a modificare i dati di questo task.
+     * 
+     * Con questi nuovi dati andrà ad eseguire una fetch al backend.
+     */
+
+    const updateTask = (task) => {
+        const updatedTask = {
+            title: task.title,
+            description: task.description,
+            start: task.start,
+            end: task.end,
+            name: task.name,
+            timesToRepeat: task.timesToRepeat,
+            isRecurring: task.isRecurring,
+            allDay: task.allDay,
+            color: task.color,
+            isTask: task.isTask,
+            completed: task.completed,
+            borderColor: task.borderColor,
+            isLate: task.isLate
+        };
+
+        let modifiedTask = false;
+
+        // Esegui i controlli sul task (in ritardo, completato, etc)
+        if (new Date(updatedTask.end) <= new Date()) {
+            updatedTask.start = new Date();
+            updatedTask.end = new Date();
+            updatedTask.isLate = true;
+            modifiedTask = true;
+            console.log('modified task')
+        } else if (updatedTask.isLate) {
+            updatedTask.isLate = false;
+            modifiedTask = true;
+        }
+
+        if (modifiedTask) {
+            // Esegui la fetch al backend
+            // se fetch va a buon fine, modifichi task, lo ricerchi nella lista dei task e lo modifichi
+            fetch(`/api/modifyTask/${task._id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(updatedTask)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+
+                    setTasks(data);
+                })
+                .catch(error => console.error("Error updating task:", error));
+        }
+
+
+
+    }
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -57,8 +151,10 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
             })
                 .then(response => response.json())
                 .then(data => {
-                    tasksToSend(data)
-                    setTasks(data)
+
+                    setTasks(data);
+                    tasksToSend(data);
+
                 })
                 .catch(error => console.error("Error fetching tasks:", error));
         }, 500);
@@ -98,6 +194,7 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
             isTask: true,
             completed: completed,
             borderColor: allDay ? borderColor : taskColor,
+            isLate: false
         };
 
         if (isRecurring) {
@@ -108,6 +205,11 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
                 taskData.endRecur = calculateRepeatEndDate(startDate, timesToRepeat);
                 taskData.daysOfWeek = getDayOfWeek(startDate);
             }
+        }
+
+        if (isLate) {
+            taskData.start = new Date();
+            taskData.end = new Date();
         }
 
         if (modifying) {
@@ -195,7 +297,9 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
             setTaskColor('#000000');
         }
         setModifying(true);
+
         setOpenDialog(true);
+
     };
 
     const draggedTasks = (task) => {
@@ -319,6 +423,7 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
         setCurrentId(null);
         setModifying(false);
         setCompleted(false);
+        setIsLate(false);
     }
 
     const handleAddTask = () => {

@@ -37,7 +37,7 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
             draggedStudyEvents(StudyEventToDrag);
             StudyEventFinish();
         }
-        if (StudyEventsDialog) {
+        if (StudyEventsDialog && !StudyEventToModify) {
             handleOpenDialog();
             StudyEventFinish();
         }

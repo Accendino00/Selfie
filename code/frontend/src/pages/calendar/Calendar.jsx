@@ -55,6 +55,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
   const [drawerOpen, setDrawerOpen] = useState(false);
 
 
+
   // tasks
   const [tasks, setTasks] = useState([]);
   const [tasksDialogOpen, setTasksDialogOpen] = useState(false);
@@ -64,6 +65,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
   const [isTask, setIsTask] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState('');
   const [isTaskCheckBox, setIsTaskCheckBox] = useState(false);
+  const [passLateTasks, setPassLateTasks] = useState([]);
 
   // studyevents
   const [isStudyEvent, setIsStudyEvent] = useState(false);
@@ -118,11 +120,11 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     if (createButton) {
       addEvent(null);
     } else if (studyEventCreateButton) {
-      
+
       setIsStudyEvent(true)
       setStudyEventsDialogOpen(true);
-      
-    } else if(taskCreateButton){
+
+    } else if (taskCreateButton) {
       setIsTask(true);
       setTasksDialogOpen(true);
     }
@@ -187,11 +189,11 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     };
 
     if (isRecurring) {
-      
+
       if (recurringDays.length !== 0) {
-        
+
         eventData.daysOfWeek = recurringDays;
-        
+
       } else {
         eventData.daysOfWeek = null;
       }
@@ -200,14 +202,14 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
       eventData.end = endDate;
       if (endDate !== '' && endDate !== null) {
         eventData.endRecur = endDate;
-        
+
       } else if (timesToRepeat !== "0" && eventData.daysOfWeek !== null) {
-        
+
         eventData.endRecur = calculateRepeatEndDate(startDate, timesToRepeat);
       } else {
         eventData.endRecur = null;
         eventData.end = null;
-        
+
       }
       if (startTime !== '') {
         eventData.startTime = startTime;
@@ -220,14 +222,14 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
         eventData.endTime = null;
       }
       if (timesToRepeat !== "0" && eventData.daysOfWeek === null && eventData.endRecur === null && eventData.end === null) {
-        
+
         eventData.endRecur = calculateRepeatEndDate(startDate, timesToRepeat);
         eventData.timesToRepeat = timesToRepeat;
         eventData.daysOfWeek = getDayOfWeek(startDate, eventData.end);
       } else if (timesToRepeat === "0") {
         eventData.timesToRepeat = null;
       }
-      
+
     } else {
       eventData.daysOfWeek = null;
       eventData.startTime = null;
@@ -237,7 +239,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     }
 
     if (modifying) {
-      
+
       if (!validateDates()) {
         return;
       }
@@ -333,7 +335,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
   }
 
   const getDayOfWeek = (startDate, endDate) => {
-    
+
 
     // Check if startDate is a Date object, if not convert from string
     let start = startDate instanceof Date ? startDate : new Date(startDate);
@@ -360,7 +362,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
 
 
   function convertDaysToIntegers(dayNames) {
-    
+
 
     const dayMap = {
       'Sunday': 0,
@@ -394,6 +396,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
 
 
     if (event.extendedProps.isStudyEvent) {
+      setIsStudyEvent(true);
       setStudyEventsDialogOpen(true);
       setStudyEventToModify({
         title: event.title,
@@ -408,12 +411,12 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
         timesToRepeat: event.extendedProps.timesToRepeat,
         _id: event.id
       });
-
+      console.log('sweg', studyEventToModify)
       return;
     }
 
     if (event.extendedProps.isTask) {
-
+      setIsTask(true) 
       setTasksDialogOpen(true);
       setTaskToModify({
         title: event.title,
@@ -428,7 +431,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
         timesToRepeat: event.extendedProps.timesToRepeat,
         _id: event.id
       });
-
+      console.log('swag', taskToModify)
       return;
     }
 
@@ -524,7 +527,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     setIsStudyEventCheckBox(false);
 
     setCurrentId(event.id);
-    
+
     if (event._def.extendedProps.isRecurring) {
       setIsRecurring(true);
       // if event is recurring then I might have clicked on a "fake" event renderized by fullcalendar, so I need to check
@@ -537,18 +540,18 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
       })
         .then(response => response.json())
         .then(data => {
-          
+
           event = data;
-          
+
         })
         .catch(error => console.error('Error fetching event:', error));
 
 
 
       if (event.extendedProps.daysOfWeek !== null) {
-        
+
         setRecurringDays(getDayOfWeek(event.start, event.end));
-        
+
       }
     }
     setSelectedCalendars(event._def.extendedProps.calendar);
@@ -657,6 +660,8 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
   }
 
   const allEventsToDisplay = () => {
+    let lateTasks = [];
+    let nonLateTasks = [];
     let allEvents = [];
     for (let i = 0; i < events.length; i++) {
       allEvents.push(events[i]);
@@ -664,16 +669,31 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
       //    
     }
     for (let i = 0; i < tasks.length; i++) {
-      if (tasks[i].completed === false) {
-        allEvents.push(tasks[i]);
+
+      allEvents.push(tasks[i]);
+
+      // Check if the task is late
+      if (!tasks[i].isRecurring && new Date(tasks[i].end) < new Date() || tasks[i].isLate) {
+        lateTasks.push(tasks[i]);
+
+      } else {
+        nonLateTasks.push(tasks[i]);
       }
+
+
     }
     for (let i = 0; i < studyEvents.length; i++) {
       allEvents.push(studyEvents[i]);
     }
 
-    return allEvents
+    return {
+      allEvents,
+      lateTasks,
+      nonLateTasks
+    };
   }
+
+
 
   const handleStudyNow = () => {
     navigate(`/timer/${studyTime}/${breakTime}/${cycles}/${totalMinutes}`);
@@ -740,7 +760,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
         }}
         initialView="dayGridMonth"
         selectable={true}
-        events={allEventsToDisplay()}
+        events={allEventsToDisplay().allEvents}
         ref={calendarRef}
         select={(e) => addEvent(e)}
         editable={true}
@@ -755,15 +775,15 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
         aspectRatio={1}
       />
 
-<Tasks tasksToSend={handleTasksFromTasks} tasksDialog={false} taskToModify={taskToModify} taskFinish={handleTaskFinish} taskToDrag={taskToDrag} draggedTasksDialog={draggedTasksDialogOpen} taskToDelete={taskToDelete} />
-<StudyEvent StudyEventsToSend={handleStudyEventsFromStudyEvents} StudyEventsDialog={false} StudyEventToModify={studyEventToModify} StudyEventFinish={handleStudyEventFinish} StudyEventToDrag={studyEventToDrag} draggedStudyEventsDialog={draggedStudyEventsDialogOpen} />
+      <Tasks tasksToSend={handleTasksFromTasks} tasksDialog={false} taskToModify={taskToModify} taskFinish={handleTaskFinish} taskToDrag={taskToDrag} draggedTasksDialog={draggedTasksDialogOpen} taskToDelete={taskToDelete} />
+      <StudyEvent StudyEventsToSend={handleStudyEventsFromStudyEvents} StudyEventsDialog={false} StudyEventToModify={studyEventToModify} StudyEventFinish={handleStudyEventFinish} StudyEventToDrag={studyEventToDrag} draggedStudyEventsDialog={draggedStudyEventsDialogOpen} />
 
       {isTask &&
-        <Tasks tasksToSend={handleTasksFromTasks} tasksDialog={tasksDialogOpen} taskToModify={taskToModify} taskFinish={handleTaskFinish} taskToDrag={taskToDrag} draggedTasksDialog={draggedTasksDialogOpen} taskToDelete={taskToDelete} />
+        <Tasks tasksToSend={handleTasksFromTasks} tasksDialog={tasksDialogOpen} taskToModify={taskToModify} taskFinish={handleTaskFinish} taskToDrag={taskToDrag} draggedTasksDialog={false} taskToDelete={taskToDelete} />
       }
       {isStudyEvent &&
         /*<StudyComponent studyTime={studyTime} setStudyTime={setStudyTime} breakTime={breakTime} setBreakTime={setBreakTime} cycles={cycles} setCycles={setCycles} totalMinutes={totalMinutes} setTotalMinutes={setTotalMinutes}/> */
-        <StudyEvent StudyEventsToSend={handleStudyEventsFromStudyEvents} StudyEventsDialog={studyEventsDialogOpen} StudyEventToModify={studyEventToModify} StudyEventFinish={handleStudyEventFinish} StudyEventToDrag={studyEventToDrag} draggedStudyEventsDialog={draggedStudyEventsDialogOpen} />
+        <StudyEvent StudyEventsToSend={handleStudyEventsFromStudyEvents} StudyEventsDialog={studyEventsDialogOpen} StudyEventToModify={studyEventToModify} StudyEventFinish={handleStudyEventFinish} StudyEventToDrag={studyEventToDrag} draggedStudyEventsDialog={false} />
       }
 
       <Dialog open={draggedOpen} onClose={handleDraggedClose}>
@@ -1085,7 +1105,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
           <button onClick={handleGetEvents}>Get Events</button>
           <Typography variant="h4" gutterBottom>Tasks</Typography>
           <List>
-            {Array.isArray(tasks) && tasks.map(task => (
+            {Array.isArray(allEventsToDisplay().nonLateTasks) && allEventsToDisplay().nonLateTasks.map(task => (
               <ListItem key={task._id} alignItems="flex-start">
                 <div style={{
                   width: '10px',
@@ -1107,6 +1127,44 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
                   }
                 />
                 <IconButton edge="end" aria-label="edit" onClick={() => {
+                  setIsTask(true)
+                  setTaskToModify(task)
+                  setTasksDialogOpen(true)
+                }
+                }>
+                  <Edit />
+                </IconButton>
+                <IconButton edge="end" aria-label="delete" onClick={() => setTaskToDelete(task._id)}>
+                  <Delete />
+                </IconButton>
+              </ListItem>
+            ))}
+          </List>
+          <Typography variant="h4" gutterBottom>Late Tasks</Typography>
+          <List>
+            {Array.isArray(allEventsToDisplay().lateTasks) && allEventsToDisplay().lateTasks.map(task => (
+              <ListItem key={task._id} alignItems="flex-start">
+                <div style={{
+                  width: '10px',
+                  height: '10px',
+                  backgroundColor: task.color,
+                  marginRight: '10px',
+                  marginTop: '13px',
+                }} />
+                <ListItemText
+                  primary={<span style={listItemStyle(task.completed)}>{task.title}</span>}
+                  secondary={
+                    <>
+                      {task.description && <>
+                        {task.description}
+                        <br />
+                      </>}
+                      {new Date(task.start).toLocaleDateString()}
+                    </>
+                  }
+                />
+                <IconButton edge="end" aria-label="edit" onClick={() => {
+                  setIsTask(true)
                   setTaskToModify(task)
                   setTasksDialogOpen(true)
                 }

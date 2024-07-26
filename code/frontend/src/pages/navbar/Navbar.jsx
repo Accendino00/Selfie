@@ -146,6 +146,12 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
     fetchStudyEvents();
   }, [token, username, selectedNotification, events, shownNotifications, tasks]);
 
+  useEffect(() => {
+    if (totalNotifications > 0) {
+      playNotificationSound();
+
+    }
+  }, [totalNotifications]);
 
   // carica tempo di preavviso per le notifiche degli eventi selezionato
   useEffect(() => {
@@ -157,6 +163,7 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
 
   const playNotificationSound = () => {
     const audio = new Audio('../../public/notification-sound.mp3');
+    audio.volume = 0.5;
     audio.play();
   };
 
