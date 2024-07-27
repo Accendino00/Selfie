@@ -40,6 +40,7 @@ function NotesPage() {
                 if (response.ok) {
                     const fetchedUserId = await response.json();
                     setUserId(fetchedUserId);
+                    console.log('User id fetched:', fetchedUserId);
                 } else {
                     console.error('Failed to fetch user id');
                 }
@@ -169,6 +170,7 @@ function NotesPage() {
                             onNoteModified={handleNoteModified} 
                             onCopyNote={handleNoteAdded} 
                             isDesktop={isDesktop} 
+                            user={userId}
                         />
                         <NotesEditor 
                             onNoteAdded={handleNoteAdded} 
@@ -216,7 +218,8 @@ function NotesPage() {
                                 onNoteDeleted={handleNoteDeleted} 
                                 onNoteModified={handleNoteModified} 
                                 onCopyNote={handleNoteAdded} 
-                                isDesktop={isDesktop} 
+                                isDesktop={isDesktop}
+                                user={userId} 
                             />
                         </>
                     )

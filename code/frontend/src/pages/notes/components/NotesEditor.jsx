@@ -28,12 +28,17 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
     const [access, setAccess] = useState('');
     const [users, setUsers] = useState([]);
     const [open, setOpen] = useState(false);
+    const [charCount, setCharCount] = useState(0);
+
 
     useEffect(() => {
         if (clear) {
             setTitle('');
             setCategory('');
             setNoteInput('');
+            setAccess('');
+            setUsers([]);
+            setCharCount(0);
             console.log('clearing');
             setClear(false);
         }
@@ -86,6 +91,7 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                         category: newCategory,
                         note: newNote,
                         userId: userId,
+                        characters: charCount,
                         access: accessType, // include access field
                         users: usersList, // include users field
                         creationDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
@@ -97,6 +103,8 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                     setTitle('');
                     setCategory('');
                     setNoteInput('');
+                    setCharCount(0);
+                    setIsShared(false);
                     setAccess('');
                     setUsers([]);
                     if (onNoteAdded) {
@@ -132,6 +140,7 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                         category: newCategory,
                         note: newNote,
                         userId: userId,
+                        characters: charCount,
                         access: noteToModify.access, // include access field
                         users: noteToModify.users, // include users field
                         creationDate: noteToModify.creationDate,
@@ -143,6 +152,10 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                     setTitle('');
                     setCategory('');
                     setNoteInput('');
+                    setCharCount(0);
+                    setIsShared(false);
+                    setAccess('');
+                    setUsers([]);
                     setNoteToModify(null);
                     setVisualizeEditor(false);
                     if (onNoteAdded) {
@@ -166,13 +179,16 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
             setTitle(noteToModify.title);
             setCategory(noteToModify.category);
             setNoteInput(noteToModify.note);
+            setCharCount(noteToModify.characters);
         }
     }, [noteToModify]); // Depend on noteToModify to trigger effect
 
 
-    const handleInputChange = (event) => {
-        setNoteInput(event.target.value);
+    const handleInputChange = (value) => {
+        setNoteInput(value);
+        setCharCount(Quill.getLength());
     };
+    
 
     const handleTitleChange = (event) => {
         setTitle(event.target.value);
@@ -236,9 +252,13 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
 
                 <Grid container direction="column">
                     <Box display="flex" style={styles.quill}>
-                        <ReactQuill theme="snow" value={noteInput} onChange={setNoteInput} modules={modules} style={styles.actualQuill} />
+                        <ReactQuill theme="snow" value={noteInput} onChange={handleInputChange} modules={modules} style={styles.actualQuill} />
                     </Box>
                     <Box display="flex" sx={{ marginTop: '30px' }}>
+                        <span 
+                            style={{ color: '#53ddf0', fontSize: '1rem', marginRight: 'auto' }}
+                        >
+                            Character Count: {charCount}</span>
                         {noteToModify ? (
                             <Button sx={styles.modifyButton} onClick={handleModifyNote} variant="contained">
                                 Modifica Appunto

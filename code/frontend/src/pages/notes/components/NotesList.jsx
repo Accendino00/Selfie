@@ -18,7 +18,7 @@ import { Box } from '@mui/material';
 import { Form } from 'react-router-dom';
 import { FormControlLabel } from '@mui/material';
 
-function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNoteDeleted, onNoteModified, onCopyNote, isDesktop }) {
+function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNoteDeleted, onNoteModified, onCopyNote, isDesktop, user }) {
     const token = Cookies.get('token');
     const [order, setOrder] = useState('title-asc');
     const [anchorEl, setAnchorEl] = useState({});
@@ -73,7 +73,8 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                     title: copiedNote.title + ' (Copy)',
                     category: copiedNote.category,
                     note: copiedNote.note,
-                    userId: copiedNote.userId,
+                    userId: user,
+                    characters: copiedNote.characters,
                     access: copiedNote.access,
                     users: [],
                     creationDate: copiedNote.creationDate,
@@ -233,9 +234,10 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                                     {note.title}
                                 </Typography>
                                 <Box style={{ display: 'flex', alignItems: 'center', marginLeft: '-2em'}}>
+                                    {note.userId === user &&
                                     <IconButton aria-label="SetAccess" onClick={() => handleOpenDialog(note)} style={{ color: '#53ddf0', padding: '0px' }}>
                                         <AccessibilityIcon sx={{ height: '0.88em'}}/>
-                                    </IconButton>
+                                    </IconButton>}
                                     <IconButton aria-label="copy" onClick={() => handleCopyNote(note.id)} style={{ color: '#53ddf0', padding: '1px' }}>
                                         <FileCopyIcon sx={{ height: '0.83em'}}/>
                                     </IconButton>
@@ -321,7 +323,8 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                                     >
                                         <MenuItem onClick={() => handleCopyNote(note.id)}>Copy</MenuItem>
                                         <MenuItem onClick={() => handleDeleteNote(note.id)}>Delete</MenuItem>
-                                        <MenuItem onClick={() => handleOpenDialog(note)}>Set Access</MenuItem>
+                                        {note.userId === user &&
+                                            <MenuItem onClick={() => handleOpenDialog(note)}>Set Access</MenuItem>}
                                     </Menu>
                                 </CardActions>
                             </Card>
@@ -349,6 +352,7 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                                     category: currentNote.category,
                                     note: currentNote.note,
                                     userId: currentNote.userId,
+                                    characters: currentNote.characters,
                                     access: accessType,
                                     users: usersList,
                                     creationDate: currentNote.creationDate,
