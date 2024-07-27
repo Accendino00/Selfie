@@ -13,12 +13,14 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import './styles.css';
 import AccessDialog from './AccessDialog.jsx';
+import { set } from 'date-fns';
 
 // Register the Markdown module with Quill
 Quill.register('modules/markdownShortcuts', MarkdownShortcuts);
 
 function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeEditor, clear, setClear }) {
     const [title, setTitle] = useState('');
+    const [category, setCategory] = useState('');
     const [noteInput, setNoteInput] = useState('');
     const token = Cookies.get('token');
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
@@ -30,6 +32,7 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
     useEffect(() => {
         if (clear) {
             setTitle('');
+            setCategory('');
             setNoteInput('');
             console.log('clearing');
             setClear(false);
@@ -69,6 +72,7 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
         console.log('Adding note with access', accessType, usersList);
         const newNote = noteInput.trim();
         const newTitle = title.trim();
+        const newCategory = category.trim();
         if (newNote && newTitle) {
             try {
                 const response = await fetch('/api/notes', {
@@ -79,6 +83,7 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                     },
                     body: JSON.stringify({
                         title: newTitle,
+                        category: newCategory,
                         note: newNote,
                         userId: userId,
                         access: accessType, // include access field
@@ -90,6 +95,7 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                 if (response.ok) {
                     const addedNote = await response.json();
                     setTitle('');
+                    setCategory('');
                     setNoteInput('');
                     setAccess('');
                     setUsers([]);
@@ -111,6 +117,7 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
     const handleModifyNote = async () => {
         const newNote = noteInput.trim();
         const newTitle = title.trim();
+        const newCategory = category.trim();
         if (newNote) { // Aggiunto controllo su entrambi i campi
             try {
                 console.log('Modifying note', newTitle, newNote);
@@ -122,6 +129,7 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                     },
                     body: JSON.stringify({
                         title: newTitle,
+                        category: newCategory,
                         note: newNote,
                         userId: userId,
                         access: noteToModify.access, // include access field
@@ -133,6 +141,7 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                 if (response.ok) {
                     const modifiedNote = await response.json();
                     setTitle('');
+                    setCategory('');
                     setNoteInput('');
                     setNoteToModify(null);
                     setVisualizeEditor(false);
@@ -155,6 +164,7 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
     useEffect(() => {
         if (noteToModify) {
             setTitle(noteToModify.title);
+            setCategory(noteToModify.category);
             setNoteInput(noteToModify.note);
         }
     }, [noteToModify]); // Depend on noteToModify to trigger effect
@@ -166,6 +176,10 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
 
     const handleTitleChange = (event) => {
         setTitle(event.target.value);
+    };
+
+    const handleCategoryChange = (event) => {
+        setCategory(event.target.value);
     };
 
     const modules = {
@@ -200,6 +214,26 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                         }
                     }}
                 />
+
+                <TextField
+                    label="Category"
+                    variant="outlined"
+                    value={category}
+                    onChange={handleCategoryChange}
+                    sx={styles.textField}
+                    fullWidth
+                    InputProps={{
+                        style: {
+                            color: '#53ddf0',
+                        }
+                    }}
+                    InputLabelProps={{
+                        style: {
+                            color: '#53ddf0',
+                        }
+                    }}
+                />
+
                 <Grid container direction="column">
                     <Box display="flex" style={styles.quill}>
                         <ReactQuill theme="snow" value={noteInput} onChange={setNoteInput} modules={modules} style={styles.actualQuill} />

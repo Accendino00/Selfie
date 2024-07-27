@@ -15,6 +15,8 @@ import { set } from 'date-fns';
 import { Checkbox } from '@mui/material';
 import EmailShareButton from '../../components/EmailShareButton.jsx';
 import { Box } from '@mui/material';
+import { Form } from 'react-router-dom';
+import { FormControlLabel } from '@mui/material';
 
 function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNoteDeleted, onNoteModified, onCopyNote, isDesktop }) {
     const token = Cookies.get('token');
@@ -69,10 +71,9 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                 },
                 body: JSON.stringify({
                     title: copiedNote.title + ' (Copy)',
+                    category: copiedNote.category,
                     note: copiedNote.note,
                     userId: copiedNote.userId,
-                    access: copiedNote.access,
-                    users: [],
                     access: copiedNote.access,
                     users: [],
                     creationDate: copiedNote.creationDate,
@@ -217,13 +218,14 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                         <MenuItem value="modificationDate-asc">Data di Modifica Crescente</MenuItem>
                         <MenuItem value="modificationDate-desc">Data di Modifica Decrescente</MenuItem>
                     </Select>
-                    <Checkbox
-                        name="Shared"
-                        checked={showSharedNotes}
-                        onChange={handleCheckboxChange}
-                        style={{ color: '#53ddf0' }}
-                        label="Show Shared Notes"
-                    />     
+                    <FormControlLabel
+                        control={<Checkbox
+                            checked={showSharedNotes}
+                            onChange={handleCheckboxChange}
+                            style={{ color: '#53ddf0' }}
+                        />}
+                        label="Show Shared"
+                    />    
                     <ul style={{marginTop: '1em'}}>
                         {filteredNotes.map((note) => (
                             <li key={note.id}>
@@ -247,12 +249,43 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                 </Box>
             ) : (
                 <div>
-                    <TextField label="Search Notes" variant="outlined" fullWidth onChange={e => setSearchTerm(e.target.value)} />
+                    <TextField label="Search Notes" variant="outlined" fullWidth onChange={e => setSearchTerm(e.target.value)} 
+                        InputProps={{
+                            style: {
+                                color: '#53ddf0',
+                            }
+                        }}
+                        InputLabelProps={{
+                            style: {
+                                color: '#7d5ffc',
+
+                            }
+                        }} />
                     <Select
                         value={order}
                         onChange={handleOrderChange}
                         displayEmpty
                         inputProps={{ 'aria-label': 'Without label' }}
+
+                        MenuProps={{
+                            PaperProps: {
+                                style: {
+                                    color: '#53ddf0',
+                                    backgroundColor: '#111119',
+                                    fontSize: '1.2rem',
+                                    fontWeight: 'bold',
+                                    backgroundColor: '#111119',
+                                    fontSize: '1.2rem',
+                                    fontWeight: 'bold'
+                                }
+                            }
+                        }}
+                        sx={{
+                            '& .MuiSelect-select': {
+                                color: '#7d5ffc',
+
+                            }
+                        }}
                     >
                         <MenuItem value="title-asc" sx>Titolo Crescente</MenuItem>
                         <MenuItem value="title-desc">Titolo Decrescente</MenuItem>
@@ -261,6 +294,14 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                         <MenuItem value="modificationDate-asc">Data di Modifica Crescente</MenuItem>
                         <MenuItem value="modificationDate-desc">Data di Modifica Decrescente</MenuItem>
                     </Select>
+                    <FormControlLabel
+                        control={<Checkbox
+                            checked={showSharedNotes}
+                            onChange={handleCheckboxChange}
+                            style={{ color: '#53ddf0' }}
+                        />}
+                        label="Show Shared"
+                    />
                     <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around' }}>
                         {filteredNotes.map((note) => (
                             <Card key={note.id} sx={{ maxWidth: '300px', margin: '10px' }}>
@@ -280,7 +321,6 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                                     >
                                         <MenuItem onClick={() => handleCopyNote(note.id)}>Copy</MenuItem>
                                         <MenuItem onClick={() => handleDeleteNote(note.id)}>Delete</MenuItem>
-                                        <MenuItem onClick={() => handleOpenDialog(note)}>Set Access</MenuItem>
                                         <MenuItem onClick={() => handleOpenDialog(note)}>Set Access</MenuItem>
                                     </Menu>
                                 </CardActions>
@@ -306,6 +346,7 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                                 },
                                 body: JSON.stringify({
                                     title: currentNote.title,
+                                    category: currentNote.category,
                                     note: currentNote.note,
                                     userId: currentNote.userId,
                                     access: accessType,
