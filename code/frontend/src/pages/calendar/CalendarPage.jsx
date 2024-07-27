@@ -314,17 +314,17 @@ const CalendarPage = () => {
             onClose={() => setDrawerOpen(false)}
           >
             <List sx={{ height: '100vh' }}>
-                <ListItem disablePadding>
+              <ListItem disablePadding>
                 <ListItemButton onMouseDown={() => setCreateCalendarButton(true)} onMouseUp={() => setCreate(false)} onMouseLeave={() => setCreate(false)}>
                   <ListItemText primary="Create Calendar" />
                 </ListItemButton>
-                </ListItem>
+              </ListItem>
               <ListItem disablePadding>
                 <ListItemButton onMouseDown={() => setCreate(true)} onMouseUp={() => setCreate(false)} onMouseLeave={() => setCreate(false)}>
                   <ListItemText primary="Create Event" />
                 </ListItemButton>
-                </ListItem>
-                <ListItem disablePadding>
+              </ListItem>
+              <ListItem disablePadding>
                 <ListItemButton
                   onMouseDown={() => setStudyEventCreate(true)}
                   onMouseUp={() => setStudyEventCreate(false)}
@@ -333,8 +333,8 @@ const CalendarPage = () => {
                   <ListItemText primary="Create Study Event" />
 
                 </ListItemButton>
-                </ListItem>
-                <ListItem disablePadding>
+              </ListItem>
+              <ListItem disablePadding>
                 <ListItemButton
                   onMouseDown={() => setTaskCreate(true)}
                   onMouseUp={() => setTaskCreate(false)}
@@ -358,7 +358,23 @@ const CalendarPage = () => {
                       control={<Checkbox checked={checkboxState['shared'] || false} onChange={() => handleCheckboxChange('shared')} />}
                       label="Shared Events"
                     />
-                    <Button onClick={() => console.log('Shared calendar cannot be deleted')} endIcon={<DeleteIcon />}>
+                    <Button onClick={() => alert('Shared calendar cannot be deleted')} endIcon={<DeleteIcon />}>
+                    </Button>
+                  </ListItem>
+                  <ListItem key="tasks" sx={{ pl: 4 }}>
+                    <FormControlLabel
+                      control={<Checkbox checked={checkboxState['tasks'] || false} onChange={() => handleCheckboxChange('tasks')} />}
+                      label="Tasks"
+                    />
+                    <Button onClick={() => alert('Tasks calendar cannot be deleted')} endIcon={<DeleteIcon />}>
+                    </Button>
+                  </ListItem>
+                  <ListItem key="pomodoro" sx={{ pl: 4 }}>
+                    <FormControlLabel
+                      control={<Checkbox checked={checkboxState['pomodoro'] || false} onChange={() => handleCheckboxChange('pomodoro')} />}
+                      label="Pomodoro"
+                    />
+                    <Button onClick={() => alert('Pomodoro calendar cannot be deleted')} endIcon={<DeleteIcon />}>
                     </Button>
                   </ListItem>
                   {calendars.map((calendar) => (
@@ -367,7 +383,14 @@ const CalendarPage = () => {
                         control={<Checkbox checked={checkboxState[calendar.name] || false} onChange={() => handleCheckboxChange(calendar.name)} />}
                         label={calendar.name}
                       />
-                      <Button onClick={() => deleteCalendar(calendar._id)} endIcon={<DeleteIcon />}>
+                      <Button
+                        onClick={() => {
+                          if (window.confirm('Are you sure you want to delete this calendar?')) {
+                            deleteCalendar(calendar._id);
+                          }
+                        }}
+                        endIcon={<DeleteIcon />}
+                      >
                       </Button>
                     </ListItem>
                   ))}
@@ -399,7 +422,7 @@ const CalendarPage = () => {
 
           {/* Calendario */}
           <Box sx={{ width: '100%', marginTop: '4vh' }}>
-            <Calendar createButton={create} chosenCalendars={Object.keys(checkboxState).filter(key => checkboxState[key])} calendars={calendars} studyEventCreateButton={studyEventCreate} taskCreateButton = {taskCreate} />
+            <Calendar createButton={create} chosenCalendars={Object.keys(checkboxState).filter(key => checkboxState[key])} calendars={calendars} studyEventCreateButton={studyEventCreate} taskCreateButton={taskCreate} />
           </Box>
         </Box>
 

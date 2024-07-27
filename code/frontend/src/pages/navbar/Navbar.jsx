@@ -162,7 +162,7 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
   }, []);
 
   const playNotificationSound = () => {
-    const audio = new Audio('../../public/notification-sound.mp3');
+    const audio = new Audio('../../notification-sound.mp3');
     audio.volume = 0.5;
     audio.play();
   };
@@ -255,16 +255,20 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
       .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))  // Assuming startDate is a date string
       .map((item, index) => (
         <MenuItem key={index}>
-          <Grid container direction="column" bgcolor={item.color} alignItems="center" justifyContent="center">
-            <Typography variant="body2" color="text.secondary" align="center" style={{ marginLeft: "5px", marginRight: "5px", borderRadius: "10px" }}>
-              {item.title}
-            </Typography>
-            <Typography align="center" sx={{ marginBottom: '5px' }}>
-              {item.start && new Date(item.start).toLocaleDateString()}
-              {!item.isTask ? (item.end && ` to ${new Date(item.end).toLocaleDateString()}`) : null}
-            </Typography>
+          <Grid container alignItems="center" justifyContent="center">
+                <Box width="10px" height="10px" bgcolor={item.color} marginRight="4px" />
+            <Grid item xs>
+              <Typography variant="body2" color="text.secondary" align="center" style={{ marginLeft: "5px", marginRight: "5px", borderRadius: "10px" }}>
+                {item.title}
+              </Typography>
+              <Typography align="center" sx={{ marginBottom: '5px' }}>
+                {item.start && new Date(item.start).toLocaleDateString()}
+                {!item.isTask ? (item.end && ` to ${new Date(item.end).toLocaleDateString()}`) : null}
+              </Typography>
+            </Grid>
           </Grid>
         </MenuItem>
+
       ));
   };
 
@@ -467,7 +471,7 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
             onClick={() => navigate('/home/')}
           >
             <img
-              src="../../public/selfie.png"
+              src="../../selfie.png"
               alt="Home"
               style={{ width: 100, height: 48, marginRight: 15 }}
             />

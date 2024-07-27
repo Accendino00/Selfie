@@ -36,7 +36,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [eventColor, setEventColor] = useState('');
-  const [allDay, setAllDay] = useState(false);
+  const [allDay, setAllDay] = useState(true);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
@@ -133,6 +133,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
 
   const addEvent = (info) => {
     resetForm();
+    setAllDay(true);
     setIsTaskCheckBox(true);
     setIsStudyEventCheckBox(true);
     if (info) {
@@ -416,7 +417,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     }
 
     if (event.extendedProps.isTask) {
-      setIsTask(true) 
+      setIsTask(true)
       setTasksDialogOpen(true);
       setTaskToModify({
         title: event.title,
@@ -665,25 +666,27 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     let allEvents = [];
     for (let i = 0; i < events.length; i++) {
       allEvents.push(events[i]);
-      //  if(events[i].isStudyEvent){
-      //    
     }
-    for (let i = 0; i < tasks.length; i++) {
+    if (chosenCalendars.includes('tasks')) {
+      for (let i = 0; i < tasks.length; i++) {
 
-      allEvents.push(tasks[i]);
+        allEvents.push(tasks[i]);
 
-      // Check if the task is late
-      if (!tasks[i].isRecurring && new Date(tasks[i].end) < new Date() || tasks[i].isLate) {
-        lateTasks.push(tasks[i]);
+        // Check if the task is late
+        if (!tasks[i].isRecurring && new Date(tasks[i].end) < new Date() || tasks[i].isLate) {
+          lateTasks.push(tasks[i]);
 
-      } else {
-        nonLateTasks.push(tasks[i]);
+        } else {
+          nonLateTasks.push(tasks[i]);
+        }
+
       }
-
-
     }
-    for (let i = 0; i < studyEvents.length; i++) {
-      allEvents.push(studyEvents[i]);
+    if (chosenCalendars.includes('pomodoro')) {
+
+      for (let i = 0; i < studyEvents.length; i++) {
+        allEvents.push(studyEvents[i]);
+      }
     }
 
     return {
@@ -775,15 +778,15 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
         aspectRatio={1}
       />
 
-      <Tasks tasksToSend={handleTasksFromTasks} tasksDialog={false} taskToModify={taskToModify} taskFinish={handleTaskFinish} taskToDrag={taskToDrag} draggedTasksDialog={draggedTasksDialogOpen} taskToDelete={taskToDelete} />
-      <StudyEvent StudyEventsToSend={handleStudyEventsFromStudyEvents} StudyEventsDialog={false} StudyEventToModify={studyEventToModify} StudyEventFinish={handleStudyEventFinish} StudyEventToDrag={studyEventToDrag} draggedStudyEventsDialog={draggedStudyEventsDialogOpen} />
+      <Tasks tasksToSend={handleTasksFromTasks} tasksDialog={false} taskToModify={taskToModify} taskFinish={handleTaskFinish} taskToDrag={taskToDrag} draggedTasksDialog={draggedTasksDialogOpen} taskToDelete={taskToDelete} taskDate={startDate} setTaskDate={setStartDate} />
+      <StudyEvent StudyEventsToSend={handleStudyEventsFromStudyEvents} StudyEventsDialog={false} StudyEventToModify={studyEventToModify} StudyEventFinish={handleStudyEventFinish} StudyEventToDrag={studyEventToDrag} draggedStudyEventsDialog={draggedStudyEventsDialogOpen} studyEventDate={startDate} setStudyEventDate={setStartDate} />
 
       {isTask &&
-        <Tasks tasksToSend={handleTasksFromTasks} tasksDialog={tasksDialogOpen} taskToModify={taskToModify} taskFinish={handleTaskFinish} taskToDrag={taskToDrag} draggedTasksDialog={false} taskToDelete={taskToDelete} />
+        <Tasks tasksToSend={handleTasksFromTasks} tasksDialog={tasksDialogOpen} taskToModify={taskToModify} taskFinish={handleTaskFinish} taskToDrag={taskToDrag} draggedTasksDialog={false} taskToDelete={taskToDelete} taskDate={startDate} setTaskDate={setStartDate} />
       }
       {isStudyEvent &&
         /*<StudyComponent studyTime={studyTime} setStudyTime={setStudyTime} breakTime={breakTime} setBreakTime={setBreakTime} cycles={cycles} setCycles={setCycles} totalMinutes={totalMinutes} setTotalMinutes={setTotalMinutes}/> */
-        <StudyEvent StudyEventsToSend={handleStudyEventsFromStudyEvents} StudyEventsDialog={studyEventsDialogOpen} StudyEventToModify={studyEventToModify} StudyEventFinish={handleStudyEventFinish} StudyEventToDrag={studyEventToDrag} draggedStudyEventsDialog={false} />
+        <StudyEvent StudyEventsToSend={handleStudyEventsFromStudyEvents} StudyEventsDialog={studyEventsDialogOpen} StudyEventToModify={studyEventToModify} StudyEventFinish={handleStudyEventFinish} StudyEventToDrag={studyEventToDrag} draggedStudyEventsDialog={false} studyEventDate={startDate} setStudyEventDate={setStartDate} />
       }
 
       <Dialog open={draggedOpen} onClose={handleDraggedClose}>

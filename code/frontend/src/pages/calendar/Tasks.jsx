@@ -8,7 +8,7 @@ import { FormControl } from '@mui/material';
 import { add } from 'date-fns';
 
 
-const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag, draggedTasksDialog, taskToDelete }) => {
+const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag, draggedTasksDialog, taskToDelete, taskDate, setTaskDate }) => {
     // Utils
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
 
@@ -54,19 +54,17 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
         if (tasksDialog && !taskToModify) {
             handleOpenDialog();
             taskFinish();
+            setTaskDate('');
         }
     }, [tasksDialog, taskToModify, taskToDrag, taskToDelete]);
 
 
     useEffect(() => {
-        console.log("son montato")
-        console.log(new Date())
-        console.log(tasks)
+
         for (let i = 0; i < tasks.length; i++) {
-            console.log('ciao')
-            console.log('task end', new Date(tasks[i].end))
+
             if (new Date(tasks[i].end) <= new Date()) {
-                console.log('task in ritardo')
+
                 updateTask(tasks[i]);
             } else if (tasks[i].isLate) {
                 updateTask(tasks[i]);
@@ -111,7 +109,7 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
             updatedTask.end = new Date();
             updatedTask.isLate = true;
             modifiedTask = true;
-            console.log('modified task')
+
         } else if (updatedTask.isLate) {
             updatedTask.isLate = false;
             modifiedTask = true;
@@ -130,8 +128,6 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
             })
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data)
-
                     setTasks(data);
                 })
                 .catch(error => console.error("Error updating task:", error));
@@ -311,7 +307,7 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
         }
 
         setCurrentId(task._id);
-        console.log(task._id)
+
         if (task.isRecurring) {
             setIsRecurring(true);
             // if task is recurring then I might have clicked on a "fake" task renderized by fullcalendar, so I need to check
@@ -324,9 +320,9 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
             })
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data)
+
                     task = data;
-                    console.log(task)
+
                 })
                 .catch(error => console.error('Error fetching task:', error));
         }
@@ -384,9 +380,7 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
 
 
     const combineDateAndTime = (date, time) => {
-        console.log('im in tasks')
-        console.log(date)
-        console.log(time)
+
         let [year, month, day] = date.split('-').map(num => parseInt(num, 10));
         if (time !== '') {
             let [hours, minutes] = time.split(':').map(num => parseInt(num, 10));
@@ -399,6 +393,9 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
 
     const handleOpenDialog = (task) => {
         resetForm();
+        if(taskDate){
+            setStartDate(taskDate);
+        }
         setOpenDialog(true);
     };
 

@@ -338,6 +338,9 @@ const HomePage = () => {
               variant="outlined"
               value={eventsToDisplay}
               onChange={handleChange('eventsToDisplay')}
+              inputProps={{
+                min: 0 
+              }}
             />
             <TextField
               margin="dense"
@@ -347,6 +350,9 @@ const HomePage = () => {
               variant="outlined"
               value={tasksToDisplay}
               onChange={handleChange('tasksToDisplay')}
+              inputProps={{
+                min: 0 
+              }}
             />
             <TextField
               margin="dense"
@@ -356,6 +362,9 @@ const HomePage = () => {
               variant="outlined"
               value={studyEventsToDisplay}
               onChange={handleChange('studyEventsToDisplay')}
+              inputProps={{
+                min: 0 
+              }}
             />
           </DialogContent>
           <DialogActions>
@@ -374,7 +383,7 @@ const HomePage = () => {
           }}
         >
           <img
-            src="../../../public/background.jpg"
+            src="../../../background.jpg"
             alt="background"
             style={{
               width: '100%',
@@ -384,10 +393,13 @@ const HomePage = () => {
           />
         </Box>
         <Box display="flex" align="center" justifyContent="center" marginTop="1vh">
-          <img src="/selfie.png" alt="Selfie" style={{ width:'60vw', maxWidth: '320px', height: '15vh', minHeight:'10vh', maxHeight: '60vh' }} />
+          <img src="/selfie.png" alt="Selfie" style={{ width: '60vw', maxWidth: '320px', height: '15vh', minHeight: '10vh', maxHeight: '60vh' }} />
         </Box>
-        <Grid container sx={{ display: 'flex', position: 'relative', zIndex: 1, alignItems: 'center', justifyContent: 'center', height: '75vh', gap: "2vh"}}>
+        <Grid container sx={{ display: 'flex', position: 'relative', zIndex: 1, alignItems: 'center', justifyContent: 'center', height: '75vh', gap: "2vh" }}>
           <Grid item xs={10} md={3}>
+            <Button onClick={handleCalendarSettingsClick} sx={{ position: 'absolute', padding: 0, marginTop: '1vh', zIndex: '1000' }}>
+              <SettingsIcon sx={{ color: "white" }} />
+            </Button>
             <Card variant="outlined" sx={{
               backgroundColor: '#ffffff15',
               minHeight: '20vh',

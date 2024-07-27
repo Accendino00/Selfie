@@ -7,7 +7,7 @@ import { Form } from 'react-router-dom';
 import { FormControl } from '@mui/material';
 
 
-const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify, StudyEventFinish, StudyEventToDrag, draggedStudyEventsDialog }) => {
+const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify, StudyEventFinish, StudyEventToDrag, draggedStudyEventsDialog, studyEventDate, setStudyEventDate }) => {
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
     const [StudyEvents, setStudyEvents] = useState([]);
     const [openDialog, setOpenDialog] = useState(false);
@@ -40,6 +40,7 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
         if (StudyEventsDialog && !StudyEventToModify) {
             handleOpenDialog();
             StudyEventFinish();
+            setStudyEventDate('');
         }
     }, [StudyEventsDialog, StudyEventToModify, StudyEventToDrag]);
 
@@ -297,6 +298,9 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
 
     const handleOpenDialog = (StudyEvent) => {
         resetForm();
+        if (studyEventDate) {
+            setStartDate(studyEventDate);
+        }
         setOpenDialog(true);
     };
 
