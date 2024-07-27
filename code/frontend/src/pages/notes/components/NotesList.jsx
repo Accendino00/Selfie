@@ -146,6 +146,8 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
             return dir === 'asc' ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title);
         } else if (key === 'creationDate' || key === 'modificationDate') {
             return dir === 'asc' ? new Date(a[key]) - new Date(b[key]) : new Date(b[key]) - new Date(a[key]);
+        } else if (key === 'length') {
+            return dir === 'asc' ? a.characters - b.characters : b.characters - a.characters;
         }
     });
 
@@ -218,6 +220,8 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                         <MenuItem value="creationDate-desc">Data di Creazione Decrescente</MenuItem>
                         <MenuItem value="modificationDate-asc">Data di Modifica Crescente</MenuItem>
                         <MenuItem value="modificationDate-desc">Data di Modifica Decrescente</MenuItem>
+                        <MenuItem value="length-asc">Lunghezza Note Crescente</MenuItem>
+                        <MenuItem value="length-desc">Lunghezza Note Decrescente</MenuItem>
                     </Select>
                     <FormControlLabel
                         control={<Checkbox
@@ -295,6 +299,8 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                         <MenuItem value="creationDate-desc">Data di Creazione Decrescente</MenuItem>
                         <MenuItem value="modificationDate-asc">Data di Modifica Crescente</MenuItem>
                         <MenuItem value="modificationDate-desc">Data di Modifica Decrescente</MenuItem>
+                        <MenuItem value="length-asc">Lunghezza Note Crescente</MenuItem>
+                        <MenuItem value="length-desc">Lunghezza Note Decrescente</MenuItem>
                     </Select>
                     <FormControlLabel
                         control={<Checkbox

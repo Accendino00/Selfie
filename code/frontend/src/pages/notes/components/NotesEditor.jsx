@@ -30,6 +30,8 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
     const [open, setOpen] = useState(false);
     const [charCount, setCharCount] = useState(0);
 
+    const quillRef = React.useRef(null);
+
 
     useEffect(() => {
         if (clear) {
@@ -186,7 +188,10 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
 
     const handleInputChange = (value) => {
         setNoteInput(value);
-        setCharCount(Quill.getLength());
+        if (quillRef.current) {
+            const charCount = quillRef.current.getEditor().getLength() - 1; // Get character count
+            setCharCount(charCount);
+        }
     };
     
 
@@ -252,7 +257,7 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
 
                 <Grid container direction="column">
                     <Box display="flex" style={styles.quill}>
-                        <ReactQuill theme="snow" value={noteInput} onChange={handleInputChange} modules={modules} style={styles.actualQuill} />
+                        <ReactQuill ref={quillRef} theme="snow" value={noteInput} onChange={handleInputChange} modules={modules} style={styles.actualQuill} />
                     </Box>
                     <Box display="flex" sx={{ marginTop: '30px' }}>
                         <span 

@@ -12,6 +12,9 @@ import PauseIcon from '@mui/icons-material/Pause';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import StopIcon from '@mui/icons-material/Stop';
 import PlayCircleFilledWhiteIcon from '@mui/icons-material/PlayCircleFilledWhite';
+import { Cookie } from '@mui/icons-material';
+import Cookies from 'js-cookie';
+import StarIcon from '@mui/icons-material/Star';
 
 const PomodoroPage = () => {
     const params = useParams();
@@ -35,8 +38,11 @@ const PomodoroPage = () => {
     const [minutes, setMinutes] = useState(0);
     const [seconds, setSeconds] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
+    const [userId, setUserId] = useState('');
+    const [creationDate, setCreationDate] = useState('');
 
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
+    const token = Cookies.get('token');
 
     useEffect(() => {
         if (!isTokenLoading) {
@@ -45,6 +51,30 @@ const PomodoroPage = () => {
             }
         }
     }, [loginStatus, isTokenLoading]);
+
+    useEffect(() => {
+        if (loginStatus) {
+            const fetchUserId = async () => {
+                try {
+                    const response = await fetch(`/api/getUserId?username=${username}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                        },
+                    });
+                    if (response.ok) {
+                        const fetchedUserId = await response.json();
+                        setUserId(fetchedUserId);
+                    } else {
+                        console.error('Failed to fetch user id');
+                    }
+                }
+                catch (error) {
+                    console.error('Failed to fetch user id', error);
+                }
+            }
+            fetchUserId();
+        }
+    }, [loginStatus, username, token]); // Dependencies to fetch user ID
 
     useEffect(() => {
         calculateCycleSettings(totalMinutes);
@@ -81,6 +111,39 @@ const PomodoroPage = () => {
 
         return () => clearInterval(interval);
     }, [isActive, oneCycle, hours, minutes, seconds]);
+
+    const handleSavePomodoro = async () => {
+        const pomodoro = {
+            user: userId,
+            studyTime: studyTime,
+            breakTime: breakTime,
+            cycles: cycles,
+            totalMinutes: totalMinutes,
+            remainingCycles: remainingCycles,
+            totalSeconds: totalSeconds,
+            creationDate: new Date().toISOString(),
+        };
+
+        try {
+            const response = await fetch('/api/savePomodoro', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify(pomodoro),
+            });
+            if (response.ok) {
+                const savedPomodoro = await response.json();
+                console.log('Pomodoro saved:', savedPomodoro);
+            } else {
+                console.error('Failed to save pomodoro');
+            }
+        } catch (error) {
+            console.error('Failed to save pomodoro', error);
+        }
+    };
+
 
     const handleEndOfCycle = () => {
         alert('Ciclo completato');
@@ -297,6 +360,9 @@ const PomodoroPage = () => {
                             <StopIcon />
                         </Button>
                     </Grid>
+                    <Button onClick={handleSavePomodoro} sx={styles.button}>
+                        <StarIcon />
+                    </Button>
 
                 </Grid>
             

@@ -70,6 +70,7 @@ app.use("/api", require(config.ROUTESERVIZI + "/account"))
 app.use("/api", require(config.ROUTESERVIZI + "/tasks"))
 app.use("/api", require(config.ROUTESERVIZI + "/email"))
 app.use("/api", require(config.ROUTESERVIZI + "/studyevents"))
+app.use("/api", require(config.ROUTESERVIZI + "/pomodoro"))
 
 
 // Setup per mandare le richieste di "/" a "routes/webpages" package

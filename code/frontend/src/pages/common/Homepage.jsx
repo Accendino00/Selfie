@@ -1,11 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Grid, Card, CardActionArea, CardContent, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
+import { Box, Grid, Card, CardActionArea, CardContent, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Menu } from '@mui/material';
 import useTokenChecker from '../../utils/useTokenChecker.jsx';
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import CircularProgress from '@mui/material/CircularProgress';
 import SettingsIcon from '@mui/icons-material/Settings';
+import { set } from 'date-fns';
+import { Select, MenuItem } from '@mui/material';
+
 
 
 const HomePage = () => {
@@ -19,7 +22,19 @@ const HomePage = () => {
   const [eventsToDisplay, setEventsToDisplay] = useState(0);
   const [tasksToDisplay, setTasksToDisplay] = useState(0);
   const [studyEventsToDisplay, setStudyEventsToDisplay] = useState(0);
-
+  const [userId, setUserId] = useState('');
+  const [lastCreatedNote, setLastCreatedNote] = useState('');
+  const [firstCreatedNote, setFirstCreatedNote] = useState('');
+  const [lastPomodoro, setLastPomodoro] = useState('');
+  const [firstPomodoro, setFirstPomodoro] = useState('');
+  const [lastModifiedNote, setLastModifiedNote] = useState('');
+  const [firstModifiedNote, setFirstModifiedNote] = useState('');
+  const [pomodoroSettings, setPomodoroSettings] = useState(false);
+  const [noteSettings, setNoteSettings] = useState(false);
+  const [pomodoroToShow, setPomodoroToShow] = useState('creationDate-last');
+  const [noteToShow, setNoteToShow] = useState('creationDate-last');
+  const [noPomodoro, setNoPomodoro] = useState(false);
+  const [noNotes, setNoNotes] = useState(false);
 
   useEffect(() => {
     if (!isTokenLoading) {
@@ -28,6 +43,30 @@ const HomePage = () => {
       }
     }
   }, [loginStatus, isTokenLoading]);
+
+  useEffect(() => {
+    if (loginStatus) {
+        const fetchUserId = async () => {
+            try {
+                const response = await fetch(`/api/getUserId?username=${username}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                if (response.ok) {
+                    const fetchedUserId = await response.json();
+                    setUserId(fetchedUserId);
+                } else {
+                    console.error('Failed to fetch user id');
+                }
+            }
+            catch (error) {
+                console.error('Failed to fetch user id', error);
+            }
+        }
+        fetchUserId();
+    }
+}, [loginStatus, username, token]);
 
   useEffect(() => {
     const storedEventsToDisplay = localStorage.getItem('eventsToDisplay');
@@ -98,6 +137,209 @@ const HomePage = () => {
     fetchStudyEvents();
     fetchEvents();
   }, [token, username, eventsToDisplay, tasksToDisplay, studyEventsToDisplay, events]);
+
+  
+  const fetchLastCreatedNote = async () => {
+    try {
+      const response = await fetch(`/api/getLastCreatedNote?userId=${userId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+  
+      if (!response.ok) {
+        // Handle 404 or other errors
+        if (response.status === 404) {
+          setNoNotes(true);
+        } else {
+          console.error(`Error fetching last created note: ${response.statusText}`);
+        }
+        return;
+      }
+  
+      const data = await response.json();
+      setLastCreatedNote(data);
+      setLastModifiedNote('');
+      setFirstModifiedNote('');
+      setFirstCreatedNote('');
+      setNoNotes(false);
+  
+    } catch (error) {
+      console.error('Error fetching last created note:', error);
+      setNoNotes(true);
+    }
+  };
+
+  const fetchLastPomodoro = async () => {
+    try {
+      const response = await fetch(`/api/getLastPomodoro?userId=${userId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+  
+      if (!response.ok) {
+        // Handle 404 or other errors
+        if (response.status === 404) {
+          setNoPomodoro(true);
+        } else {
+          console.error(`Error fetching last pomodoro: ${response.statusText}`);
+        }
+        return;
+      }
+  
+      const data = await response.json();
+      setLastPomodoro(data);
+      setFirstPomodoro('');
+      setNoPomodoro(false);
+  
+    } catch (error) {
+      console.error('Error fetching last pomodoro:', error);
+      setNoPomodoro(true);
+    }
+  };
+  
+  useEffect(() => {
+    if (loginStatus) {
+      fetchLastCreatedNote();
+      fetchLastPomodoro();
+    }
+  }, [loginStatus, userId]);
+  
+
+  const fetchFirstCreatedNote = async () => {
+    try {
+      const response = await fetch(`/api/getFirstCreatedNote?userId=${userId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      setFirstCreatedNote(data);
+      setLastModifiedNote('');
+      setFirstModifiedNote('');
+      setLastCreatedNote('');
+
+    } catch (error) {
+      console.error('Error fetching first created note:', error);
+    }
+  };
+
+  const fetchFirstPomodoro = async () => {
+    try {
+      const response = await fetch(`/api/getFirstPomodoro?userId=${userId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      setFirstPomodoro(data);
+      setLastPomodoro('');
+
+    } catch (error) {
+      console.error('Error fetching first pomodoro:', error);
+    }
+  };
+
+  const fetchLastModifiedNote = async () => {
+    try {
+      const response = await fetch(`/api/getLastModifiedNote?userId=${userId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      setLastModifiedNote(data);
+      setFirstModifiedNote('');
+      setLastCreatedNote('');
+      setFirstCreatedNote('');
+
+    } catch (error) {
+      console.error('Error fetching last modified note:', error);
+    } 
+  };
+
+  const fetchFirstModifiedNote = async () => {
+    try {
+      const response = await fetch(`/api/getFirstModifiedNote?userId=${userId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      setFirstModifiedNote(data);
+      setLastModifiedNote('');
+      setLastCreatedNote('');
+      setFirstCreatedNote('');
+
+    } catch (error) {
+      console.error('Error fetching first modified note:', error);
+    }
+  };
+
+  const handlePomodoroSettingsClick = () => {
+    setPomodoroSettings(true);
+  }
+
+  const handlePomodoroSettingsClose = () => {
+    setPomodoroSettings(false);
+  }
+
+  const handlePomodoroToShowChange = (event) => {
+    setPomodoroToShow(event.target.value);
+  }
+
+  const handleNoteSettingsClick = () => {
+    setNoteSettings(true);
+  }
+
+  const handleNoteSettingsClose = () => {
+    setNoteSettings(false);
+  }
+
+  const handleNoteToShowChange = (event) => {
+    setNoteToShow(event.target.value);
+  }
+
+  const handlePomodoroSettingsSave = async () => {
+    setPomodoroSettings(false);
+    localStorage.setItem('pomodoroToShow', pomodoroToShow);
+  
+    try {
+      if (pomodoroToShow === 'creationDate-first') {
+        await fetchFirstPomodoro();
+      } else if (pomodoroToShow === 'creationDate-last') {
+        await fetchLastPomodoro();
+      }
+    } catch (error) {
+      console.error('Error fetching pomodoro:', error);
+    }
+  };
+  
+  const handleNoteSettingsSave = async () => {
+    setNoteSettings(false);
+    localStorage.setItem('noteToShow', noteToShow);
+  
+    try {
+      if (noteToShow === 'creationDate-first') {
+        await fetchFirstCreatedNote();
+      } else if (noteToShow === 'creationDate-last') {
+        await fetchLastCreatedNote();
+      } else if (noteToShow === 'modifiedDate-first') {
+        await fetchFirstModifiedNote();
+      } else if (noteToShow === 'modifiedDate-last') {
+        await fetchLastModifiedNote();
+      }
+    } catch (error) {
+      console.error('Error fetching note:', error);
+    }
+  };
 
 
   function getNextYear() {
@@ -373,6 +615,86 @@ const HomePage = () => {
           </DialogActions>
         </Dialog>
 
+        <Dialog open={pomodoroSettings} onClose={handlePomodoroSettingsClose}>
+          <DialogTitle>Configure Your Settings</DialogTitle>
+          <DialogContent>
+          <Select
+            value={pomodoroToShow}
+            onChange={handlePomodoroToShowChange}
+            displayEmpty
+            inputProps={{ 'aria-label': 'Without label' }}
+
+            MenuProps={{
+                PaperProps: {
+                    style: {
+                        color: '#53ddf0',
+                        backgroundColor: '#111119',
+                        fontSize: '1.2rem',
+                        fontWeight: 'bold',
+                        backgroundColor: '#111119',
+                        fontSize: '1.2rem',
+                        fontWeight: 'bold'
+                    }
+                }
+            }}
+            sx={{
+                '& .MuiSelect-select': {
+                    color: '#7d5ffc',
+
+                }
+            }}
+          >
+              <MenuItem value="creationDate-first">Creation Date (First)</MenuItem>
+              <MenuItem value="creationDate-last">Creation Date (Last)</MenuItem>
+          </Select>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handlePomodoroSettingsClose}>Cancel</Button>
+            <Button onClick={handlePomodoroSettingsSave} color="primary">Save</Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog open={noteSettings} onClose={handleNoteSettingsClose}>
+          <DialogTitle>Configure Your Settings</DialogTitle>
+          <DialogContent>
+          <Select
+            value={noteToShow}
+            onChange={handleNoteToShowChange}
+            displayEmpty
+            inputProps={{ 'aria-label': 'Without label' }}
+
+            MenuProps={{
+              PaperProps: {
+                  style: {
+                      color: '#53ddf0',
+                      backgroundColor: '#111119',
+                      fontSize: '1.2rem',
+                      fontWeight: 'bold',
+                      backgroundColor: '#111119',
+                      fontSize: '1.2rem',
+                      fontWeight: 'bold'
+                  }
+              }
+              }}
+              sx={{
+                  '& .MuiSelect-select': {
+                      color: '#7d5ffc',
+
+                  }
+              }}
+            >
+                <MenuItem value="creationDate-first">Creation Date (First)</MenuItem>
+                <MenuItem value="creationDate-last">Creation Date (Last)</MenuItem>
+                <MenuItem value="modifiedDate-first">Modified Date (First)</MenuItem>
+                <MenuItem value="modifiedDate-last">Modified Date (Last)</MenuItem>
+            </Select>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleNoteSettingsClose}>Cancel</Button>
+            <Button onClick={handleNoteSettingsSave} color="primary">Save</Button>
+          </DialogActions>
+        </Dialog>
+
         <Box
           sx={{
             backgroundColor: 'rgba(0, 0, 30, 0.99)',
@@ -434,6 +756,9 @@ const HomePage = () => {
             </Card>
           </Grid>
           <Grid item xs={10} md={3}>
+            <Button onClick={handlePomodoroSettingsClick} sx={{ position: 'absolute', padding: 0, marginTop: '1vh', zIndex: '1000' }}>
+              <SettingsIcon sx={{ color: "white" }} />
+            </Button>
             <Card variant="outlined" sx={{
               backgroundColor: '#ffffff15',
               minHeight: '20vh',
@@ -462,12 +787,36 @@ const HomePage = () => {
                   <Typography variant="body2" color="#ffffffdf" align="center">
                     Manage your time using the Pomodoro technique.
                   </Typography>
+                  {lastPomodoro && (
+                    <Box>
+                      <Typography variant="body2" color="#ffffffdf">Study Time: {lastPomodoro.studyTime}</Typography>
+                      <Typography variant="body2" color="#ffffffdf">Break Time: {lastPomodoro.breakTime}</Typography>
+                      <Typography variant="body2" color="#ffffffdf">Total Minutes: {lastPomodoro.totalMinutes}</Typography>
+                      <Typography variant="body2" color="#ffffffdf">Cycles: {lastPomodoro.cycles}</Typography>
+                      <Typography variant="body2" color="#ffffffdf">Remaining Cycles: {lastPomodoro.remainingCycles}</Typography>
+                    </Box>
+                  )}
+                  {firstPomodoro && (
+                    <Box>
+                      <Typography variant="body2" color="#ffffffdf">Study Time: {firstPomodoro.studyTime}</Typography>
+                      <Typography variant="body2" color="#ffffffdf">Break Time: {firstPomodoro.breakTime}</Typography>
+                      <Typography variant="body2" color="#ffffffdf">Total Minutes: {firstPomodoro.totalMinutes}</Typography>
+                      <Typography variant="body2" color="#ffffffdf">Cycles: {firstPomodoro.cycles}</Typography>
+                      <Typography variant="body2" color="#ffffffdf">Remaining Cycles: {firstPomodoro.remainingCycles}</Typography>
+                    </Box>
+                  )}
+                  {noPomodoro && (
+                    <Typography variant="body2" color="#ffffffdf">No pomodoro found.</Typography>
+                  )}
                 </CardContent>
               </CardActionArea>
             </Card>
           </Grid>
 
           <Grid item xs={10} md={3}>
+            <Button onClick={handleNoteSettingsClick} sx={{ position: 'absolute', padding: 0, marginTop: '1vh', zIndex: '1000' }}>
+              <SettingsIcon sx={{ color: "white" }} />
+            </Button>
             <Card variant="outlined" sx={{
               backgroundColor: '#ffffff15',
               minHeight: '20vh',
@@ -496,6 +845,33 @@ const HomePage = () => {
                   <Typography variant="body2" color="#ffffffdf" align="center">
                     Create and organize your notes.
                   </Typography>
+                  {lastCreatedNote && (
+                    <Box>
+                      <Typography variant="body2" color="#ffffffdf">Title: {lastCreatedNote.title}</Typography>
+                      <Typography variant="body2" color="#ffffffdf">Category: {lastCreatedNote.category}</Typography>
+                    </Box>
+                  )}
+                  {firstCreatedNote && (
+                    <Box>
+                      <Typography variant="body2" color="#ffffffdf">Title: {firstCreatedNote.title}</Typography>
+                      <Typography variant="body2" color="#ffffffdf">Category: {firstCreatedNote.category}</Typography>
+                    </Box>
+                  )}
+                  {lastModifiedNote && (
+                    <Box>
+                      <Typography variant="body2" color="#ffffffdf">Title: {lastModifiedNote.title}</Typography>
+                      <Typography variant="body2" color="#ffffffdf">Category: {lastModifiedNote.category}</Typography>
+                    </Box>
+                  )}
+                  {firstModifiedNote && (
+                    <Box>
+                      <Typography variant="body2" color="#ffffffdf">Title: {firstModifiedNote.title}</Typography>
+                      <Typography variant="body2" color="#ffffffdf">Category: {firstModifiedNote.category}</Typography>
+                    </Box>
+                  )}
+                  {noNotes && (
+                    <Typography variant="body2" color="#ffffffdf">No notes found.</Typography>
+                  )}
                 </CardContent>
               </CardActionArea>
             </Card>
