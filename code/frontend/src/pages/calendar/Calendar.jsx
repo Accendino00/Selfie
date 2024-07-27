@@ -669,11 +669,16 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     }
     if (chosenCalendars.includes('tasks')) {
       for (let i = 0; i < tasks.length; i++) {
-
-        allEvents.push(tasks[i]);
+        if(!tasks[i].completed){
+          allEvents.push(tasks[i]);
+        }
 
         // Check if the task is late
-        if (!tasks[i].isRecurring && new Date(tasks[i].end) < new Date() || tasks[i].isLate) {
+        if (!tasks[i].isRecurring && new Date(tasks[i].end) <= new Date()) {
+          lateTasks.push(tasks[i]);
+
+        } else if((tasks[i].isRecurring && new Date(tasks[i].endRecur) <= new Date())){
+          //console.log((tasks[i].isRecurring && tasks[i].isLate))
           lateTasks.push(tasks[i]);
 
         } else {

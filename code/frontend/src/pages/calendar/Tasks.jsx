@@ -5,7 +5,7 @@ import useTokenChecker from '../../utils/useTokenChecker';
 import cookies from 'js-cookie';
 import { Form } from 'react-router-dom';
 import { FormControl } from '@mui/material';
-import { add } from 'date-fns';
+import { add, set } from 'date-fns';
 
 
 const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag, draggedTasksDialog, taskToDelete, taskDate, setTaskDate }) => {
@@ -64,14 +64,49 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
         for (let i = 0; i < tasks.length; i++) {
 
             if (new Date(tasks[i].end) <= new Date()) {
-
                 updateTask(tasks[i]);
-            } else if (tasks[i].isLate) {
+            } else if (tasks[i].isRecurring && new Date(tasks[i].endRecur) <= new Date()) {
                 updateTask(tasks[i]);
-            }
+            } 
         }
 
     }, [tasks]);
+
+
+    function calculateOriginalStartDate(endDate, timesToRepeat) {
+        const endDateObj = new Date(endDate);
+        endDateObj.setDate(endDateObj.getDate() - (timesToRepeat) * 7); // Subtract 7 days for each week to repeat
+        return endDateObj;
+    }
+
+    function nextSameWeekday(startDate) {
+        // Create a Date object for the start date
+        const startDay = new Date(startDate);
+        // Get the weekday from the start date
+        const startWeekday = startDay.getDay();  // getDay() returns 0 (Sunday) to 6 (Saturday)
+
+        // Create a Date object for today
+        const today = new Date();
+        // Get today's weekday
+        const todayWeekday = today.getDay();
+
+        // Calculate days to add to reach the next occurrence of the same weekday
+        let daysToAdd = startWeekday - todayWeekday;
+        if (daysToAdd <= 0) {
+            daysToAdd += 7;  // Ensure it's in the future
+        }
+
+        // Set the date to the next occurrence
+        today.setDate(today.getDate() + daysToAdd);
+
+        return today;
+    }
+
+    function addSevenDays(date) {
+        const newDate = new Date(date); // Create a new Date object to avoid mutating the original date
+        newDate.setDate(newDate.getDate() + 7); // Subtract 7 days
+        return newDate;
+    }
 
     // TODO list:
     /**
@@ -102,19 +137,35 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
         };
 
         let modifiedTask = false;
-
         // Esegui i controlli sul task (in ritardo, completato, etc)
-        if (new Date(updatedTask.end) <= new Date()) {
-            updatedTask.start = new Date();
-            updatedTask.end = new Date();
+        if (updatedTask.isRecurring) {
+            if (task.daysOfWeek) {
+                updatedTask.daysOfWeek = task.daysOfWeek;
+            }
+            
+            if (new Date(task.endRecur) <= addSevenDays(new Date())) {
+                
+                updatedTask.start = formatDate(nextSameWeekday(task.start));
+            }
+            updatedTask.endRecur = calculateRepeatEndDate(updatedTask.start, updatedTask.timesToRepeat);
+            updatedTask.startRecur = calculateOriginalStartDate(updatedTask.endRecur, parseInt(updatedTask.timesToRepeat) + 1);
             updatedTask.isLate = true;
+            updatedTask.end = updatedTask.endRecur
             modifiedTask = true;
+            console.log('Task in ritardo', updatedTask);
+        } else {
 
-        } else if (updatedTask.isLate) {
-            updatedTask.isLate = false;
-            modifiedTask = true;
+            if (new Date(updatedTask.end) <= new Date()) {
+                updatedTask.start = new Date();
+                updatedTask.end = new Date();
+                updatedTask.isLate = true;
+                modifiedTask = true;
+
+            } else if (updatedTask.isLate) {
+                updatedTask.isLate = false;
+                modifiedTask = true;
+            }
         }
-
         if (modifiedTask) {
             // Esegui la fetch al backend
             // se fetch va a buon fine, modifichi task, lo ricerchi nella lista dei task e lo modifichi
@@ -353,6 +404,19 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
 
     }
 
+
+    function formatDate(date) {
+        const year = date.getFullYear(); // Gets the full year (4 digits)
+        const month = date.getMonth() + 1; // getMonth() is 0-based, add 1 to make it 1-based
+        const day = date.getDate(); // Gets the day of the month
+
+        // Function to add leading zero if necessary
+        const pad = (n) => n < 10 ? '0' + n : n;
+
+        // Format the date string
+        return `${year}-${pad(month)}-${pad(day)}`;
+    }
+
     const dateToUsable = (year, month, date) => {
         const pad = (n) => n < 10 ? '0' + n : n;
         return `${year}-${pad(month + 1)}-${pad(date)}`;
@@ -393,7 +457,7 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
 
     const handleOpenDialog = (task) => {
         resetForm();
-        if(taskDate){
+        if (taskDate) {
             setStartDate(taskDate);
         }
         setOpenDialog(true);
@@ -459,14 +523,21 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
 
     const handleToggleComplete = (id) => {
         setCompleted(!completed);
-        const newTasks = tasks.map(task => {
-            if (task._id === id) {
-                return { ...task, completed: !task.completed };
-            }
-            return task;
-        });
-        setTasks(newTasks);
+        // Check if tasks is an array and handle accordingly
+        if (Array.isArray(tasks)) {
+            const newTasks = tasks.map(task => {
+                if (task._id === id) {
+                    return { ...task, completed: !task.completed };
+                }
+                return task;
+            });
+            setTasks(newTasks);
+        } else if (tasks && tasks._id === id) {
+            // Handle the case where tasks is a single task object
+            setTasks({ ...tasks, completed: !tasks.completed });
+        }
     };
+
 
     const listItemStyle = (completed) => ({
         textDecoration: completed ? 'line-through' : 'none',
