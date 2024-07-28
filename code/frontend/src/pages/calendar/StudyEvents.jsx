@@ -61,16 +61,64 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
 
     useEffect(() => {
 
-        for (let i = 0; i < StudyEvents.length; i++) {
-
+       /* for (let i = 0; i < StudyEvents.length; i++) {
             if (new Date(StudyEvents[i].end) <= new Date()) {
                 updateStudyEvent(StudyEvents[i]);
             } else if (StudyEvents[i].isRecurring && new Date(StudyEvents[i].endRecur) <= new Date()) {
                 updateStudyEvent(StudyEvents[i]);
             }
         }
+            */
+
+        let counter = 0;
+        let currentStudyTime = 0;
+        let currentBreakTime = 0;
+        let currentCycles = 0;
+        let currentTotalMinutes = 0;
+        let dates = [];
+        for (let i = 0; i < StudyEvents.length; i++) {
+            if (new Date(StudyEvents[i].start) <= new Date()) {
+                counter++;
+                currentStudyTime += StudyEvents[i].studyTime;
+                currentBreakTime += StudyEvents[i].breakTime;
+                currentCycles += StudyEvents[i].cycles;
+                currentTotalMinutes += StudyEvents[i].totalMinutes;
+                dates.push(StudyEvents[i].start);
+                console.log('dates', dates)
+
+            }
+        }
+        if (counter > 1) {
+
+            fetch(`/api/modifyAndDeleteStudyEventsFromPomodoro`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    username: username,
+                    dates: dates,
+                    studyTime: currentStudyTime,
+                    breakTime: currentBreakTime,
+                    totalMinutes: currentTotalMinutes,
+                    cycles: currentCycles,
+                }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    
+                }
+                )
+                .catch((error) => {
+                    console.error('Failed to modify study events', error);
+                }
+                );
+        }
 
     }, [StudyEvents]);
+
+    
 
 
     const updateStudyEvent = (StudyEvent) => {

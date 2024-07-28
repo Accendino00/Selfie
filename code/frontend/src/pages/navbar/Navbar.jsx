@@ -27,6 +27,7 @@ import TimeMachineIcon from '../common/components/TimeMachineIcon';
 import { set } from 'date-fns';
 import WarningIcon from '@mui/icons-material/Warning';
 import NotificationImportantIcon from '@mui/icons-material/NotificationImportant';
+import HomeIcon from '@mui/icons-material/Home';
 
 const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
   const navigate = useNavigate();
@@ -262,7 +263,7 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
             <Grid item xs>
               <Typography variant="body2" color="text.secondary" align="center" style={{ marginLeft: "5px", marginRight: "5px", borderRadius: "10px" }}>
                 {selectedNotification === "30 min" || selectedNotification === "1 hour" && <WarningIcon />}
-                {selectedNotification === "12 hours" || selectedNotification === "6 hours" && <NotificationImportantIcon /> }
+                {selectedNotification === "12 hours" || selectedNotification === "6 hours" && <NotificationImportantIcon />}
                 {item.title}
               </Typography>
               <Typography align="center" sx={{ marginBottom: '5px' }}>
@@ -316,7 +317,7 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
 
   function calculateAllRecurrencies(event, finalDate) {
     const recurrencies = [];
-    
+
     let nextStartDate = new Date(event.start);
     let nextEndDate = null;
 
@@ -491,20 +492,32 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
 
   if (loginStatus) {
     return (
-      <AppBar position="static" sx={{ height: '7vh', color: "#ffffff", backgroundColor: '#7d5ffc' }}>
+      <AppBar position="static" sx={{ color: "#ffffff", backgroundColor: '#7d5ffc' }}>
         <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="home"
-            onClick={() => navigate('/home/')}
-          >
-            <img
-              src="../../selfie.png"
-              alt="Home"
-              style={{ width: 100, height: 48, marginRight: 15 }}
-            />
 
-          </IconButton>
+          {
+          window.innerWidth > 600 ?
+            <IconButton
+              color="inherit"
+              aria-label="home"
+              onClick={() => navigate('/home/')}
+            >
+              <img
+                src="../../selfie.png"
+                alt="Home"
+                style={{ width: 100, height: 48, marginRight: 15 }}
+              />
+
+            </IconButton>
+            :
+            <IconButton
+              color="inherit"
+              aria-label="home"
+              onClick={() => navigate('/home/')}
+            >
+              <HomeIcon />
+            </IconButton>
+          }
           <IconButton
             edge="start"
             color="inherit"

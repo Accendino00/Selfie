@@ -6,7 +6,8 @@ const styles = {
         alignItems: 'center',
         backgroundColor: '#111119',
         height: '93vh',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        borderRadius: '20px',
     },
     heading: {
         marginTop: '1vh',
