@@ -256,7 +256,7 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
       .map((item, index) => (
         <MenuItem key={index}>
           <Grid container alignItems="center" justifyContent="center">
-                <Box width="10px" height="10px" bgcolor={item.color} marginRight="4px" />
+            <Box width="10px" height="10px" bgcolor={item.color} marginRight="4px" />
             <Grid item xs>
               <Typography variant="body2" color="text.secondary" align="center" style={{ marginLeft: "5px", marginRight: "5px", borderRadius: "10px" }}>
                 {item.title}
@@ -312,13 +312,13 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
 
   function calculateAllRecurrencies(event, finalDate) {
     const recurrencies = [];
-
+    
     let nextStartDate = new Date(event.start);
     let nextEndDate = null;
 
     if (event.end && !event.isTask) {
       nextEndDate = new Date(event.end);
-    } else if (event.endRecur && event.isTask || event.isStudyEvent) {
+    } else if (event.endRecur && (event.isTask || event.isStudyEvent)) {
       nextEndDate = new Date(event.endRecur);
     }
 
@@ -326,51 +326,69 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
 
     // Determine the maximum number of recurrences, if specified
     const maxRecurrences = event.timesToRepeat ? Math.min(event.timesToRepeat, 52) : 52; // Assuming a limit of 52 repetitions or one year
-
     // Loop until the maximum repetitions are met or the date exceeds the finalDate
     while ((event.timesToRepeat ? counter < maxRecurrences : true) && nextStartDate.getFullYear() <= finalDate) {
-      let startDate = formatDate(nextStartDate)
-      let endDate = nextEndDate ? formatDate(nextEndDate) : null
-      let newEvent = {};
+      // Loop through each day of the week
+      for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+        let currentDay = (nextStartDate.getDay() + dayOffset) % 7;
 
-      if (!event.isTask) {
-        newEvent = {
-          title: event.title,
-          description: event.description,
-          color: event.color,
-          allDay: event.allDay,
-          start: startDate,
-          end: endDate,
-          calendar: event.calendar,
-          name: event.name,
-          location: event.location,
-          invitedUsers: event.invitedUsers,
-          shared: event.shared,
-          isRecurring: event.isRecurring
-        };
-        // else da rivedere boh
-      } else {
-        newEvent = {
-          title: event.title,
-          description: event.description,
-          color: event.color,
-          allDay: event.allDay,
-          start: startDate,
-          end: endDate,
-          name: event.name,
-          location: event.location,
-          completed: event.completed,
-          isTask: event.isTask,
-          isRecurring: event.isRecurring,
-          timesToRepeat: event.timesToRepeat,
-          endRecur: event.endRecur
-        };
+        if (event.daysOfWeek && event.daysOfWeek.includes(currentDay)) {
+          let eventDate = new Date(nextStartDate);
+          eventDate.setDate(nextStartDate.getDate() + dayOffset);
+
+          if (eventDate.getFullYear() > finalDate) {
+            //console.log(event)
+            break;
+          }
+
+          let startDate = formatDate(eventDate);
+          let endDate = nextEndDate ? formatDate(new Date(eventDate.getTime() + (nextEndDate.getTime() - nextStartDate.getTime()))) : null;
+
+          let newEvent = {};
+
+          if (!event.isTask) {
+            newEvent = {
+              title: event.title,
+              description: event.description,
+              color: event.color,
+              allDay: event.allDay,
+              start: startDate,
+              end: endDate,
+              calendar: event.calendar,
+              name: event.name,
+              location: event.location,
+              invitedUsers: event.invitedUsers,
+              shared: event.shared,
+              isRecurring: event.isRecurring
+            };
+          } else {
+            newEvent = {
+              title: event.title,
+              description: event.description,
+              color: event.color,
+              allDay: event.allDay,
+              start: startDate,
+              end: endDate,
+              name: event.name,
+              location: event.location,
+              completed: event.completed,
+              isTask: event.isTask,
+              isRecurring: event.isRecurring,
+              timesToRepeat: event.timesToRepeat,
+              endRecur: event.endRecur
+            };
+          }
+
+          recurrencies.push(newEvent);
+          counter++; // Increment the repetition counter
+
+          if (event.timesToRepeat && counter >= maxRecurrences) {
+            break;
+          }
+        }
       }
-
-      recurrencies.push(newEvent);
-      counter++; // Increment the repetition counter
-
-      // Increment the date by 1 week
+      //console.log('newevent', recurrencies);
+      // Move to the next week
       nextStartDate.setDate(nextStartDate.getDate() + 7);
       if (nextEndDate) {
         nextEndDate.setDate(nextEndDate.getDate() + 7);
@@ -379,6 +397,12 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
 
     return recurrencies;
   }
+
+  function formatDate(date) {
+    // Helper function to format the date as required
+    return date.toISOString().split('T')[0];
+  }
+
 
   function getFirstUsefulDate(event) {
     const recurrencies = calculateAllRecurrencies(event, getNextYear());
