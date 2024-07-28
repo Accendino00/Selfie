@@ -106,7 +106,6 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                     setCategory('');
                     setNoteInput('');
                     setCharCount(0);
-                    setIsShared(false);
                     setAccess('');
                     setUsers([]);
                     if (onNoteAdded) {
@@ -141,7 +140,7 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                         title: newTitle,
                         category: newCategory,
                         note: newNote,
-                        userId: userId,
+                        userId: noteToModify.userId,
                         characters: charCount,
                         access: noteToModify.access, // include access field
                         users: noteToModify.users, // include users field
@@ -155,7 +154,6 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                     setCategory('');
                     setNoteInput('');
                     setCharCount(0);
-                    setIsShared(false);
                     setAccess('');
                     setUsers([]);
                     setNoteToModify(null);

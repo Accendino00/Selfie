@@ -8,6 +8,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { set } from 'date-fns';
 import { Select, MenuItem } from '@mui/material';
+import MessagingComponent from './components/MessagingComponent.jsx';
+import IconButton from '@mui/material/IconButton';
 
 
 
@@ -587,6 +589,17 @@ const HomePage = () => {
           overflow: 'hidden',
         }}
       >
+        <IconButton
+          sx={{
+            position: 'absolute',
+            top: '1vh',
+            right: '1vh',
+            color: '#ffffffdf',
+            zIndex: 1000
+          }}
+        >
+          <MessagingComponent />
+        </IconButton>
         <Dialog open={calendarSettings} onClose={handleCalendarSettingsClose}>
           <DialogTitle>Configure Your Settings</DialogTitle>
           <DialogContent>
@@ -807,24 +820,24 @@ const HomePage = () => {
                   </Typography>
                   {lastPomodoro && (
                     <Box>
-                      <Typography variant="body2" color="#ffffffdf">Study Time: {lastPomodoro.studyTime}</Typography>
-                      <Typography variant="body2" color="#ffffffdf">Break Time: {lastPomodoro.breakTime}</Typography>
-                      <Typography variant="body2" color="#ffffffdf">Total Minutes: {lastPomodoro.totalMinutes}</Typography>
-                      <Typography variant="body2" color="#ffffffdf">Cycles: {lastPomodoro.cycles}</Typography>
-                      <Typography variant="body2" color="#ffffffdf">Remaining Cycles: {lastPomodoro.remainingCycles}</Typography>
+                      <Typography variant="body2" color="#53ddf0" align="center">Study Time: <span style={{ color: "#ffffffdf" }}>{lastPomodoro.studyTime}</span></Typography>
+                      <Typography variant="body2" color="#53ddf0" align="center">Break Time: <span style={{ color: "#ffffffdf" }}>{lastPomodoro.breakTime}</span></Typography>
+                      <Typography variant="body2" color="#53ddf0" align="center">Total Minutes: <span style={{ color: "#ffffffdf" }}>{lastPomodoro.totalMinutes}</span></Typography>
+                      <Typography variant="body2" color="#53ddf0" align="center">Cycles: <span style={{ color: "#ffffffdf" }}>{lastPomodoro.cycles}</span></Typography>
+                      <Typography variant="body2" color="#53ddf0" align="center">Remaining Cycles: <span style={{ color: "#ffffffdf" }}>{lastPomodoro.remainingCycles}</span></Typography>
                     </Box>
                   )}
                   {firstPomodoro && (
                     <Box>
-                      <Typography variant="body2" color="#ffffffdf">Study Time: {firstPomodoro.studyTime}</Typography>
-                      <Typography variant="body2" color="#ffffffdf">Break Time: {firstPomodoro.breakTime}</Typography>
-                      <Typography variant="body2" color="#ffffffdf">Total Minutes: {firstPomodoro.totalMinutes}</Typography>
-                      <Typography variant="body2" color="#ffffffdf">Cycles: {firstPomodoro.cycles}</Typography>
-                      <Typography variant="body2" color="#ffffffdf">Remaining Cycles: {firstPomodoro.remainingCycles}</Typography>
+                      <Typography variant="body2" color="#53ddf0" align="center">Study Time: <span style={{ color: "#ffffffdf" }}>{firstPomodoro.studyTime}</span></Typography>
+                      <Typography variant="body2" color="#53ddf0" align="center">Break Time: <span style={{ color: "#ffffffdf" }}>{firstPomodoro.breakTime}</span></Typography>
+                      <Typography variant="body2" color="#53ddf0" align="center">Total Minutes: <span style={{ color: "#ffffffdf" }}>{firstPomodoro.totalMinutes}</span></Typography>
+                      <Typography variant="body2" color="#53ddf0" align="center">Cycles: <span style={{ color: "#ffffffdf" }}>{firstPomodoro.cycles}</span></Typography>
+                      <Typography variant="body2" color="#53ddf0" align="center">Remaining Cycles: <span style={{ color: "#ffffffdf" }}>{firstPomodoro.remainingCycles}</span></Typography>
                     </Box>
                   )}
                   {noPomodoro && (
-                    <Typography variant="body2" color="#ffffffdf">No pomodoro found.</Typography>
+                    <Typography variant="body2" color="#53ddf0" align="center">No pomodoro found.</Typography>
                   )}
                 </CardContent>
               </CardActionArea>
@@ -865,30 +878,30 @@ const HomePage = () => {
                   </Typography>
                   {lastCreatedNote && (
                     <Box>
-                      <Typography variant="body2" color="#ffffffdf">Title: {lastCreatedNote.title}</Typography>
-                      <Typography variant="body2" color="#ffffffdf">Category: {lastCreatedNote.category}</Typography>
+                      <Typography variant="body2" color="#53ddf0" align="center">Title: <span style={{ color: "#ffffffdf" }}>{lastCreatedNote.title}</span></Typography>
+                      <Typography variant="body2" color="#53ddf0" align="center">Category: <span style={{ color: "#ffffffdf" }}>{lastCreatedNote.category}</span></Typography>
                     </Box>
                   )}
                   {firstCreatedNote && (
                     <Box>
-                      <Typography variant="body2" color="#ffffffdf">Title: {firstCreatedNote.title}</Typography>
-                      <Typography variant="body2" color="#ffffffdf">Category: {firstCreatedNote.category}</Typography>
+                      <Typography variant="body2" color="#53ddf0" align="center">Title: <span style={{ color: "#ffffffdf" }}>{firstCreatedNote.title}</span></Typography>
+                      <Typography variant="body2" color="#53ddf0" align="center">Category: <span style={{ color: "#ffffffdf" }}>{firstCreatedNote.category}</span></Typography>
                     </Box>
                   )}
                   {lastModifiedNote && (
                     <Box>
-                      <Typography variant="body2" color="#ffffffdf">Title: {lastModifiedNote.title}</Typography>
-                      <Typography variant="body2" color="#ffffffdf">Category: {lastModifiedNote.category}</Typography>
+                      <Typography variant="body2" color="#53ddf0" align="center">Title: <span style={{ color: "#ffffffdf" }}>{lastModifiedNote.title}</span></Typography>
+                      <Typography variant="body2" color="#53ddf0" align="center">Category: <span style={{ color: "#ffffffdf" }}>{lastModifiedNote.category}</span></Typography>
                     </Box>
                   )}
                   {firstModifiedNote && (
                     <Box>
-                      <Typography variant="body2" color="#ffffffdf">Title: {firstModifiedNote.title}</Typography>
-                      <Typography variant="body2" color="#ffffffdf">Category: {firstModifiedNote.category}</Typography>
+                      <Typography variant="body2" color="#53ddf0" align="center">Title: <span style={{ color: "#ffffffdf" }}>{firstModifiedNote.title}</span></Typography>
+                      <Typography variant="body2" color="#53ddf0" align="center">Category: <span style={{ color: "#ffffffdf" }}>{firstModifiedNote.category}</span></Typography>
                     </Box>
                   )}
                   {noNotes && (
-                    <Typography variant="body2" color="#ffffffdf">No notes found.</Typography>
+                    <Typography variant="body2" color="#53ddf0" align="center">No notes found.</Typography>
                   )}
                 </CardContent>
               </CardActionArea>
