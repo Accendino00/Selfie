@@ -25,6 +25,8 @@ import { Grid } from '@mui/material';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import TimeMachineIcon from '../common/components/TimeMachineIcon';
 import { set } from 'date-fns';
+import WarningIcon from '@mui/icons-material/Warning';
+import NotificationImportantIcon from '@mui/icons-material/NotificationImportant';
 
 const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
   const navigate = useNavigate();
@@ -259,6 +261,8 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
             <Box width="10px" height="10px" bgcolor={item.color} marginRight="4px" />
             <Grid item xs>
               <Typography variant="body2" color="text.secondary" align="center" style={{ marginLeft: "5px", marginRight: "5px", borderRadius: "10px" }}>
+                {selectedNotification === "30 min" || selectedNotification === "1 hour" && <WarningIcon />}
+                {selectedNotification === "12 hours" || selectedNotification === "6 hours" && <NotificationImportantIcon /> }
                 {item.title}
               </Typography>
               <Typography align="center" sx={{ marginBottom: '5px' }}>

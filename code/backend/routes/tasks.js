@@ -58,10 +58,13 @@ router.get('/getTasks', authenticateJWT, (req, res) => {
         try {
         const username = req.query.username;
         const tasksCollection = clientMDB.db("SelfieGD").collection('Tasks');
-        
-        tasksCollection.find({
-            name: username,
-        }).toArray().then((tasks) => {
+        const query = {
+            $or: [
+                { name: username },
+                { users: username }
+            ]
+        };
+        tasksCollection.find(query).toArray().then((tasks) => {
             const tasksWithCorrectId = tasks.map((task) => {
                 task.id = task._id.toString();
                 return task;

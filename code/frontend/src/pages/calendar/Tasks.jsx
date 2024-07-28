@@ -34,6 +34,8 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
     const [completed, setCompleted] = useState(false);
     const [draggedOpen, setDraggedOpen] = useState(false);
     const [isLate, setIsLate] = useState(false);
+    const [users, setUsers] = useState([]);
+    const [usersInput, setUsersInput] = useState('');
 
     const token = cookies.get('token');
 
@@ -241,7 +243,8 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
             isTask: true,
             completed: completed,
             borderColor: allDay ? borderColor : taskColor,
-            isLate: false
+            isLate: false,
+            users: users
         };
 
         if (isRecurring) {
@@ -439,6 +442,15 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
         ];
 
         return dayIntegers.map(dayIndex => days[dayIndex]);
+    }
+
+
+    const handleUserAdd = () => {
+        if (usersInput.trim() !== "") {
+            const updatedUsers = [...users, usersInput.trim()];
+            setUsers(updatedUsers);
+            setUsersInput("");
+        }
     }
 
 
@@ -683,6 +695,28 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
                             label="Completed?"
                         />
                     }
+                    <div>
+                    <TextField
+                    margin="dense"
+                    label="Add Users"
+                    type="text"
+                    fullWidth
+                    variant="standard"
+                    InputLabelProps={{
+                        shrink: true,
+                    }}
+                    value={usersInput}
+                    onChange={(e) => setUsersInput(e.target.value)}
+                />
+                <Button onClick={handleUserAdd}>Add</Button>
+                <div>
+                    <ul>
+                        {users.map((user, index) => (
+                        <li key={index}>{user}</li>
+                        ))}
+                    </ul>
+                </div>
+                </div>
                 </DialogContent>
                 <DialogActions>
                     {modifying && <Button onClick={() => handleDeleteTask(currentId)}>Delete</Button>}
