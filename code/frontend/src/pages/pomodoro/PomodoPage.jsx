@@ -25,11 +25,11 @@ const PomodoroPage = () => {
     const defaultCycles = 5;
     const defaultTotalMinutes = 175;  // Assuming some default total minutes
 
-    const [studyTime, setStudyTime] = useState(Number(params.studyTime) || defaultStudyTime);
-    const [breakTime, setBreakTime] = useState(Number(params.breakTime) || defaultBreakTime);
-    const [cycles, setCycles] = useState(Number(params.cycles) || defaultCycles);
-    const [remainingCycles, setRemainingCycles] = useState(Number(params.cycles) || defaultCycles);
-    const [totalMinutes, setTotalMinutes] = useState(Number(params.totalMinutes) || defaultTotalMinutes);
+    const [studyTime, setStudyTime] = useState(0);
+    const [breakTime, setBreakTime] = useState(0);
+    const [cycles, setCycles] = useState(0);
+    const [remainingCycles, setRemainingCycles] = useState(0);
+    const [totalMinutes, setTotalMinutes] = useState(0);
     const [currentId, setCurrentId] = useState(params?.currentId);
     const [totalSeconds, setTotalSeconds] = useState(totalMinutes * 60);
     const [oneCycle, setoneCycle] = useState(0);
@@ -41,6 +41,7 @@ const PomodoroPage = () => {
     const [isPaused, setIsPaused] = useState(false);
     const [userId, setUserId] = useState('');
     const [creationDate, setCreationDate] = useState('');
+    const [studyEvents, setStudyEvents] = useState([]);
 
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
     const token = Cookies.get('token');
@@ -76,6 +77,85 @@ const PomodoroPage = () => {
             fetchUserId();
         }
     }, [loginStatus, username, token]); // Dependencies to fetch user ID
+
+    useEffect(() => {
+        fetch(`/api/getStudyEvents?username=${username}`, {
+            headers: {
+                Authorization: `Bearer ${token}`, // Corrected syntax here
+            },
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                //set study events only if different from the current state
+                if (JSON.stringify(data) !== JSON.stringify(studyEvents)) setStudyEvents(data);
+
+
+            })
+            .catch((error) => {
+                console.error('Failed to fetch study events', error);
+            });
+    }, [username, token]); // Dependencies to fetch study events
+
+
+    useEffect(() => {
+        console.log("eventi studio:", studyEvents)
+        let counter = 0;
+        let currentStudyTime = 0;
+        let currentBreakTime = 0;
+        let currentCycles = 0;
+        let currentTotalMinutes = 0;
+        let dates =  [];
+        for (let i = 0; i < studyEvents.length; i++) {
+            if (new Date(studyEvents[i].start) <= new Date()) {
+                counter++;
+                setStudyTime((prevStudyTime) => prevStudyTime + studyEvents[i].studyTime);
+                setBreakTime((prevBreakTime) => prevBreakTime + studyEvents[i].breakTime);
+                setCycles((prevCycles) => prevCycles + studyEvents[i].cycles);
+                setRemainingCycles((prevRemainingCycles) => prevRemainingCycles + studyEvents[i].remainingCycles);
+                setTotalMinutes((prevTotalMinutes) => prevTotalMinutes + studyEvents[i].totalMinutes);
+                currentStudyTime += studyEvents[i].studyTime;
+                currentBreakTime += studyEvents[i].breakTime;
+                currentCycles += studyEvents[i].cycles;
+                currentTotalMinutes += studyEvents[i].totalMinutes;
+                dates.push(studyEvents[i].start);
+                console.log('dates', dates)
+
+            }
+        }
+        console.log('study time after set', studyTime)
+        if (counter > 1) {
+
+            fetch(`/api/modifyAndDeleteStudyEventsFromPomodoro`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    username: username,
+                    dates: dates,
+                    studyTime: currentStudyTime,
+                    breakTime: currentBreakTime,
+                    totalMinutes: currentTotalMinutes,
+                    cycles: currentCycles,
+                }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    setStudyTime(data.studyTime);
+                    setBreakTime(data.breakTime);
+                    setCycles(data.cycles);
+                    setTotalMinutes(data.totalMinutes);
+                }
+                )
+                .catch((error) => {
+                    console.error('Failed to modify study events', error);
+                }
+                );
+        }
+
+
+    }, [studyEvents]);
 
     useEffect(() => {
         calculateCycleSettings(totalMinutes);
@@ -283,7 +363,7 @@ const PomodoroPage = () => {
     console.log('minutes', minutes);
     console.log('seconds', seconds);
     console.log('isStudyTime', isStudyTime);
-    
+
 
 
 
