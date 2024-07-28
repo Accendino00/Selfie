@@ -5,6 +5,13 @@ import useTokenChecker from '../../utils/useTokenChecker';
 import cookies from 'js-cookie';
 import { Form } from 'react-router-dom';
 import { FormControl } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { Select } from '@mui/material';
+import { MenuItem } from '@mui/material';
+import { ListItemIcon } from '@mui/material';
+import { ListItemSecondaryAction } from '@mui/material';
+import { InputLabel } from '@mui/material';
+
 
 
 const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify, StudyEventFinish, StudyEventToDrag, draggedStudyEventsDialog, studyEventDate, setStudyEventDate }) => {
@@ -24,9 +31,15 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
     const [currentId, setCurrentId] = useState(null);
     const [completed, setCompleted] = useState(false);
     const [draggedOpen, setDraggedOpen] = useState(false);
+    const [studyTime, setStudyTime] = useState(0);
+    const [breakTime, setBreakTime] = useState(0);
+    const [cycles, setCycles] = useState(0);
+    const [totalMinutes, setTotalMinutes] = useState(0);
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
 
     const token = cookies.get('token');
-
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (StudyEventsDialog && StudyEventToModify) {
@@ -95,16 +108,36 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
             isStudyEvent: true,
             completed: completed,
             borderColor: allDay ? borderColor : taskColor,
+            studyTime: studyTime,
+            breakTime: breakTime,
+            cycles: cycles,
+            totalMinutes: totalMinutes,
+
         };
 
         if (isRecurring) {
+
             StudyEventData.startRecur = startDate;
             StudyEventData.start = startDate;
-            if (timesToRepeat > 0) {
+            console.log(startDate)
+            if (recurringDays.length !== 0) {
+
+                StudyEventData.daysOfWeek = convertDaysToIntegers(recurringDays);
+                if (timesToRepeat == 0) {
+                    StudyEventData.endRecur = new Date(startDate);
+                }
+            } else {
+                StudyEventData.daysOfWeek = null;
+            }
+            if (timesToRepeat !== "0" && StudyEventData.daysOfWeek !== null) {
+                StudyEventData.endRecur = calculateRepeatEndDate(startDate, timesToRepeat);
+            }
+            if (timesToRepeat > 0 && recurringDays.length == 0) {
                 StudyEventData.timesToRepeat = timesToRepeat;
                 StudyEventData.endRecur = calculateRepeatEndDate(startDate, timesToRepeat);
                 StudyEventData.daysOfWeek = getDayOfWeek(startDate);
             }
+
         }
 
         if (modifying) {
@@ -144,6 +177,7 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
     };
 
     const modifyStudyEvent = (StudyEvent) => {
+        console.log('ao2', StudyEvent)
         if (StudyEvent.completed) {
             setCompleted(true);
         } else {
@@ -151,8 +185,9 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
         }
         if (StudyEvent.isRecurring) {
             setIsRecurring(true);
-            if (StudyEvent.recurringDays) {
-                setRecurringDays(convertIntegersToDays(StudyEvent.recurringDays));
+            if (StudyEvent.daysOfWeek) {
+                setRecurringDays(convertIntegersToDays(StudyEvent.daysOfWeek));
+
             }
         } else {
             setIsRecurring(false);
@@ -191,6 +226,27 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
         } else {
             setStudyEventColor('#000000');
         }
+        if (StudyEvent.studyTime) {
+            setStudyTime(StudyEvent.studyTime);
+        } else {
+            setStudyTime(0);
+        }
+        if (StudyEvent.breakTime) {
+            setBreakTime(StudyEvent.breakTime);
+        } else {
+            setBreakTime(0);
+        }
+        if (StudyEvent.cycles) {
+            setCycles(StudyEvent.cycles);
+        } else {
+            setCycles(0);
+        }
+        if (StudyEvent.totalMinutes) {
+            setTotalMinutes(StudyEvent.totalMinutes);
+        } else {
+            setTotalMinutes(0);
+        }
+
         setModifying(true);
         setOpenDialog(true);
     };
@@ -208,7 +264,6 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
 
         if (StudyEvent.isRecurring) {
             setIsRecurring(true);
-
             // if StudyEvent is recurring then I might have clicked on a "fake" StudyEvent renderized by fullcalendar, so I need to check
             // the StudyEvent.id and get the actual StudyEvent from the database.
             fetch(`/api/getSingleStudyEvent/${currentId}`, {
@@ -225,6 +280,10 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
                     console.log(StudyEvent)
                 })
                 .catch(error => console.error('Error fetching StudyEvent:', error));
+            if (StudyEvent.daysOfWeek) {
+                setRecurringDays(convertIntegersToDays(StudyEvent.daysOfWeek));
+
+            }
         }
         setAllDay(StudyEvent.allDay);
         if (!StudyEvent.allDay) {
@@ -247,6 +306,27 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
         }
         if (StudyEvent.timesToRepeat !== null) {
             setTimesToRepeat(StudyEvent.timesToRepeat);
+        }
+
+        if (StudyEvent.studyTime) {
+            setStudyTime(StudyEvent.studyTime);
+        } else {
+            setStudyTime(0);
+        }
+        if (StudyEvent.breakTime) {
+            setBreakTime(StudyEvent.breakTime);
+        } else {
+            setBreakTime(0);
+        }
+        if (StudyEvent.cycles) {
+            setCycles(StudyEvent.cycles);
+        } else {
+            setCycles(0);
+        }
+        if (StudyEvent.totalMinutes) {
+            setTotalMinutes(StudyEvent.totalMinutes);
+        } else {
+            setTotalMinutes(0);
         }
         setStudyEventColor(StudyEvent.backgroundColor);
         setModifying(true);
@@ -325,6 +405,10 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
         setCurrentId(null);
         setModifying(false);
         setCompleted(false);
+        setStudyTime(0);
+        setBreakTime(0);
+        setCycles(0);
+        setTotalMinutes(0);
     }
 
     const handleAddStudyEvent = () => {
@@ -361,6 +445,22 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
         return [date.getDay()];
     }
 
+    function convertDaysToIntegers(dayNames) {
+
+
+        const dayMap = {
+            'Sunday': 0,
+            'Monday': 1,
+            'Tuesday': 2,
+            'Wednesday': 3,
+            'Thursday': 4,
+            'Friday': 5,
+            'Saturday': 6
+        };
+
+        return dayNames.map(dayName => dayMap[dayName]);
+    }
+
     const handleToggleComplete = (id) => {
         setCompleted(!completed);
         const newStudyEvents = StudyEvents.map(StudyEvent => {
@@ -376,6 +476,32 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
         textDecoration: completed ? 'line-through' : 'none',
     });
 
+
+    function addSevenDays(date) {
+        const newDate = new Date(date); // Create a new Date object to avoid mutating the original date
+        newDate.setDate(newDate.getDate() + 7); // Subtract 7 days
+        return newDate;
+    }
+
+    const handleStudyNow = () => {
+        navigate(`/timer/${studyTime}/${breakTime}/${cycles}/${totalMinutes}/${currentId}/${startDate}`);
+    }
+
+
+    function getDayName(day) {
+        if (typeof day === 'string' && !isNaN(day)) {
+            // Convert string number to integer and get day name
+            return dayNames[parseInt(day)];
+        } else if (typeof day === 'number') {
+            // Get day name from integer
+            return dayNames[day];
+        }
+        return day;  // Return the day name if it's not a number
+    }
+
+    function translateDays(days) {
+        return days.map(day => getDayName(day));
+    }
 
     return (
         <Box>
@@ -401,6 +527,23 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
             <Dialog open={openDialog} onClose={handleCloseDialog}>
                 <DialogTitle>{currentId ? "Edit StudyEvent" : "Add StudyEvent"}</DialogTitle>
                 <DialogContent>
+                    <TextField sx={{
+                        opacity: "0",
+                        position: 'absolute',
+                        pointerEvents: 'none',
+                        zIndex: "-1"
+                    }}>
+                        {currentId}
+                    </TextField>
+                    <TextField sx={{
+                        opacity: "0",
+                        position: 'absolute',
+                        pointerEvents: 'none',
+                        zIndex: "-1"
+                    }}>
+                        {startDate}
+                    </TextField>
+
                     <TextField
                         autoFocus
                         margin="dense"
@@ -462,6 +605,42 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
                     )}
                     <TextField
                         margin="dense"
+                        label="Study Time (minutes)"
+                        type="number"
+                        fullWidth
+                        variant="standard"
+                        value={studyTime}
+                        onChange={(e) => setStudyTime(Math.max(0, e.target.value))}
+                    />
+                    <TextField
+                        margin="dense"
+                        label="Break Time (minutes)"
+                        type="number"
+                        fullWidth
+                        variant="standard"
+                        value={breakTime}
+                        onChange={(e) => setBreakTime(Math.max(0, e.target.value))}
+                    />
+                    <TextField
+                        margin="dense"
+                        label="Cycles"
+                        type="number"
+                        fullWidth
+                        variant="standard"
+                        value={cycles}
+                        onChange={(e) => setCycles(Math.max(0, e.target.value))}
+                    />
+                    <TextField
+                        margin="dense"
+                        label="Total Minutes"
+                        type="number"
+                        fullWidth
+                        variant="standard"
+                        value={totalMinutes}
+                        onChange={(e) => setTotalMinutes(Math.max(0, e.target.value))}
+                    />
+                    <TextField
+                        margin="dense"
                         label="Color"
                         type="color"
                         fullWidth
@@ -472,7 +651,7 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
                         value={StudyEventColor}
                         onChange={(e) => setStudyEventColor(e.target.value)}
                     />
-                    <FormControlLabel
+                    {/*<FormControlLabel
                         control={
                             <Checkbox
                                 checked={isRecurring}
@@ -481,20 +660,58 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
                             />
                         }
                         label="Recurring StudyEvent"
-                    />
+                    />*/}
                     {isRecurring && (
-                        <TextField
-                            margin="dense"
-                            label="Times to Repeat"
-                            type="number"
-                            fullWidth
-                            variant="standard"
-                            InputLabelProps={{
-                                shrink: true,
-                            }}
-                            value={timesToRepeat}
-                            onChange={(e) => setTimesToRepeat(e.target.value)}
-                        />
+                        <>
+                            <TextField
+                                margin="dense"
+                                label="Times to Repeat"
+                                type="number"
+                                fullWidth
+                                variant="standard"
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                                value={timesToRepeat}
+                                onChange={(e) => setTimesToRepeat(e.target.value)}
+                            />
+                            <FormControl fullWidth margin="dense">
+                                <InputLabel id="recurring-day-label">Days of the Week</InputLabel>
+                                <Select
+                                    labelId="recurring-day-label"
+                                    id="recurring-day"
+                                    multiple
+                                    value={translateDays(recurringDays)}
+                                    onChange={(e) => {
+                                        setRecurringDays(e.target.value);
+                                        console.log(e.target.value);
+
+                                        // Automatically update start date based on recurring days
+                                        if (e.target.value.length > 0) {
+                                            const today = new Date();
+                                            const nextDay = new Date(
+                                                today.setDate(
+                                                    today.getDate() +
+                                                    ((7 - today.getDay() + ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].indexOf(e.target.value[0])) % 7)
+                                                )
+                                            );
+                                            setStartDate(nextDay.toISOString().split('T')[0]);
+
+                                        }
+                                    }}
+                                    label="Days of the Week"
+                                    variant="standard"
+                                    renderValue={(selected) => selected.join(', ')}
+                                >
+                                    {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day) => (
+                                        <MenuItem key={day} value={day}>
+                                            <Checkbox checked={recurringDays.indexOf(day) > -1} />
+                                            <ListItemText primary={day} />
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </>
                     )}
                     <FormControlLabel
                         control={
@@ -507,17 +724,20 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
                         label="All Day StudyEvent"
                     />
                     {modifying &&
-                        <FormControlLabel
-                            control={<Checkbox
-                                checked={completed}
-                                onChange={() => handleToggleComplete(currentId)}
-                                color="primary"
-                            />}
-                            label="Completed?"
-                        />
+                        <>
+                            <FormControlLabel
+                                control={<Checkbox
+                                    checked={completed}
+                                    onChange={() => handleToggleComplete(currentId)}
+                                    color="primary"
+                                />}
+                                label="Completed?"
+                            />
+                        </>
                     }
                 </DialogContent>
                 <DialogActions>
+                    {modifying && <Button onClick={handleStudyNow}>Study Now</Button>}
                     {modifying && <Button onClick={() => handleDeleteStudyEvent(currentId)}>Delete</Button>}
                     <Button onClick={handleCloseDialog} color="secondary">
                         Cancel

@@ -116,6 +116,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
+
   useEffect(() => {
     if (createButton) {
       addEvent(null);
@@ -181,11 +182,6 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
       invitedUsers: invitedUsers,
       shared: shared,
       isRecurring: isRecurring,
-      studyTime: studyTime,
-      breakTime: breakTime,
-      cycles: cycles,
-      totalMinutes: totalMinutes,
-      isStudyEvent: isStudyEvent
 
     };
 
@@ -193,7 +189,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
 
       if (recurringDays.length !== 0) {
 
-        eventData.daysOfWeek = recurringDays;
+        eventData.daysOfWeek = convertDaysToIntegers(recurringDays);
 
       } else {
         eventData.daysOfWeek = null;
@@ -204,7 +200,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
       if (endDate !== '' && endDate !== null) {
         eventData.endRecur = endDate;
 
-      } else if (timesToRepeat !== "0" && eventData.daysOfWeek !== null) {
+      } else if (timesToRepeat != "0" && eventData.daysOfWeek !== null) {
 
         eventData.endRecur = calculateRepeatEndDate(startDate, timesToRepeat);
       } else {
@@ -222,12 +218,14 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
       } else {
         eventData.endTime = null;
       }
-      if (timesToRepeat !== "0" && eventData.daysOfWeek === null && eventData.endRecur === null && eventData.end === null) {
+      if (timesToRepeat != "0" && eventData.daysOfWeek === null && eventData.endRecur === null && eventData.end === null) {
 
         eventData.endRecur = calculateRepeatEndDate(startDate, timesToRepeat);
         eventData.timesToRepeat = timesToRepeat;
         eventData.daysOfWeek = getDayOfWeek(startDate, eventData.end);
-      } else if (timesToRepeat === "0") {
+      }
+      if (timesToRepeat == "0") {
+
         eventData.timesToRepeat = null;
       }
 
@@ -410,9 +408,13 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
         name: event.extendedProps.name,
         isRecurring: event.extendedProps.isRecurring,
         timesToRepeat: event.extendedProps.timesToRepeat,
+        studyTime: event.extendedProps.studyTime,
+        breakTime: event.extendedProps.breakTime,
+        cycles: event.extendedProps.cycles,
+        totalMinutes: event.extendedProps.totalMinutes,
+        //daysOfWeek: event._def.recurringDef.typeData.daysOfWeek,
         _id: event.id
       });
-      console.log('sweg', studyEventToModify)
       return;
     }
 
@@ -448,7 +450,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     if (event._def.extendedProps.isRecurring) {
       setIsRecurring(true);
       if (event._def.recurringDef.typeData.daysOfWeek !== null) {
-        setRecurringDays(getDayOfWeek(event.start, event.end));
+        setRecurringDays(convertIntegersToDays(event._def.recurringDef.typeData.daysOfWeek));
 
       }
     }
@@ -498,6 +500,11 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
         name: event.extendedProps.name,
         isRecurring: event.extendedProps.isRecurring,
         timesToRepeat: event.extendedProps.timesToRepeat,
+        studyTime: event.extendedProps.studyTime,
+        breakTime: event.extendedProps.breakTime,
+        cycles: event.extendedProps.cycles,
+        totalMinutes: event.extendedProps.totalMinutes,
+        //daysOfWeek: event._def.recurringDef.typeData.daysOfWeek,
         _id: event.id
       });
 
@@ -548,10 +555,10 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
         .catch(error => console.error('Error fetching event:', error));
 
 
-
+      console.log('wtf', event)
       if (event.extendedProps.daysOfWeek !== null) {
 
-        setRecurringDays(getDayOfWeek(event.start, event.end));
+        setRecurringDays(convertIntegersToDays(event._def.recurringDef.typeData.daysOfWeek));
 
       }
     }
@@ -611,6 +618,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     setEndTime('');
     setRecurringDays([]);
     setIsRecurring(false);
+    setTimesToRepeat(0);
     setDescription('');
     setModifying(false);
     setCurrentId('');
@@ -669,7 +677,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     }
     if (chosenCalendars.includes('tasks')) {
       for (let i = 0; i < tasks.length; i++) {
-        if(!tasks[i].completed){
+        if (!tasks[i].completed) {
           allEvents.push(tasks[i]);
         }
 
@@ -677,7 +685,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
         if (!tasks[i].isRecurring && new Date(tasks[i].end) <= new Date()) {
           lateTasks.push(tasks[i]);
 
-        } else if((tasks[i].isRecurring && new Date(tasks[i].endRecur) <= new Date())){
+        } else if ((tasks[i].isRecurring && new Date(tasks[i].endRecur) <= new Date())) {
           //console.log((tasks[i].isRecurring && tasks[i].isLate))
           lateTasks.push(tasks[i]);
 
@@ -741,6 +749,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
   const handleGetEvents = () => {
     const calendarApi = calendarRef.current.getApi();
     const events = calendarApi.getEvents();
+    console.log(events);
   };
 
   useEffect(() => {
@@ -756,6 +765,23 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
   const listItemStyle = (completed) => ({
     textDecoration: completed ? 'line-through' : 'none',
   });
+
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  function getDayName(day) {
+    if (typeof day === 'string' && !isNaN(day)) {
+      // Convert string number to integer and get day name
+      return dayNames[parseInt(day)];
+    } else if (typeof day === 'number') {
+      // Get day name from integer
+      return dayNames[day];
+    }
+    return day;  // Return the day name if it's not a number
+  }
+
+  function translateDays(days) {
+    return days.map(day => getDayName(day));
+  }
 
   return (
     <>
@@ -928,9 +954,10 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
                   labelId="recurring-day-label"
                   id="recurring-day"
                   multiple
-                  value={convertIntegersToDays(recurringDays)}
+                  value={translateDays(recurringDays)}
                   onChange={(e) => {
                     setRecurringDays(e.target.value);
+                    console.log(e.target.value);
 
                     // Automatically update start date based on recurring days
                     if (e.target.value.length > 0) {

@@ -69,7 +69,7 @@ function App() {
           element: <NotesPage />,
         },
         {
-          path: "/timer/:studyTime/:breakTime/:cycles/:totalMinutes",
+          path: "/timer/:studyTime/:breakTime/:cycles/:totalMinutes/:currentId",
           element: <PomodoroPage />,
         },
         // Route without parameters
