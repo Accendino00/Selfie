@@ -50,4 +50,29 @@ router.post('/savePomodoro', authenticateJWT, async (req, res) => {
     }
 });
 
+router.get('/getPomodoros', authenticateJWT, async (req, res) => {
+    const username = req.query.username;
+    const pomodoroCollection = clientMDB.db("SelfieGD").collection('Pomodoros');
+    try {
+        const pomodoros = await pomodoroCollection.find({ user: username }).toArray();
+        res.json(pomodoros);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error getting pomodoros');
+    }
+}
+);
+
+router.post('/sendPomodoro', authenticateJWT, async (req, res) => {
+    const pomodoro = req.body;
+    const pomodoroCollection = clientMDB.db("SelfieGD").collection('Pomodoros');
+    try {
+        const result = await pomodoroCollection.insertOne(pomodoro);
+        res.json(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error sending pomodoro');
+    }
+});
+
 module.exports = router;
