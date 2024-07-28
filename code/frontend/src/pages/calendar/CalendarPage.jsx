@@ -58,7 +58,9 @@ const CalendarPage = () => {
   }, [loginStatus, isTokenLoading]);
 
   useEffect(() => {
-    const savedCheckboxState = JSON.parse(localStorage.getItem('checkboxState')) || {};
+    // Imposta lo stato dei checkbox e i calendari scelti in base ai valori salvati in localStorage,
+    // nel caso invece non ci siano valori salvati, imposta lo stato dei checkbox a tutti true e i calendari scelti a vuoti
+    const savedCheckboxState = JSON.parse(localStorage.getItem('checkboxState')) || { shared: true, tasks: true, pomodoro: true };
     const savedChosenCalendars = JSON.parse(localStorage.getItem('chosenCalendars')) || [];
 
     setCheckboxState(savedCheckboxState);
@@ -133,7 +135,7 @@ const CalendarPage = () => {
     }
 
     fetch('/api/createCalendars', {
-      method: 'POST',
+      method: 'POST', 
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`

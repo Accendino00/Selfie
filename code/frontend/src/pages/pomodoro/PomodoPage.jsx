@@ -79,22 +79,25 @@ const PomodoroPage = () => {
     }, [loginStatus, username, token]); // Dependencies to fetch user ID
 
     useEffect(() => {
-        fetch(`/api/getStudyEvents?username=${username}`, {
-            headers: {
-                Authorization: `Bearer ${token}`, // Corrected syntax here
-            },
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                //set study events only if different from the current state
-                if (JSON.stringify(data) !== JSON.stringify(studyEvents)) setStudyEvents(data);
-
-
+        const interval = setInterval(() => {
+            fetch(`/api/getStudyEvents?username=${username}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`, // Corrected syntax here
+                },
             })
-            .catch((error) => {
-                console.error('Failed to fetch study events', error);
-            });
-    }, [username, token]); // Dependencies to fetch study events
+                .then((response) => response.json())
+                .then((data) => {
+                    //set study events only if different from the current state
+                    if (JSON.stringify(data) !== JSON.stringify(studyEvents)) setStudyEvents(data);
+
+
+                })
+                .catch((error) => {
+                    console.error('Failed to fetch study events', error);
+                });
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [username, token, studyEvents]); // Dependencies to fetch study events
 
 
     useEffect(() => {
@@ -104,7 +107,7 @@ const PomodoroPage = () => {
         let currentBreakTime = 0;
         let currentCycles = 0;
         let currentTotalMinutes = 0;
-        let dates =  [];
+        let dates = [];
         for (let i = 0; i < studyEvents.length; i++) {
             if (new Date(studyEvents[i].start) <= new Date()) {
                 counter++;
