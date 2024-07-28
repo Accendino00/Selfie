@@ -35,6 +35,7 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
     const [breakTime, setBreakTime] = useState(0);
     const [cycles, setCycles] = useState(0);
     const [totalMinutes, setTotalMinutes] = useState(0);
+    const [isLate, setIsLate] = useState(false);
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 
@@ -56,6 +57,68 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
             setStudyEventDate('');
         }
     }, [StudyEventsDialog, StudyEventToModify, StudyEventToDrag]);
+
+
+    useEffect(() => {
+
+        for (let i = 0; i < StudyEvents.length; i++) {
+
+            if (new Date(StudyEvents[i].end) <= new Date()) {
+                updateStudyEvent(StudyEvents[i]);
+            } else if (StudyEvents[i].isRecurring && new Date(StudyEvents[i].endRecur) <= new Date()) {
+                updateStudyEvent(StudyEvents[i]);
+            } 
+        }
+
+    }, [StudyEvents]);
+
+
+    const updateStudyEvent = (StudyEvent) => {
+        const updatedStudyEvent = {
+            title: StudyEvent.title,
+            description: StudyEvent.description,
+            start: StudyEvent.start,
+            end: StudyEvent.end,
+            name: StudyEvent.name,
+            allDay: StudyEvent.allDay,
+            color: StudyEvent.color,
+            isStudyEvent: true,
+            completed: StudyEvent.completed,
+            studyTime: StudyEvent.studyTime,
+            breakTime: StudyEvent.breakTime,
+            cycles: StudyEvent.cycles,
+            totalMinutes: StudyEvent.totalMinutes,
+            borderColor: StudyEvent.borderColor,
+            isLate: StudyEvent.isLate
+        };
+
+        let modifiedStudyEvent = false;
+
+        if(new Date(StudyEvent.end) <= new Date()) {
+            updatedStudyEvent.start = new Date();
+            updatedStudyEvent.end = new Date();
+            updatedStudyEvent.isLate = true;
+            modifiedStudyEvent = true;
+        } else if(updateStudyEvent.isLate){
+            updatedStudyEvent.isLate = false;
+            modifiedStudyEvent = true;
+        }
+        if(modifiedStudyEvent){
+            fetch(`/api/modifyStudyEvent/${StudyEvent._id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(updatedStudyEvent),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    setStudyEvents(data);
+                })
+                .catch(error => console.error("Error modifying StudyEvent:", error));
+            }
+        }
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -89,6 +152,7 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
                 setStudyEvents(data)
                 resetForm();
                 handleCloseDialog();
+                StudyEventFinish();
             })
             .catch(error => console.error("Error deleting StudyEvent:", error));
     };
@@ -112,6 +176,7 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
             breakTime: breakTime,
             cycles: cycles,
             totalMinutes: totalMinutes,
+            isLate: false
 
         };
 
@@ -138,6 +203,11 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
                 StudyEventData.daysOfWeek = getDayOfWeek(startDate);
             }
 
+        }
+
+        if (isLate){
+            StudyEventData.start = new Date();
+            StudyEventData.end = new Date();
         }
 
         if (modifying) {
@@ -409,6 +479,7 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
         setBreakTime(0);
         setCycles(0);
         setTotalMinutes(0);
+        setIsLate(false);
     }
 
     const handleAddStudyEvent = () => {

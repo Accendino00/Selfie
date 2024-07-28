@@ -263,7 +263,7 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
               </Typography>
               <Typography align="center" sx={{ marginBottom: '5px' }}>
                 {item.start && new Date(item.start).toLocaleDateString()}
-                {!item.isTask ? (item.end && ` to ${new Date(item.end).toLocaleDateString()}`) : null}
+                {(!item.isTask && !item.isStudyEvent) ? (item.end && ` to ${new Date(item.end).toLocaleDateString()}`) : null}
               </Typography>
             </Grid>
           </Grid>

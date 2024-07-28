@@ -46,27 +46,27 @@ const HomePage = () => {
 
   useEffect(() => {
     if (loginStatus) {
-        const fetchUserId = async () => {
-            try {
-                const response = await fetch(`/api/getUserId?username=${username}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
-                if (response.ok) {
-                    const fetchedUserId = await response.json();
-                    setUserId(fetchedUserId);
-                } else {
-                    console.error('Failed to fetch user id');
-                }
-            }
-            catch (error) {
-                console.error('Failed to fetch user id', error);
-            }
+      const fetchUserId = async () => {
+        try {
+          const response = await fetch(`/api/getUserId?username=${username}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+          if (response.ok) {
+            const fetchedUserId = await response.json();
+            setUserId(fetchedUserId);
+          } else {
+            console.error('Failed to fetch user id');
+          }
         }
-        fetchUserId();
+        catch (error) {
+          console.error('Failed to fetch user id', error);
+        }
+      }
+      fetchUserId();
     }
-}, [loginStatus, username, token]);
+  }, [loginStatus, username, token]);
 
   useEffect(() => {
     const storedEventsToDisplay = localStorage.getItem('eventsToDisplay');
@@ -138,7 +138,7 @@ const HomePage = () => {
     fetchEvents();
   }, [token, username, eventsToDisplay, tasksToDisplay, studyEventsToDisplay, events]);
 
-  
+
   const fetchLastCreatedNote = async () => {
     try {
       const response = await fetch(`/api/getLastCreatedNote?userId=${userId}`, {
@@ -147,7 +147,7 @@ const HomePage = () => {
           'Authorization': `Bearer ${token}`
         }
       });
-  
+
       if (!response.ok) {
         // Handle 404 or other errors
         if (response.status === 404) {
@@ -157,14 +157,14 @@ const HomePage = () => {
         }
         return;
       }
-  
+
       const data = await response.json();
       setLastCreatedNote(data);
       setLastModifiedNote('');
       setFirstModifiedNote('');
       setFirstCreatedNote('');
       setNoNotes(false);
-  
+
     } catch (error) {
       console.error('Error fetching last created note:', error);
       setNoNotes(true);
@@ -179,7 +179,7 @@ const HomePage = () => {
           'Authorization': `Bearer ${token}`
         }
       });
-  
+
       if (!response.ok) {
         // Handle 404 or other errors
         if (response.status === 404) {
@@ -189,25 +189,25 @@ const HomePage = () => {
         }
         return;
       }
-  
+
       const data = await response.json();
       setLastPomodoro(data);
       setFirstPomodoro('');
       setNoPomodoro(false);
-  
+
     } catch (error) {
       console.error('Error fetching last pomodoro:', error);
       setNoPomodoro(true);
     }
   };
-  
+
   useEffect(() => {
     if (loginStatus) {
       fetchLastCreatedNote();
       fetchLastPomodoro();
     }
   }, [loginStatus, userId]);
-  
+
 
   const fetchFirstCreatedNote = async () => {
     try {
@@ -261,7 +261,7 @@ const HomePage = () => {
 
     } catch (error) {
       console.error('Error fetching last modified note:', error);
-    } 
+    }
   };
 
   const fetchFirstModifiedNote = async () => {
@@ -310,7 +310,7 @@ const HomePage = () => {
   const handlePomodoroSettingsSave = async () => {
     setPomodoroSettings(false);
     localStorage.setItem('pomodoroToShow', pomodoroToShow);
-  
+
     try {
       if (pomodoroToShow === 'creationDate-first') {
         await fetchFirstPomodoro();
@@ -321,11 +321,11 @@ const HomePage = () => {
       console.error('Error fetching pomodoro:', error);
     }
   };
-  
+
   const handleNoteSettingsSave = async () => {
     setNoteSettings(false);
     localStorage.setItem('noteToShow', noteToShow);
-  
+
     try {
       if (noteToShow === 'creationDate-first') {
         await fetchFirstCreatedNote();
@@ -369,7 +369,7 @@ const HomePage = () => {
 
     if (event.end && !event.isTask) {
       nextEndDate = new Date(event.end);
-    } else if (event.endRecur && event.isTask || event.isStudyEvent) {
+    } else if (event.endRecur && (event.isTask || event.isStudyEvent)) {
       nextEndDate = new Date(event.endRecur);
     }
 
@@ -377,51 +377,69 @@ const HomePage = () => {
 
     // Determine the maximum number of recurrences, if specified
     const maxRecurrences = event.timesToRepeat ? Math.min(event.timesToRepeat, 52) : 52; // Assuming a limit of 52 repetitions or one year
-
     // Loop until the maximum repetitions are met or the date exceeds the finalDate
     while ((event.timesToRepeat ? counter < maxRecurrences : true) && nextStartDate.getFullYear() <= finalDate) {
-      let startDate = formatDate(nextStartDate)
-      let endDate = nextEndDate ? formatDate(nextEndDate) : null
-      let newEvent = {};
+      // Loop through each day of the week
+      for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+        let currentDay = (nextStartDate.getDay() + dayOffset) % 7;
 
-      if (!event.isTask) {
-        newEvent = {
-          title: event.title,
-          description: event.description,
-          color: event.color,
-          allDay: event.allDay,
-          start: startDate,
-          end: endDate,
-          calendar: event.calendar,
-          name: event.name,
-          location: event.location,
-          invitedUsers: event.invitedUsers,
-          shared: event.shared,
-          isRecurring: event.isRecurring
-        };
-        // else da rivedere boh
-      } else {
-        newEvent = {
-          title: event.title,
-          description: event.description,
-          color: event.color,
-          allDay: event.allDay,
-          start: startDate,
-          end: endDate,
-          name: event.name,
-          location: event.location,
-          completed: event.completed,
-          isTask: event.isTask,
-          isRecurring: event.isRecurring,
-          timesToRepeat: event.timesToRepeat,
-          endRecur: event.endRecur
-        };
+        if (event.daysOfWeek && event.daysOfWeek.includes(currentDay)) {
+          let eventDate = new Date(nextStartDate);
+          eventDate.setDate(nextStartDate.getDate() + dayOffset);
+
+          if (eventDate.getFullYear() > finalDate) {
+            //console.log(event)
+            break;
+          }
+
+          let startDate = formatDate(eventDate);
+          let endDate = nextEndDate ? formatDate(new Date(eventDate.getTime() + (nextEndDate.getTime() - nextStartDate.getTime()))) : null;
+
+          let newEvent = {};
+
+          if (!event.isTask) {
+            newEvent = {
+              title: event.title,
+              description: event.description,
+              color: event.color,
+              allDay: event.allDay,
+              start: startDate,
+              end: endDate,
+              calendar: event.calendar,
+              name: event.name,
+              location: event.location,
+              invitedUsers: event.invitedUsers,
+              shared: event.shared,
+              isRecurring: event.isRecurring
+            };
+          } else {
+            newEvent = {
+              title: event.title,
+              description: event.description,
+              color: event.color,
+              allDay: event.allDay,
+              start: startDate,
+              end: endDate,
+              name: event.name,
+              location: event.location,
+              completed: event.completed,
+              isTask: event.isTask,
+              isRecurring: event.isRecurring,
+              timesToRepeat: event.timesToRepeat,
+              endRecur: event.endRecur
+            };
+          }
+
+          recurrencies.push(newEvent);
+          counter++; // Increment the repetition counter
+
+          if (event.timesToRepeat && counter >= maxRecurrences) {
+            break;
+          }
+        }
       }
-
-      recurrencies.push(newEvent);
-      counter++; // Increment the repetition counter
-
-      // Increment the date by 1 week
+      //console.log('newevent', recurrencies);
+      // Move to the next week
       nextStartDate.setDate(nextStartDate.getDate() + 7);
       if (nextEndDate) {
         nextEndDate.setDate(nextEndDate.getDate() + 7);
@@ -435,7 +453,7 @@ const HomePage = () => {
     const recurrencies = calculateAllRecurrencies(event, getNextYear())
     const currentDate = new Date()
     return recurrencies.filter(event => stringToDate(event.start) > currentDate)
-      .sort((a, b) => stringToDate(a.start) - stringToDate(b.start))[0] || null;
+      .sort((a, b) => stringToDate(a.start) - stringToDate(b.start))[0] || false;
 
   }
 
@@ -445,13 +463,13 @@ const HomePage = () => {
     if (event.isRecurring) {
       if (event.isTask || event.isStudyEvent) {
         if (event.endRecur && (stringToDate(event.endRecur) < currentDate)) {
-          return null
+          return false
         }
         else {
           return getFirstUsefulDate(event)
         }
       }
-      if (event.end && (stringToDate(event.end) < currentDate)) return null
+      if (event.end && (stringToDate(event.end) < currentDate)) return false
       else {
         return getFirstUsefulDate(event)
       }
@@ -467,7 +485,6 @@ const HomePage = () => {
   }
 
   const isNotifiable = (event) => {
-    const eventEndDate = new Date(event.end);
     const eventStartDate = new Date(event.start);
     const currentDate = new Date();
     return eventStartDate > currentDate || recurrenceMath(event);
@@ -481,6 +498,7 @@ const HomePage = () => {
   }
 
   const renderEvents = (events, tasks, studyEvents) => {
+    //console.log('studyEvents', studyEvents)
     // Helper function to render each category of items
     const renderItems = (items, title, noItemsMessage, number) => {
 
@@ -509,7 +527,7 @@ const HomePage = () => {
           }} />
           <Typography variant="body2" color="#ffffffbf" align="center">
             {item.title} - {new Date(item.start).toLocaleDateString()}
-            {item.end && ` to ${new Date(item.end).toLocaleDateString()}`}
+            {(!item.isTask && !item.isStudyEvent) ? item.end && ` to ${new Date(item.end).toLocaleDateString()}` : null}
           </Typography>
         </Grid>
       ));
@@ -581,7 +599,7 @@ const HomePage = () => {
               value={eventsToDisplay}
               onChange={handleChange('eventsToDisplay')}
               inputProps={{
-                min: 0 
+                min: 0
               }}
             />
             <TextField
@@ -593,7 +611,7 @@ const HomePage = () => {
               value={tasksToDisplay}
               onChange={handleChange('tasksToDisplay')}
               inputProps={{
-                min: 0 
+                min: 0
               }}
             />
             <TextField
@@ -605,7 +623,7 @@ const HomePage = () => {
               value={studyEventsToDisplay}
               onChange={handleChange('studyEventsToDisplay')}
               inputProps={{
-                min: 0 
+                min: 0
               }}
             />
           </DialogContent>
@@ -618,35 +636,35 @@ const HomePage = () => {
         <Dialog open={pomodoroSettings} onClose={handlePomodoroSettingsClose}>
           <DialogTitle>Configure Your Settings</DialogTitle>
           <DialogContent>
-          <Select
-            value={pomodoroToShow}
-            onChange={handlePomodoroToShowChange}
-            displayEmpty
-            inputProps={{ 'aria-label': 'Without label' }}
+            <Select
+              value={pomodoroToShow}
+              onChange={handlePomodoroToShowChange}
+              displayEmpty
+              inputProps={{ 'aria-label': 'Without label' }}
 
-            MenuProps={{
+              MenuProps={{
                 PaperProps: {
-                    style: {
-                        color: '#53ddf0',
-                        backgroundColor: '#111119',
-                        fontSize: '1.2rem',
-                        fontWeight: 'bold',
-                        backgroundColor: '#111119',
-                        fontSize: '1.2rem',
-                        fontWeight: 'bold'
-                    }
+                  style: {
+                    color: '#53ddf0',
+                    backgroundColor: '#111119',
+                    fontSize: '1.2rem',
+                    fontWeight: 'bold',
+                    backgroundColor: '#111119',
+                    fontSize: '1.2rem',
+                    fontWeight: 'bold'
+                  }
                 }
-            }}
-            sx={{
+              }}
+              sx={{
                 '& .MuiSelect-select': {
-                    color: '#7d5ffc',
+                  color: '#7d5ffc',
 
                 }
-            }}
-          >
+              }}
+            >
               <MenuItem value="creationDate-first">Creation Date (First)</MenuItem>
               <MenuItem value="creationDate-last">Creation Date (Last)</MenuItem>
-          </Select>
+            </Select>
           </DialogContent>
           <DialogActions>
             <Button onClick={handlePomodoroSettingsClose}>Cancel</Button>
@@ -657,36 +675,36 @@ const HomePage = () => {
         <Dialog open={noteSettings} onClose={handleNoteSettingsClose}>
           <DialogTitle>Configure Your Settings</DialogTitle>
           <DialogContent>
-          <Select
-            value={noteToShow}
-            onChange={handleNoteToShowChange}
-            displayEmpty
-            inputProps={{ 'aria-label': 'Without label' }}
+            <Select
+              value={noteToShow}
+              onChange={handleNoteToShowChange}
+              displayEmpty
+              inputProps={{ 'aria-label': 'Without label' }}
 
-            MenuProps={{
-              PaperProps: {
+              MenuProps={{
+                PaperProps: {
                   style: {
-                      color: '#53ddf0',
-                      backgroundColor: '#111119',
-                      fontSize: '1.2rem',
-                      fontWeight: 'bold',
-                      backgroundColor: '#111119',
-                      fontSize: '1.2rem',
-                      fontWeight: 'bold'
+                    color: '#53ddf0',
+                    backgroundColor: '#111119',
+                    fontSize: '1.2rem',
+                    fontWeight: 'bold',
+                    backgroundColor: '#111119',
+                    fontSize: '1.2rem',
+                    fontWeight: 'bold'
                   }
-              }
+                }
               }}
               sx={{
-                  '& .MuiSelect-select': {
-                      color: '#7d5ffc',
+                '& .MuiSelect-select': {
+                  color: '#7d5ffc',
 
-                  }
+                }
               }}
             >
-                <MenuItem value="creationDate-first">Creation Date (First)</MenuItem>
-                <MenuItem value="creationDate-last">Creation Date (Last)</MenuItem>
-                <MenuItem value="modifiedDate-first">Modified Date (First)</MenuItem>
-                <MenuItem value="modifiedDate-last">Modified Date (Last)</MenuItem>
+              <MenuItem value="creationDate-first">Creation Date (First)</MenuItem>
+              <MenuItem value="creationDate-last">Creation Date (Last)</MenuItem>
+              <MenuItem value="modifiedDate-first">Modified Date (First)</MenuItem>
+              <MenuItem value="modifiedDate-last">Modified Date (Last)</MenuItem>
             </Select>
           </DialogContent>
           <DialogActions>
