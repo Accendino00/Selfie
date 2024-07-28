@@ -5,6 +5,70 @@ const { authenticateJWT } = require('../middleware/authorization');
 const { clientMDB } = require('../utils/dbmanagement');
 const { ObjectId } = require('mongodb');
 
+router.put('/modifyAndDeleteStudyEventsFromPomodoro', authenticateJWT, (req, res) => {
+    // I save the titles of the study events from current date, then I delete them
+    // and create a single unified study events with the sum of the pomodoros parameters
+    // that are passed in the body
+    return new Promise((resolve, reject) => {
+        try {
+            const username = req.body.username;
+            const dates = req.body.dates; // Ensure dates are Date objects
+            const studyTime = req.body.studyTime;
+            const breakTime = req.body.breakTime;
+            const totalMinutes = req.body.totalMinutes;
+            const cycles = req.body.cycles;
+            console.log('Modifying and deleting StudyEvents from Pomodoro:', req.body);
+            const StudyEventsCollection = clientMDB.db("SelfieGD").collection('StudyEvents');
+            StudyEventsCollection.find({
+                name: username,
+                start: { $in: dates } // Find documents where date is in the provided dates array
+            }).toArray().then((StudyEvents) => {
+                console.log(StudyEvents);
+                const titles = StudyEvents.map((StudyEvent) => {
+                    return StudyEvent.title;
+                });
+                console.log(titles);
+                StudyEventsCollection.deleteMany({
+                    name: username,
+                    start: { $in: dates }, // Delete documents where date is in the provided dates array
+                }).then((result) => {
+                    const newStudyEvent = {
+                        name: username,
+                        description: "Unification of Study Events",
+                        title: titles.join(' + '),
+                        studyTime: studyTime,
+                        breakTime: breakTime,
+                        totalMinutes: totalMinutes,
+                        cycles: cycles,
+                        isStudyEvent: true,
+                        borderColor: '#FF007F',
+                        isLate: true,
+                        start: new Date().toISOString(),
+                        end: new Date().toISOString(),
+                        completed: false,
+                        allDay: true
+                    };
+                    saveStudyEventtoDB(newStudyEvent).then((savedStudyEvent) => {
+                        res.json(savedStudyEvent);
+                    }).catch((error) => {
+                        console.log(error);
+                        res.status(500).send('Error adding StudyEvent');
+                    });
+                }).catch((error) => {
+                    console.log(error);
+                    res.status(500).send('Error deleting StudyEvents');
+                });
+            }).catch((err) => {
+                console.log(err);
+                res.status(500).send('Error getting StudyEvents');
+            });
+        } catch (err) {
+            reject(err);
+        }
+    });
+});
+
+
 
 router.get('/getSingleStudyEvent/:id', authenticateJWT, (req, res) => {
     return new Promise((resolve, reject) => {

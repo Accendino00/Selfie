@@ -399,7 +399,7 @@ const HomePage = () => {
 
           let newEvent = {};
 
-          if (!event.isTask) {
+          if (!event.isTask || !event.isStudyEvent) {
             newEvent = {
               title: event.title,
               description: event.description,
@@ -423,7 +423,6 @@ const HomePage = () => {
               start: startDate,
               end: endDate,
               name: event.name,
-              location: event.location,
               completed: event.completed,
               isTask: event.isTask,
               isRecurring: event.isRecurring,
@@ -454,6 +453,7 @@ const HomePage = () => {
   function getFirstUsefulDate(event) {
     const recurrencies = calculateAllRecurrencies(event, getNextYear())
     const currentDate = new Date()
+    //console.log('recurrencies', recurrencies)
     return recurrencies.filter(event => stringToDate(event.start) > currentDate)
       .sort((a, b) => stringToDate(a.start) - stringToDate(b.start))[0] || false;
 
@@ -489,7 +489,7 @@ const HomePage = () => {
   const isNotifiable = (event) => {
     const eventStartDate = new Date(event.start);
     const currentDate = new Date();
-    return eventStartDate > currentDate || recurrenceMath(event);
+    return eventStartDate >= currentDate || recurrenceMath(event);
   };
 
   function convertRecurringEventToFirstUsefulDate(event) {
