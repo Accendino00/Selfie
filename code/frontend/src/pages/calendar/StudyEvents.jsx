@@ -67,7 +67,7 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
                 updateStudyEvent(StudyEvents[i]);
             } else if (StudyEvents[i].isRecurring && new Date(StudyEvents[i].endRecur) <= new Date()) {
                 updateStudyEvent(StudyEvents[i]);
-            } 
+            }
         }
 
     }, [StudyEvents]);
@@ -94,16 +94,16 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
 
         let modifiedStudyEvent = false;
 
-        if(new Date(StudyEvent.end) <= new Date()) {
+        if (new Date(StudyEvent.end) <= new Date()) {
             updatedStudyEvent.start = new Date();
             updatedStudyEvent.end = new Date();
             updatedStudyEvent.isLate = true;
             modifiedStudyEvent = true;
-        } else if(updateStudyEvent.isLate){
+        } else if (updateStudyEvent.isLate) {
             updatedStudyEvent.isLate = false;
             modifiedStudyEvent = true;
         }
-        if(modifiedStudyEvent){
+        if (modifiedStudyEvent) {
             fetch(`/api/modifyStudyEvent/${StudyEvent._id}`, {
                 method: 'PUT',
                 headers: {
@@ -117,8 +117,8 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
                     setStudyEvents(data);
                 })
                 .catch(error => console.error("Error modifying StudyEvent:", error));
-            }
         }
+    }
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -205,7 +205,7 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
 
         }
 
-        if (isLate){
+        if (isLate) {
             StudyEventData.start = new Date();
             StudyEventData.end = new Date();
         }
@@ -555,7 +555,7 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
     }
 
     const handleStudyNow = () => {
-        navigate(`/timer/${studyTime}/${breakTime}/${cycles}/${totalMinutes}/${currentId}/${startDate}`);
+        navigate(`/timer/${studyTime}/${breakTime}/${cycles}/${totalMinutes}/${currentId}`);
     }
 
 
