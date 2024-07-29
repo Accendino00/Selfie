@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, CardActions, CardContent, IconButton, Typography, TextField, Menu, MenuItem, Select } from '@mui/material';
+import { Card, CardActions, CardContent, IconButton, Typography, TextField, Menu, MenuItem, Select, Paper } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -17,8 +17,21 @@ import EmailShareButton from '../../components/EmailShareButton.jsx';
 import { Box } from '@mui/material';
 import { Form } from 'react-router-dom';
 import { FormControlLabel } from '@mui/material';
+import parse from 'html-react-parser';
+import useTokenChecker from '../../../utils/useTokenChecker.jsx';
+import './stylesList.css';
+import { useNavigate } from 'react-router-dom';
 
-function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNoteDeleted, onNoteModified, onCopyNote, isDesktop, user }) {
+import Divider from '@mui/material/Divider';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
+
+function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNoteDeleted, onNoteModified, onCopyNote, isDesktop, user}) {
     const token = Cookies.get('token');
     const [order, setOrder] = useState('title-asc');
     const [anchorEl, setAnchorEl] = useState({});
@@ -27,6 +40,8 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
     const [access, setAccess] = useState('');
     const [users, setUsers] = useState([]);
     const [currentNote, setCurrentNote] = useState(null); // State to track the current note
+    const { loginStatus, isTokenLoading, username } = useTokenChecker();
+    const navigate = useNavigate();
 
 
     NotesList.defaultProps = {
@@ -34,6 +49,7 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
     };
 
     const handleDeleteNote = async (id) => {
+        handleClose(id);
         try {
             const response = await fetch(`/api/notes/${id}`, {
                 method: 'DELETE',
@@ -52,6 +68,7 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
     };
 
     const handleCopyNote = (id) => {
+        handleClose(id);
         fetch(`/api/notes/${id}`, {
             method: 'GET',
             headers: {
@@ -63,6 +80,12 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
             }
             throw new Error('Failed to fetch the note');
         }).then(copiedNote => {
+            let newAccess;
+            if(copiedNote.access === 'public') {
+                newAccess = 'private';
+            } else {
+                newAccess = copiedNote.access;
+            }
             return fetch('/api/notes', {
                 method: 'POST',
                 headers: {
@@ -74,8 +97,9 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                     category: copiedNote.category,
                     note: copiedNote.note,
                     userId: user,
+                    owner: username,
                     characters: copiedNote.characters,
-                    access: copiedNote.access,
+                    access: newAccess,
                     users: [],
                     creationDate: copiedNote.creationDate,
                     modificationDate: copiedNote.modificationDate,
@@ -88,53 +112,11 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
             throw new Error('Failed to copy the note');
         }).then(addedNote => {
             onCopyNote(addedNote);
+            
         }).catch(error => {
             console.error('Failed to copy the note', error);
         });
     };
-
-    //const handleShareNote = (id) => {
-    //    fetch(`/api/notes/${id}`, {
-    //        method: 'POST',
-    //        headers: {
-    //            'Content-Type': 'application/json',
-    //            'Authorization': `Bearer ${token}`,
-    //        },
-    //        body: JSON.stringify({
-    //            email: email,
-    //        }),
-    //    }).then(response => {
-    //        if (response.ok) {
-    //            return response.json();
-    //        }
-    //        throw new Error('Failed to share the note');
-    //    }).then(sharedNote => {
-    //        console.log(sharedNote);
-    //    }).catch(error => {
-    //        console.error('Failed to share the note', error);
-    //    });
-    //};
-    //const handleShareNote = (id) => {
-    //    fetch(`/api/notes/${id}`, {
-    //        method: 'POST',
-    //        headers: {
-    //            'Content-Type': 'application/json',
-    //            'Authorization': `Bearer ${token}`,
-    //        },
-    //        body: JSON.stringify({
-    //            email: email,
-    //        }),
-    //    }).then(response => {
-    //        if (response.ok) {
-    //            return response.json();
-    //        }
-    //        throw new Error('Failed to share the note');
-    //    }).then(sharedNote => {
-    //        console.log(sharedNote);
-    //    }).catch(error => {
-    //        console.error('Failed to share the note', error);
-    //    });
-    //};
 
     const handleOrderChange = (event) => {
         setOrder(event.target.value);
@@ -160,6 +142,7 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
     };
 
     const handleOpenDialog = (note) => {
+        handleClose(note.id);
         console.log('Opening dialog for note', note);
         setCurrentNote(note);
         setOpen(true);
@@ -172,152 +155,132 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
     const filteredNotes = sortedNotes.filter(note => note.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
     return (
-        <Box sx={{ display: 'flex', height: '82vh', overflow: 'scroll' }}>
-            {isDesktop ? (
-                <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                    <TextField label="Search Notes" variant="outlined" fullWidth onChange={e => setSearchTerm(e.target.value)} style={styles.textField}
-                        InputProps={{
-                            style: {
-                                color: '#53ddf0',
-                            }
+        <Box sx={{
+            backgroundColor: "#111119",
+            marginTop: "20px",
+            marginBottom: "20px",
+            borderRadius: "20px",
+            paddingBottom: "20px",
+        }}>
+            <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center',  }}>
+                <Accordion square='false' sx={{ backgroundColor: '#1d1d2f', color: 'white', width: "100%", borderRadius: "20px 20px 0px 0px", marginBottom: "20px" }}>
+                        <AccordionSummary expandIcon={<ArrowDropDownIcon />} sx={{ backgroundColor: '#7d5ffc', borderRadius: "19px 19px 0px 0px" }}>
+                            <Typography> <FilterAltIcon/> Filter notes</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails sx={{ backgroundColor: '#1d1d2f', borderRadius: "20px 20px 0px 0px" }}>
+                            <Box style={{ 
+                                display: 'flex', 
+                                flexWrap: 'wrap', 
+                                flexDirection: 'row',
+                                justifyContent: 'center',
+                                gap: "20px", 
+                                marginTop: "20px",
+                                }}>
+                                <TextField label="Search Notes" variant="outlined" fullWidth onChange={e => setSearchTerm(e.target.value)} 
+                                    InputProps={{
+                                        style: {
+                                            color: '#53ddf0',
+                                        }
+                                    }}
+                                    InputLabelProps={{
+                                        style: {
+                                            color: '#7d5ffc',
+
+                                        }
+                                }} />
+                                <Select
+                                    value={order}
+                                    onChange={handleOrderChange}
+                                    displayEmpty
+                                    inputProps={{ 'aria-label': 'Without label' }}
+
+                                    MenuProps={{
+                                        PaperProps: {
+                                            style: {
+                                                color: '#53ddf0',
+                                                backgroundColor: '#111119',
+                                                fontSize: '1.2rem',
+                                                fontWeight: 'bold',
+                                                backgroundColor: '#111119',
+                                                fontSize: '1.2rem',
+                                                fontWeight: 'bold'
+                                            }
+                                        }
+                                    }}
+                                    sx={{
+                                        width: "100%",
+                                        '& .MuiSelect-select': {
+                                            color: '#7d5ffc',
+                                            
+                                        }
+                                    }}
+                                >
+                                    <MenuItem value="title-asc" sx>Titolo Crescente</MenuItem>
+                                    <MenuItem value="title-desc">Titolo Decrescente</MenuItem>
+                                    <MenuItem value="creationDate-asc">Data di Creazione Crescente</MenuItem>
+                                    <MenuItem value="creationDate-desc">Data di Creazione Decrescente</MenuItem>
+                                    <MenuItem value="modificationDate-asc">Data di Modifica Crescente</MenuItem>
+                                    <MenuItem value="modificationDate-desc">Data di Modifica Decrescente</MenuItem>
+                                    <MenuItem value="length-asc">Lunghezza Note Crescente</MenuItem>
+                                    <MenuItem value="length-desc">Lunghezza Note Decrescente</MenuItem>
+                                </Select>
+                                <FormControlLabel
+                                    control={<Checkbox
+                                        checked={showSharedNotes}
+                                        onChange={handleCheckboxChange}
+                                        style={{ color: '#53ddf0' }}
+                                    />}
+                                    label="Show Shared"
+                                />
+                            </Box>
+                        </AccordionDetails>
+                </Accordion>
+                <Box style={{ 
+                    display: 'flex', 
+                    flexWrap: 'wrap', 
+                    justifyContent: 'space-around',
+                }}>
+                    {filteredNotes.map((note) => (
+                        <Box style={{ display: 'flex', 
+                            flexDirection: 'column', 
+                            alignItems: 'center',
+                            backgroundColor: "#111119",
+                            borderRadius: "10px",
+                            boxShadow: "0px 0px 0px #53ddf063",
+                            padding: "8px",
+                            margin: "5px", }}>
+                        <Card key={note.id} sx={{ 
+                            maxWidth: '300px', 
+                            margin: '10px', 
+                            padding: '10px', 
+                            height: "208px",
+                            width: "147px",
+                            overflow: "hidden", 
                         }}
-                        InputLabelProps={{
-                            style: {
-                                color: '#7d5ffc',
-
-                            }
-                        }} />
-
-                    <Select
-                        value={order}
-                        onChange={handleOrderChange}
-                        displayEmpty
-                        inputProps={{ 'aria-label': 'Without label' }}
-
-                        MenuProps={{
-                            PaperProps: {
-                                style: {
-                                    color: '#53ddf0',
-                                    backgroundColor: '#111119',
-                                    fontSize: '1.2rem',
-                                    fontWeight: 'bold',
-                                    backgroundColor: '#111119',
-                                    fontSize: '1.2rem',
-                                    fontWeight: 'bold'
-                                }
-                            }
-                        }}
-                        sx={{
-                            '& .MuiSelect-select': {
-                                color: '#7d5ffc',
-
-                            }
-                        }}
-                    >
-                        <MenuItem value="title-asc">Titolo Crescente</MenuItem>
-                        <MenuItem value="title-desc">Titolo Decrescente</MenuItem>
-                        <MenuItem value="creationDate-asc">Data di Creazione Crescente</MenuItem>
-                        <MenuItem value="creationDate-desc">Data di Creazione Decrescente</MenuItem>
-                        <MenuItem value="modificationDate-asc">Data di Modifica Crescente</MenuItem>
-                        <MenuItem value="modificationDate-desc">Data di Modifica Decrescente</MenuItem>
-                        <MenuItem value="length-asc">Lunghezza Note Crescente</MenuItem>
-                        <MenuItem value="length-desc">Lunghezza Note Decrescente</MenuItem>
-                    </Select>
-                    <FormControlLabel
-                        control={<Checkbox
-                            checked={showSharedNotes}
-                            onChange={handleCheckboxChange}
-                            style={{ color: '#53ddf0' }}
-                        />}
-                        label="Show Shared"
-                    />    
-                    <ul style={{marginTop: '1em'}}>
-                        {filteredNotes.map((note) => (
-                            <li key={note.id}>
-                                <Typography variant="h7" onClick={() => onNoteModified(note.id)} style={{ cursor: 'pointer' }}>
-                                    {note.title}
-                                </Typography>
-                                <Box style={{ display: 'flex', alignItems: 'center', marginLeft: '-2em'}}>
-                                    {note.userId === user &&
-                                    <IconButton aria-label="SetAccess" onClick={() => handleOpenDialog(note)} style={{ color: '#53ddf0', padding: '0px' }}>
-                                        <AccessibilityIcon sx={{ height: '0.88em'}}/>
-                                    </IconButton>}
-                                    <IconButton aria-label="copy" onClick={() => handleCopyNote(note.id)} style={{ color: '#53ddf0', padding: '1px' }}>
-                                        <FileCopyIcon sx={{ height: '0.83em'}}/>
-                                    </IconButton>
-                                    <IconButton aria-label="delete" onClick={() => handleDeleteNote(note.id)} style={{ color: '#53ddf0', padding: '1px' }}>
-                                        <DeleteIcon sx={{ height: '0.88em'}}/>
-                                    </IconButton>
-                                </Box>
-                            </li>
-                        ))}
-                    </ul>
-                </Box>
-            ) : (
-                <div>
-                    <TextField label="Search Notes" variant="outlined" fullWidth onChange={e => setSearchTerm(e.target.value)} 
-                        InputProps={{
-                            style: {
-                                color: '#53ddf0',
-                            }
-                        }}
-                        InputLabelProps={{
-                            style: {
-                                color: '#7d5ffc',
-
-                            }
-                        }} />
-                    <Select
-                        value={order}
-                        onChange={handleOrderChange}
-                        displayEmpty
-                        inputProps={{ 'aria-label': 'Without label' }}
-
-                        MenuProps={{
-                            PaperProps: {
-                                style: {
-                                    color: '#53ddf0',
-                                    backgroundColor: '#111119',
-                                    fontSize: '1.2rem',
-                                    fontWeight: 'bold',
-                                    backgroundColor: '#111119',
-                                    fontSize: '1.2rem',
-                                    fontWeight: 'bold'
-                                }
-                            }
-                        }}
-                        sx={{
-                            '& .MuiSelect-select': {
-                                color: '#7d5ffc',
-
-                            }
-                        }}
-                    >
-                        <MenuItem value="title-asc" sx>Titolo Crescente</MenuItem>
-                        <MenuItem value="title-desc">Titolo Decrescente</MenuItem>
-                        <MenuItem value="creationDate-asc">Data di Creazione Crescente</MenuItem>
-                        <MenuItem value="creationDate-desc">Data di Creazione Decrescente</MenuItem>
-                        <MenuItem value="modificationDate-asc">Data di Modifica Crescente</MenuItem>
-                        <MenuItem value="modificationDate-desc">Data di Modifica Decrescente</MenuItem>
-                        <MenuItem value="length-asc">Lunghezza Note Crescente</MenuItem>
-                        <MenuItem value="length-desc">Lunghezza Note Decrescente</MenuItem>
-                    </Select>
-                    <FormControlLabel
-                        control={<Checkbox
-                            checked={showSharedNotes}
-                            onChange={handleCheckboxChange}
-                            style={{ color: '#53ddf0' }}
-                        />}
-                        label="Show Shared"
-                    />
-                    <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around' }}>
-                        {filteredNotes.map((note) => (
-                            <Card key={note.id} sx={{ maxWidth: '300px', margin: '10px' }}>
-                                <CardContent onClick={() => onNoteModified(note.id)} style={{ cursor: 'pointer' }}>
-                                    <Typography variant="h5">{note.title}</Typography>
-                                </CardContent>
+                        >
+                            <CardContent onClick={() => onNoteModified(note.id)} style={{ cursor: 'pointer' }}>
+                                <Typography variant="body2"
+                                    sx={{
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        textAlign: 'justify',
+                                        textShadow: "0px 0px 0px white !important",
+                            
+                                        zoom: "0.3",
+                                        overflowWrap: "break-word",
+                                        textWrap: "wrap",
+                                        height: "370px",
+                                    }}
+                                >{parse(note.note.substring(0, 200))}</Typography>
+                            </CardContent>
                                 <CardActions disableSpacing>
-                                    <IconButton aria-label="settings" onClick={(e) => handleMenu(e, note.id)}>
+                                    <IconButton aria-label="settings" onClick={(e) => handleMenu(e, note.id)} 
+                                        sx={{
+                                            position: 'relative',
+                                            left: '80%',
+                                        }}
+                                    >
                                         <MoreVertIcon />
                                     </IconButton>
                                     <Menu
@@ -326,23 +289,74 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                                         keepMounted
                                         open={Boolean(anchorEl[note.id])}
                                         onClose={() => handleClose(note.id)}
+                                        sx = {{
+                                            '& .MuiMenu-paper': {
+                                                backgroundColor: '#111119',
+                                                color: '#53ddf0',
+                                                fontSize: '1.2rem',
+                                                fontWeight: 'bold'
+                                            }
+                                        }}
                                     >
                                         <MenuItem onClick={() => handleCopyNote(note.id)}>Copy</MenuItem>
-                                        <MenuItem onClick={() => handleDeleteNote(note.id)}>Delete</MenuItem>
+                                        {((note.access === 'specified' && note.users.includes(user)) || note.access === 'private' || note.userId === user) &&
+                                            <MenuItem onClick={() => handleDeleteNote(note.id)}>Delete</MenuItem>}
                                         {note.userId === user &&
                                             <MenuItem onClick={() => handleOpenDialog(note)}>Set Access</MenuItem>}
                                     </Menu>
                                 </CardActions>
-                            </Card>
-                        ))}
-                    </div>
-                </div>
-            )}
+                        </Card>
+                        <Box sx={{
+                            width: "147px",
+                            display: "flex",
+                            flexDirection: "column",
+                            flexWrap: "wrap",
+                            backgroundColor: "#111119",
+                            borderRadius: "10px",
+                            boxShadow: note.owner == username ? "1px 1px 0px rgb(238 79 252), -1px -1px 0px #7d5ffc" : "1px 1px 0px #5ffcf6, -1px -1px 0px rgb(255 244 43)",
+                            padding: "8px",
+                            margin: "5px",
+                            marginTop: "0px",
+                            marginBottom: "9px",
+                        }}>
+                            <Typography variant="caption" sx={{
+                                fontSize: "0.65em",
+                                display: "flex",
+                                flexDirection: "row",
+                                flexWrap: "wrap",
+                                justifyContent: "space-between",
+                                alignItems: "baseline",    
+                            }} color="#ffffff88">Title  <span style={{fontSize: "1.7em", color: "#53ddf0"}}> {note.title} </span></Typography>
+                            <Divider color="#fff" sx={{height: "0px !important", color: "#ffffff55"}}/>
+                            <Typography variant="caption" sx={{
+                                fontSize: "0.5em",
+                                display: "flex",
+                                flexDirection: "row",
+                                flexWrap: "wrap",
+                                justifyContent: "space-between",
+                                alignItems: "baseline",
+                                lineHeight: "2",  
+                            }} color="#ffffff88">Creation Date  <span style={{fontSize: "1.5em", color: "#53ddf0"}}>{new Date(note.creationDate).toLocaleDateString()}</span></Typography>
+                            <Divider sx={{height: "0px !important", color: "#ffffff55"}}/>
+                            <Typography variant="caption" sx={{
+                                fontSize: "0.65em",
+                                display: "flex",
+                                flexDirection: "row",
+                                flexWrap: "wrap",
+                                justifyContent: "space-between",
+                                alignItems: "baseline",    
+                            }} color="#ffffff88">Owner  <span style={{fontSize: "1.2em", color: "#53ddf0"}}>{note.owner}</span></Typography>
+                        </Box>
+                        </Box>
+                    ))}
+                </Box>
+            </Box>
             <AccessDialog
                 open={open}
                 setOpen={setOpen}
                 setAccess={setAccess}
                 setUsers={setUsers}
+                note={currentNote}
                 onConfirm={async (accessType, usersList) => {
                     console.log('Setting access for note', currentNote, accessType, usersList);
                     if (currentNote) {
@@ -358,6 +372,7 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                                     category: currentNote.category,
                                     note: currentNote.note,
                                     userId: currentNote.userId,
+                                    owner: currentNote.owner,
                                     characters: currentNote.characters,
                                     access: accessType,
                                     users: usersList,
@@ -386,4 +401,3 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
 }
 
 export default NotesList;
-

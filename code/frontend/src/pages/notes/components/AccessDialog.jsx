@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -10,20 +10,25 @@ import {
 } from "@mui/material";
 import { set } from "date-fns";
 
-function AccessDialog({ open, setOpen, setAccess, setUsers, onConfirm }) {
-  const [checkedPrivate, setCheckedPrivate] = useState(false);
-  const [checkedPublic, setCheckedPublic] = useState(false);
-  const [checkedSpecified, setCheckedSpecified] = useState(false);
+function AccessDialog({ open, setOpen, setAccess, setUsers, onConfirm, note }) {
   const [userInput, setUserInput] = useState("");
-  const [users, updateUsers] = useState([]);
+  const [users, updateUsers] = useState(note != null ? note.users && note.users.length > 0 ? note.users : [] : []);
+  const [checkedPrivate, setCheckedPrivate] = useState(note != null ? note.access === "private" : false);
+  const [checkedPublic, setCheckedPublic] = useState(note != null ? note.access === "public" : false);
+  const [checkedSpecified, setCheckedSpecified] = useState(note != null ? note.access === "specified" : false);
+
+  useEffect(() => {
+    if (note != null) {
+      setCheckedPrivate(note.access === "private");
+      setCheckedPublic(note.access === "public");
+      setCheckedSpecified(note.access === "specified");
+      updateUsers(note.users && note.users.length > 0 ? note.users : []);
+    }
+  }, [note]);
 
   const handleClose = () => {
     setOpen(false);
-    setCheckedPrivate(false);
-    setCheckedPublic(false);
-    setCheckedSpecified(false);
     setUserInput("");
-    updateUsers([]);
   };
 
   const handleConfirm = () => {

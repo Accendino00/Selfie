@@ -120,5 +120,37 @@ router.get("/getUserId", authenticateJWT, function (req, res) {
     });
 });
 
+router.post("/modifyNotificationSettings", authenticateJWT, function (req, res) {
+  //update the notification settings of the user, notifyNotice and notifyRepeat
+  const username = req.query.username;
+  const notifyNotice = req.query.notifyNotice;
+  const notifyRepeat = req.query.notifyRepeat;
+  console.log("username: " + username + " notifyNotice: " + notifyNotice + " notifyRepeat: " + notifyRepeat);
+  if(!username){
+    res.status(403).send({
+      success: false,
+      message: "Non sei autorizzato",
+    });
+  }
+
+  const usersCollection = clientMDB.db("SelfieGD").collection("Users");
+  usersCollection
+    .updateOne({ username: username }, { $set: { notifyNotice: notifyNotice, notifyRepeat: notifyRepeat } })
+    .then((result) => {
+      res.status(200).send({
+        success: true,
+        message: "Impostazioni di notifica modificate",
+      });
+    })
+    .catch((error) => {
+      res.status(500).send({
+        success: false,
+        message: "Errore interno",
+      });
+    });
+}
+);
+
+
 
 module.exports = router;

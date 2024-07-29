@@ -136,7 +136,8 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
             isTask: task.isTask,
             completed: task.completed,
             borderColor: task.borderColor,
-            isLate: task.isLate
+            isLate: task.isLate,
+            users: task.users
         };
 
         let modifiedTask = false;
@@ -348,6 +349,12 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
         } else {
             setTaskColor('#000000');
         }
+        if(task.users){
+            setUsers(task.users);
+            
+        } else {
+            setUsers([]);
+        }
         setModifying(true);
 
         setOpenDialog(true);
@@ -448,12 +455,19 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
 
 
     const handleUserAdd = () => {
-        if (usersInput.trim() !== "") {
-            const updatedUsers = [...users, usersInput.trim()];
-            setUsers(updatedUsers);
-            setUsersInput("");
+        const trimmedInput = usersInput.trim();
+        if (trimmedInput !== "") {
+            // Check if the trimmed input is already in the users array
+            if (!users.includes(trimmedInput)) {
+                const updatedUsers = [...users, trimmedInput];
+                setUsers(updatedUsers);
+            } else {
+                alert('User already added'); // Notify the user about the duplicate
+            }
+            setUsersInput(""); // Clear the input field regardless of whether the user was added or not
         }
     }
+    
 
 
 

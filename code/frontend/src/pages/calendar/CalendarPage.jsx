@@ -27,7 +27,6 @@ import StudyEvent from './StudyEvents.jsx';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
-
 const CalendarPage = () => {
   const navigate = useNavigate();
   const [create, setCreate] = useState(false);
@@ -252,11 +251,13 @@ const CalendarPage = () => {
       .then(response => response.json())
       .then(data => {
 
-        setInvitedEvents(invitedEvents.filter(event => !selectedInvitedEvents.title.includes(event)));
-        setSelectedInvitedEvents([]);
-
-
-
+        if (data) {
+          setInvitedEvents(invitedEvents.filter(event => !selectedInvitedEvents.includes(event)));
+          console.log('Invited events accepted:', data);
+          setSelectedInvitedEvents([]);
+        } else {
+          console.error('Failed to accept invited events:', data.message);
+        }
       })
       .catch(error => console.error('Error accepting invited events:', error));
   };

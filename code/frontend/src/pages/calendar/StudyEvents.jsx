@@ -36,6 +36,7 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
     const [cycles, setCycles] = useState(0);
     const [totalMinutes, setTotalMinutes] = useState(0);
     const [isLate, setIsLate] = useState(false);
+    const [mode, setMode] = useState('Standard');
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 
@@ -114,7 +115,7 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
                 } else if (StudyEvents[i].isRecurring && new Date(StudyEvents[i].endRecur) <= new Date()) {
                     updateStudyEvent(StudyEvents[i]);
                 }
-            }
+        }
 
         }
 
@@ -139,10 +140,17 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
             cycles: StudyEvent.cycles,
             totalMinutes: StudyEvent.totalMinutes,
             borderColor: StudyEvent.borderColor,
-            isLate: StudyEvent.isLate
+            isLate: StudyEvent.isLate,
+            mode: StudyEvent.mode
         };
 
         let modifiedStudyEvent = false;
+
+        if(StudyEvent.cycles === 0) {
+            updatedStudyEvent.completed = true;
+            modifiedStudyEvent = true;
+            console.log('completed', updatedStudyEvent)
+        }
 
         if (new Date(StudyEvent.end) <= new Date()) {
             updatedStudyEvent.start = new Date();
@@ -226,7 +234,8 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
             breakTime: breakTime,
             cycles: cycles,
             totalMinutes: totalMinutes,
-            isLate: false
+            isLate: false,
+            mode: mode
 
         };
 
@@ -259,6 +268,8 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
             StudyEventData.start = new Date();
             StudyEventData.end = new Date();
         }
+
+        console.log('addData', StudyEventData)
 
         if (modifying) {
             fetch(`/api/modifyStudyEvent/${currentId}`, {
@@ -298,10 +309,18 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
 
     const modifyStudyEvent = (StudyEvent) => {
         console.log('ao2', StudyEvent)
+        
         if (StudyEvent.completed) {
             setCompleted(true);
+        } else if(StudyEvent.cycles > 0){
+            setCompleted(false);
         } else {
             setCompleted(false);
+        }
+        if(StudyEvent.mode === 'Standard') {
+            setMode('Standard');
+        } else {
+            setMode('Custom');
         }
         if (StudyEvent.isRecurring) {
             setIsRecurring(true);
@@ -375,8 +394,16 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
 
         if (StudyEvent.completed) {
             setCompleted(true);
+        } else if(StudyEvent.cycles > 0){
+            setCompleted(false);
         } else {
             setCompleted(false);
+        }
+
+        if(StudyEvent.mode === 'Standard') {
+            setMode('Standard');
+        } else {
+            setMode('Custom');
         }
 
         setCurrentId(StudyEvent._id);
@@ -530,6 +557,7 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
         setCycles(0);
         setTotalMinutes(0);
         setIsLate(false);
+        setMode('Standard');
     }
 
     const handleAddStudyEvent = () => {
@@ -584,13 +612,21 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
 
     const handleToggleComplete = (id) => {
         setCompleted(!completed);
-        const newStudyEvents = StudyEvents.map(StudyEvent => {
-            if (StudyEvent._id === id) {
-                return { ...StudyEvent, completed: !StudyEvent.completed };
-            }
-            return StudyEvent;
-        });
-        setStudyEvents(newStudyEvents);
+        if(Array.isArray(StudyEvents)) {
+            console.log(StudyEvents)
+            const newStudyEvents = StudyEvents.map(StudyEvent => {
+                if (StudyEvent.id === id) {
+                    console.log('aiut')
+                    console.log('completed?', StudyEvent.completed)
+                    return { ...StudyEvent, completed: !StudyEvent.completed };
+                }
+                return StudyEvent;
+            });
+            setStudyEvents(newStudyEvents);
+        } else if(StudyEvents && StudyEvents.id === id) {
+            setStudyEvents({ ...StudyEvents, completed: !StudyEvents.completed });
+        }
+
     };
 
     const listItemStyle = (completed) => ({
@@ -623,6 +659,17 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
     function translateDays(days) {
         return days.map(day => getDayName(day));
     }
+
+    const handleModeChange = (event) => {
+        const selectedMode = event.target.value;
+        if(selectedMode === 'Standard') {
+            setTotalMinutes(0);
+        } else {
+            setStudyTime(0);
+            setBreakTime(0);
+        }
+        setMode(selectedMode);
+    };
 
     return (
         <Box>
@@ -724,42 +771,75 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
                             onChange={(e) => setStartTime(e.target.value)}
                         />
                     )}
-                    <TextField
-                        margin="dense"
-                        label="Study Time (minutes)"
-                        type="number"
-                        fullWidth
-                        variant="standard"
-                        value={studyTime}
-                        onChange={(e) => setStudyTime(Math.max(0, e.target.value))}
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={mode === 'Standard'}
+                                onChange={handleModeChange}
+                                value="Standard"
+                            />
+                        }
+                        label="Standard"
                     />
-                    <TextField
-                        margin="dense"
-                        label="Break Time (minutes)"
-                        type="number"
-                        fullWidth
-                        variant="standard"
-                        value={breakTime}
-                        onChange={(e) => setBreakTime(Math.max(0, e.target.value))}
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={mode === 'Custom'}
+                                onChange={handleModeChange}
+                                value="Custom"
+                            />
+                        }
+                        label="Custom"
                     />
-                    <TextField
-                        margin="dense"
-                        label="Cycles"
-                        type="number"
-                        fullWidth
-                        variant="standard"
-                        value={cycles}
-                        onChange={(e) => setCycles(Math.max(0, e.target.value))}
-                    />
-                    <TextField
-                        margin="dense"
-                        label="Total Minutes"
-                        type="number"
-                        fullWidth
-                        variant="standard"
-                        value={totalMinutes}
-                        onChange={(e) => setTotalMinutes(Math.max(0, e.target.value))}
-                    />
+                        <TextField
+                            margin="dense"
+                            label="Cycles"
+                            type="number"
+                            fullWidth
+                            variant="standard"
+                            value={cycles}
+                            onChange={(e) => setCycles(Math.max(0, e.target.value))}
+                        />
+                        {mode === 'Custom' && (
+                            <>
+
+                            <TextField
+                                margin="dense"
+                                label="Study Time (minutes)"
+                                type="number"
+                                fullWidth
+                                variant="standard"
+                                value={studyTime}
+                                onChange={(e) => setStudyTime(Math.max(0, e.target.value))}
+                            />
+                            <TextField
+                                margin="dense"
+                                label="Break Time (minutes)"
+                                type="number"
+                                fullWidth
+                                variant="standard"
+                                value={breakTime}
+                                onChange={(e) => setBreakTime(Math.max(0, e.target.value))}
+                            />
+
+                            </>
+                        )
+
+                        }
+                        {mode === 'Standard' && (
+                            <TextField
+                                margin="dense"
+                                label="Total Minutes"
+                                type="number"
+                                fullWidth
+                                variant="standard"
+                                value={totalMinutes}
+                                onChange={(e) => setTotalMinutes(Math.max(0, e.target.value))}
+                            />
+
+                        )
+
+                        }
                     <TextField
                         margin="dense"
                         label="Color"
@@ -851,6 +931,7 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
                                     checked={completed}
                                     onChange={() => handleToggleComplete(currentId)}
                                     color="primary"
+                                    disabled={cycles > 0}
                                 />}
                                 label="Completed?"
                             />

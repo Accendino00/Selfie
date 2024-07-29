@@ -56,7 +56,7 @@ function ProgressBarComponent({ inputValue, label, hours, minutes, seconds, hand
                 flexDirection="column"
                 sx={{ textAlign: 'center' }}
             >
-                    {label == "Hai finito!" ? 
+                    {label == "You finished!" ? 
                         <Box 
                             sx={{
                                 color: 'inherit',
@@ -70,9 +70,9 @@ function ProgressBarComponent({ inputValue, label, hours, minutes, seconds, hand
                                 color="inherit"
                                 size="small"
                                 onClick={handleStart}
-                                sx={{ marginTop: '1em' }}
+                                sx={{ marginTop: '1em', backgroundColor: "#1d1d2f" }}
                             >
-                            Ricomincia
+                            Restart
                             </Button>
                         </Box> :
                         <Box 
@@ -87,7 +87,7 @@ function ProgressBarComponent({ inputValue, label, hours, minutes, seconds, hand
                     }
                 
                 <Typography variant="caption" component="div">
-                    {!(label == "Hai finito!") && `${hours}:${minutes}:${seconds}`}
+                    {!(label == "You finished!") && `${hours}:${minutes}:${seconds}`}
                 </Typography>
             </Box>
         </Box>

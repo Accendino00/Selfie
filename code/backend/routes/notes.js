@@ -5,17 +5,18 @@ const { authenticateJWT } = require('../middleware/authorization');
 const { clientMDB } = require('../utils/dbmanagement');
 const { ObjectId } = require('mongodb');
 
-function saveNoteToDatabase(title, category, note, userId, characters, access, users, creationDate, modificationDate) {
+function saveNoteToDatabase(title, category, note, userId, owner, characters, access, users, creationDate, modificationDate) {
     return new Promise((resolve, reject) => {
         try {
             const notesCollection = clientMDB.db("SelfieGD").collection("Notes");
-            notesCollection.insertOne({ title: title, category: category, note: note, userId: userId, characters: characters, access: access, users: users, creationDate: creationDate, modificationDate: modificationDate }).then((result) => {
+            notesCollection.insertOne({ title: title, category: category, note: note, userId: userId, owner: owner, characters: characters, access: access, users: users, creationDate: creationDate, modificationDate: modificationDate }).then((result) => {
                 resolve({
                     id: result.insertedId.toString(), // Convert inserted ID to string
                     title: title,
                     category: category,
                     note: note,
                     userId: userId,
+                    owner: owner,
                     characters: characters,
                     access: access,
                     users: users,
@@ -60,7 +61,8 @@ function getNotesFromDatabase(userId, showSharedNotes, username) {
             query = {
                 $or: [
                     { userId: userId },
-                    { users: username }
+                    { users: username },
+                    { access: 'public' }
                 ]
             };
         } else {
@@ -75,6 +77,7 @@ function getNotesFromDatabase(userId, showSharedNotes, username) {
                     category: note.category,
                     note: note.note,
                     userId: note.userId,
+                    owner: note.owner,
                     characters: note.characters,
                     access: note.access,
                     users: note.users,
@@ -95,6 +98,7 @@ router.post("/notes", authenticateJWT, function (req, res) {
     const category = req.body.category;
     const note = req.body.note;
     const userId = req.body.userId;
+    const owner = req.body.owner;
     const characters = req.body.characters;
     const access = req.body.access;
     const users = req.body.users;
@@ -106,7 +110,7 @@ router.post("/notes", authenticateJWT, function (req, res) {
     }
 
     // Save the note to the database
-    saveNoteToDatabase(title, category, note, userId, characters, access, users, creationDate, modificationDate).then((savedNote) => {
+    saveNoteToDatabase(title, category, note, userId, owner, characters, access, users, creationDate, modificationDate).then((savedNote) => {
         console.log("Note saved successfully", savedNote);
         res.status(201).send(savedNote);
     }).catch((error) => {
@@ -148,6 +152,7 @@ router.post("/notes/:id", authenticateJWT, function (req, res) {
                                 category: updatedNote.category,
                                 note: updatedNote.note,
                                 userId: updatedNote.userId,
+                                owner: updatedNote.owner,
                                 characters: updatedNote.characters,
                                 access: updatedNote.access,
                                 users: updatedNote.users,
@@ -219,6 +224,7 @@ router.get("/notes/:id", authenticateJWT, function (req, res) {
                     category: note.category,
                     note: note.note,
                     userId: note.userId,
+                    owner: note.owner,
                     characters: note.characters,
                     access: note.access,
                     users: note.users,
@@ -246,6 +252,7 @@ router.put("/notes/:id", authenticateJWT, function (req, res) {
     const category = req.body.category;
     const note = req.body.note;
     const userId = req.body.userId;
+    const owner = req.body.owner;
     const characters = req.body.characters;
     const access = req.body.access;
     const users = req.body.users;
@@ -258,7 +265,7 @@ router.put("/notes/:id", authenticateJWT, function (req, res) {
     }
 
     const notesCollection = clientMDB.db("SelfieGD").collection("Notes");
-    notesCollection.updateOne({ _id: new ObjectId(id) }, { $set: { title: title, category: category, note: note, userId: userId, characters: characters, access: access, users: users, creationDate: creationDate, modificationDate: modificationDate } })
+    notesCollection.updateOne({ _id: new ObjectId(id) }, { $set: { title: title, category: category, note: note, userId: userId, owner: owner, characters: characters, access: access, users: users, creationDate: creationDate, modificationDate: modificationDate } })
         .then(result => {
             if (result.matchedCount === 0) {
                 res.status(404).send({ message: "Note not found" });
@@ -275,6 +282,7 @@ router.put("/notes/:id", authenticateJWT, function (req, res) {
                                 category: updatedNote.category,
                                 note: updatedNote.note,
                                 userId: updatedNote.userId,
+                                owner: updatedNote.owner,
                                 characters: updatedNote.characters,
                                 access: updatedNote.access,
                                 users: updatedNote.users,
@@ -307,6 +315,7 @@ router.get("/getLastCreatedNote", authenticateJWT, function (req, res) {
                     category: lastNote[0].category,
                     note: lastNote[0].note,
                     userId: lastNote[0].userId,
+                    owner: lastNote[0].owner,
                     characters: lastNote[0].characters,
                     access: lastNote[0].access,
                     users: lastNote[0].users,
@@ -335,6 +344,7 @@ router.get("/getFirstCreatedNote", authenticateJWT, function (req, res) {
                     category: firstNote[0].category,
                     note: firstNote[0].note,
                     userId: firstNote[0].userId,
+                    owner: firstNote[0].owner,
                     characters: firstNote[0].characters,
                     access: firstNote[0].access,
                     users: firstNote[0].users,
@@ -363,6 +373,7 @@ router.get("/getLastModifiedNote", authenticateJWT, function (req, res) {
                     category: lastNote[0].category,
                     note: lastNote[0].note,
                     userId: lastNote[0].userId,
+                    owner: lastNote[0].owner,
                     characters: lastNote[0].characters,
                     access: lastNote[0].access,
                     users: lastNote[0].users,
@@ -391,6 +402,7 @@ router.get("/getFirstModifiedNote", authenticateJWT, function (req, res) {
                     category: firstNote[0].category,
                     note: firstNote[0].note,
                     userId: firstNote[0].userId,
+                    owner: firstNote[0].owner,
                     characters: firstNote[0].characters,
                     access: firstNote[0].access,
                     users: firstNote[0].users,

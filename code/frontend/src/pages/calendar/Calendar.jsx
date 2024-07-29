@@ -54,6 +54,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
   const [draggedOpen, setDraggedOpen] = useState(false);
   const [dragVariable, setDragVariable] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [name, setName] = useState('');
 
  // const [view, setView] = useState('');
 
@@ -101,8 +102,8 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
       })
         .then(response => response.json())
         .then(data => {
-
           setEvents(data);
+          
 
         })
         .catch(error => {
@@ -194,6 +195,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
       location: location,
       invitedUsers: invitedUsers,
       shared: shared,
+      isShared: shared.length > 0,
       isRecurring: isRecurring,
 
     };
@@ -433,6 +435,8 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
         cycles: event.extendedProps.cycles,
         totalMinutes: event.extendedProps.totalMinutes,
         //daysOfWeek: event._def.recurringDef.typeData.daysOfWeek,
+        completed: event.extendedProps.completed,
+        mode: event.extendedProps.mode,
         _id: event.id
       });
       return;
@@ -452,6 +456,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
         name: event.extendedProps.name,
         isRecurring: event.extendedProps.isRecurring,
         timesToRepeat: event.extendedProps.timesToRepeat,
+        users: event.extendedProps.users,
         _id: event.id
       });
       console.log('swag', taskToModify)
@@ -501,6 +506,12 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     }
     setLocation(event.extendedProps.location);
     setEventColor(event.backgroundColor);
+    setShared(event.extendedProps.shared);
+    setInvitedUsers(event.extendedProps.invitedUsers);
+    setName(event.extendedProps.name);
+
+    console.log(event)
+
     setModifying(true);
     handleOpen();
 
@@ -525,6 +536,8 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
         cycles: event.extendedProps.cycles,
         totalMinutes: event.extendedProps.totalMinutes,
         //daysOfWeek: event._def.recurringDef.typeData.daysOfWeek,
+        completed: event.extendedProps.completed,
+        mode: event.extendedProps.mode,
         _id: event.id
       });
 
@@ -545,6 +558,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
         name: event.extendedProps.name,
         isRecurring: event.extendedProps.isRecurring,
         timesToRepeat: event.extendedProps.timesToRepeat,
+        users: event.extendedProps.users,
         _id: event.id
       });
 
@@ -614,6 +628,10 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     }
     setLocation(event.extendedProps.location);
     setEventColor(event.backgroundColor);
+    setShared(event.extendedProps.shared);
+    setInvitedUsers(event.extendedProps.invitedUsers);
+    setName(event.extendedProps.name);
+
     setModifying(true);
     handleDraggedOpen();
   }
@@ -654,7 +672,39 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
 
   const removeInvitedUser = (user) => {
     setInvitedUsers(invitedUsers.filter(u => u !== user));
+    fetch(`/api/removeInvitedUser/${currentId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ user: user })
+    })
+      .then(response => response.json())
+      .then(data => {
+        setEvents(data);
+      })
+      .catch(error => console.error('Error removing invited user:', error));
   };
+
+  const removeSharedUser = (user) => {
+    setShared(shared.filter(u => u !== user));
+    fetch(`/api/removeSharedUser/${currentId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ user: user })
+    })
+      .then(response => response.json())
+      .then(data => {
+        setEvents(data);
+      })
+      .catch(error => console.error('Error removing shared user:', error));
+  };
+
+
 
   const handleTasksFromTasks = (tasks) => {
     setTasks(tasks);
@@ -1111,6 +1161,14 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
               <div key={index}>
                 {user}
                 <Button onClick={() => removeInvitedUser(user)}>Remove</Button>
+              </div>
+            ))}
+          </div>
+          <div>
+            {shared.map((user, index) => (
+              <div key={index}>
+                {(user != username) && user && (user != name) && name &&
+                  <Button onClick={() => removeSharedUser(user)}>Remove</Button>}
               </div>
             ))}
           </div>

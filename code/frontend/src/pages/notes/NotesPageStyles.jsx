@@ -4,8 +4,8 @@ const styles = {
     flexDirection: 'row', // Imposta i figli uno sotto l'altro
     alignItems: 'center', // Allinea i figli al centro orizzontalmente
     justifyContent: 'space-around', // Distanzia i figli uniformemente
-    backgroundColor: '#111119',
-    height: 'calc(100vh - 64px)',
+    minHeight: 'calc(100vh - 64px)',
+    height: '100%',
   },
   newNoteDesktop: {
     position: 'fixed', // Adjust based on your layout needs
@@ -16,7 +16,12 @@ const styles = {
     position: 'fixed',
     right: 16,
     bottom: 16,
-    zIndex: 1000
+    zIndex: 1000,
+    backgroundColor: "#7d5ffb",
+    color: "#fff",
+    "&:hover": {
+      backgroundColor: "#6f4bd8",
+    },
   },
 }
 

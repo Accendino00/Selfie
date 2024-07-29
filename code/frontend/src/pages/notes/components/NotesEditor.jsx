@@ -14,6 +14,8 @@ import Grid from '@mui/material/Grid';
 import './styles.css';
 import AccessDialog from './AccessDialog.jsx';
 import { set } from 'date-fns';
+import Typography from '@mui/material/Typography';
+import { useNavigate } from 'react-router-dom';
 
 // Register the Markdown module with Quill
 Quill.register('modules/markdownShortcuts', MarkdownShortcuts);
@@ -24,6 +26,7 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
     const [noteInput, setNoteInput] = useState('');
     const token = Cookies.get('token');
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
+    const navigate = useNavigate();
     const [userId, setUserId] = useState(null);
     const [access, setAccess] = useState('');
     const [users, setUsers] = useState([]);
@@ -38,8 +41,6 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
             setTitle('');
             setCategory('');
             setNoteInput('');
-            setAccess('');
-            setUsers([]);
             setCharCount(0);
             console.log('clearing');
             setClear(false);
@@ -93,6 +94,7 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                         category: newCategory,
                         note: newNote,
                         userId: userId,
+                        owner: username,
                         characters: charCount,
                         access: accessType, // include access field
                         users: usersList, // include users field
@@ -106,8 +108,6 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                     setCategory('');
                     setNoteInput('');
                     setCharCount(0);
-                    setAccess('');
-                    setUsers([]);
                     if (onNoteAdded) {
                         onNoteAdded(addedNote);
                     }
@@ -141,6 +141,7 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                         category: newCategory,
                         note: newNote,
                         userId: noteToModify.userId,
+                        owner: noteToModify.owner,
                         characters: charCount,
                         access: noteToModify.access, // include access field
                         users: noteToModify.users, // include users field
@@ -154,8 +155,6 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                     setCategory('');
                     setNoteInput('');
                     setCharCount(0);
-                    setAccess('');
-                    setUsers([]);
                     setNoteToModify(null);
                     setVisualizeEditor(false);
                     if (onNoteAdded) {
@@ -214,6 +213,14 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
 
     return (
         <Container sx={styles.container}>
+                <Typography variant="h4" sx={{
+        marginTop: '0.5em',
+        marginBottom: '1em',
+        fontWeight: '800',
+        fontSize: '1.1em',
+        color: "#53ddf0",
+        textAlign: 'center',
+        }}>Note Editor</Typography>
             <Paper elevation={3} sx={styles.paper}>
                 <TextField
                     label="Title"
@@ -229,7 +236,8 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                     }}
                     InputLabelProps={{
                         style: {
-                            color: '#53ddf0',
+                            color: '#53ddf043',
+                            fontStyle: "italic",
                         }
                     }}
                 />
@@ -248,7 +256,8 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                     }}
                     InputLabelProps={{
                         style: {
-                            color: '#53ddf0',
+                            color: '#53ddf043',
+                            fontStyle: "italic",
                         }
                     }}
                 />
@@ -257,9 +266,15 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                     <Box display="flex" style={styles.quill}>
                         <ReactQuill ref={quillRef} theme="snow" value={noteInput} onChange={handleInputChange} modules={modules} style={styles.actualQuill} />
                     </Box>
-                    <Box display="flex" sx={{ marginTop: '30px' }}>
+                    <Box display="flex" sx={{ marginTop: '30px',
+                        flexWrap: "wrap",
+                        justifyContent: "center",
+                        alignContent: "center",
+                        flexDirection: "row",
+                        alignItems: "baseline",
+                     }}>
                         <span 
-                            style={{ color: '#53ddf0', fontSize: '1rem', marginRight: 'auto' }}
+                            style={{ color: '#53ddf0', fontSize: '1rem', marginRight: 'auto', width: "10em", maxWidth: "100%" }}
                         >
                             Character Count: {charCount}</span>
                         {noteToModify ? (
@@ -279,6 +294,7 @@ function NotesEditor({ onNoteAdded, noteToModify, setNoteToModify, setVisualizeE
                 setOpen={setOpen}
                 setAccess={setAccess}
                 setUsers={setUsers}
+                note = {noteToModify ? noteToModify : null}
                 onConfirm={handleAddNoteWithAccess} // Call this function when confirming the dialog
             />
         </Container>

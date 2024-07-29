@@ -33,7 +33,9 @@ const styles = {
         }
     },
     button: {
-        margin: '0'
+        margin: '0',
+        marginTop: '0.5rem',
+        marginBottom: '0.5rem',
     }
 };
 

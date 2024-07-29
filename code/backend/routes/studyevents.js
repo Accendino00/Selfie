@@ -183,6 +183,35 @@ router.post('/addStudyEvent', authenticateJWT, (req, res) => {
 }
 );
 
+router.put('/modifyStudyEventFromPomodoro/:id', authenticateJWT, (req, res) => {
+    return new Promise((resolve, reject) => {
+        try {
+            const id = req.params.id;
+            const totalMinutes = req.body.totalMinutes;
+            const cycles = req.body.cycles;
+            let completed = false;
+            if (cycles === 0) {
+                 completed = true;
+            } 
+            console.log(id, totalMinutes, cycles);
+            const StudyEventsCollection = clientMDB.db("SelfieGD").collection('StudyEvents');
+            StudyEventsCollection.updateOne({ _id: new ObjectId(id) }, { $set: {totalMinutes: totalMinutes, cycles: cycles, completed: completed} }).then((result) => {
+                if (result.matchedCount === 0) {
+                    res.status(404).send('No StudyEvent found with that id');
+                } else {
+                    res.json(id);
+                }
+            }).catch((error) => {
+                console.log(error);
+                res.status(500).send('Error modifying StudyEvent');
+            });
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+);
+
 router.put('/modifyStudyEvent/:id', authenticateJWT, (req, res) => {
     return new Promise((resolve, reject) => {
         try {

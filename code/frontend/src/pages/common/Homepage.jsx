@@ -567,9 +567,7 @@ const HomePage = () => {
         sx={{
           backgroundColor: 'rgba(0, 0, 40, 0.5)',
           position: 'relative',
-          width: '100vw',
-          height: '100vh',
-          overflow: 'hidden',
+          minHeight: '100vh',
         }}
       >
         <IconButton
@@ -728,12 +726,12 @@ const HomePage = () => {
             }}
           />
         </Box>
-        <Box display="flex" align="center" justifyContent="center" marginTop="1vh">
-          <img src="/selfie.png" alt="Selfie" style={{ width: '60vw', maxWidth: '320px', height: '15vh', minHeight: '10vh', maxHeight: '60vh' }} />
+        <Box display="flex" align="center" justifyContent="center">
+          <img src="/selfie.png" alt="Selfie" style={{ width: '60vw', maxWidth: '320px', height: 'auto', minHeight: '10vh', maxHeight: '60vh' }} />
         </Box>
-        <Grid container sx={{ display: 'flex', position: 'relative', zIndex: 1, alignItems: 'center', justifyContent: 'center', height: '75vh', gap: "2vh" }}>
+        <Grid container sx={{ display: 'flex', position: 'relative', zIndex: 1, alignItems: 'center', justifyContent: 'center', gap: "2vh" }}>
           <Grid item xs={10} md={3}>
-            <Button onClick={handleCalendarSettingsClick} sx={{ position: 'absolute', padding: 0, marginTop: '1vh', zIndex: '1000' }}>
+            <Button onClick={handleCalendarSettingsClick} sx={{ position: 'absolute', padding: 0, marginTop: '1vh', zIndex: '1000', minWidth: "40px" }}>
               <SettingsIcon sx={{ color: "white" }} />
             </Button>
             <Card variant="outlined" sx={{
@@ -748,10 +746,10 @@ const HomePage = () => {
               backdropFilter: "blur(10px)",
               boxShadow: "0px 0px 10px 0px #00000006"
             }}>
-              <CardActionArea onClick={() => navigate('/calendar/')}>
+              <CardActionArea onClick={() => navigate('/calendar/')} sx={{minHeight: "20vh", maxHeight: "60vh"}}>
                 <CardContent>
                   <Typography variant="h5" component="div" align="center" sx={{
-                    fontSize: "45px",
+                    fontSize: "40px",
                     background: "-webkit-linear-gradient(45deg, #333b96, #9f4f84 80%)",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
@@ -770,7 +768,7 @@ const HomePage = () => {
             </Card>
           </Grid>
           <Grid item xs={10} md={3}>
-            <Button onClick={handlePomodoroSettingsClick} sx={{ position: 'absolute', padding: 0, marginTop: '1vh', zIndex: '1000' }}>
+            <Button onClick={handlePomodoroSettingsClick} sx={{ position: 'absolute', padding: 0, marginTop: '1vh', zIndex: '1000', minWidth: "40px" }}>
               <SettingsIcon sx={{ color: "white" }} />
             </Button>
             <Card variant="outlined" sx={{
@@ -785,10 +783,10 @@ const HomePage = () => {
               backdropFilter: "blur(10px)",
               boxShadow: "0px 0px 10px 0px #00000006"
             }}>
-              <CardActionArea onClick={() => navigate('/timer/')}>
+              <CardActionArea onClick={() => navigate('/timer/')} sx={{minHeight: "20vh", maxHeight: "60vh"}}>
                 <CardContent>
                   <Typography variant="h5" component="div" align="center" sx={{
-                    fontSize: "45px",
+                    fontSize: "40px",
                     background: "-webkit-linear-gradient(165deg, #eed06a, #9f4f84 80%)",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
@@ -828,7 +826,7 @@ const HomePage = () => {
           </Grid>
 
           <Grid item xs={10} md={3}>
-            <Button onClick={handleNoteSettingsClick} sx={{ position: 'absolute', padding: 0, marginTop: '1vh', zIndex: '1000' }}>
+            <Button onClick={handleNoteSettingsClick} sx={{ position: 'absolute', padding: 0, marginTop: '1vh', zIndex: '1000', minWidth: "40px" }}>
               <SettingsIcon sx={{ color: "white" }} />
             </Button>
             <Card variant="outlined" sx={{
@@ -843,10 +841,10 @@ const HomePage = () => {
               backdropFilter: "blur(10px)",
               boxShadow: "0px 0px 10px 0px #00000006"
             }}>
-              <CardActionArea onClick={() => navigate('/notes/')}>
+              <CardActionArea onClick={() => navigate('/notes/')} sx={{minHeight: "20vh", maxHeight: "60vh"}}>
                 <CardContent>
                   <Typography variant="h5" component="div" align="center" sx={{
-                    fontSize: "45px",
+                    fontSize: "40px",
                     background: "-webkit-linear-gradient(45deg, #0b1439, #4a8dda 80%)",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",

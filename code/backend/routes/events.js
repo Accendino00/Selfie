@@ -105,12 +105,12 @@ function getInvitedEvents(username) {
   return new Promise((resolve, reject) => {
     try {
       const calendarCollection = clientMDB.db("SelfieGD").collection('Events');
-      calendarCollection.find({}).toArray().then((events) => {
+      calendarCollection.find({ invitedUsers: username }).toArray().then((events) => {
         // Filtra gli eventi per quelli in cui invitedUsers include l'username
-        const filteredEvents = events.filter((event) => event.invitedUsers.includes(username));
+        //const filteredEvents = events.filter((event) => event.invitedUsers.includes(username));
         
         // Converti _id in stringa per ogni evento
-        const eventsWithCorrectId = filteredEvents.map((event) => {
+        const eventsWithCorrectId = events.map((event) => {
           event.id = event._id.toString();
           return event;
         });
@@ -144,44 +144,6 @@ function saveEventToDB(event) {
   }
 )};
 
-function acceptInvitedEvents(username, selectedEvents) {
-  return new Promise((resolve, reject) => {
-    try {
-      const calendarCollection = clientMDB.db("SelfieGD").collection('Events');
-
-      calendarCollection.find({ invitedUsers: username }).toArray().then((events) => {
-        if (events.length === 0) {
-          return resolve({ message: "No events found for the invited user" });
-        }
-
-        // Filter the events to include only those that are in selectedEvents
-        const filteredEvents = events.filter(event => selectedEvents.includes(event.title));
-
-        if (filteredEvents.length === 0) {
-          return resolve({ message: "No selected events found for the invited user" });
-        }
-
-        // Update only the filtered events
-        const updatePromises = filteredEvents.map(event =>
-          calendarCollection.updateOne(
-            { title: event.title },
-            { $push: { shared: username } }
-          )
-        );
-
-        Promise.all(updatePromises).then((results) => {
-          resolve(results);
-        }).catch((error) => {
-          reject(error);
-        });
-      }).catch((error) => {
-        reject(error);
-      });
-    } catch (err) {
-      reject(err);
-    }
-  });
-}
 
 function declineInvitedEvents(username, event) {
   return new Promise((resolve, reject) => {
@@ -204,6 +166,30 @@ function declineInvitedEvents(username, event) {
     }
   });
 }
+
+function acceptInvitedEvents(username, selectedEvents) {
+  return new Promise((resolve, reject) => {
+    try {
+      console.log("Accepting events", selectedEvents);
+      const calendarCollection = clientMDB.db("SelfieGD").collection('Events');
+      return calendarCollection.updateMany(
+        { title: { $in: selectedEvents } },
+        { $push: { shared: username } , $pull: { invitedUsers: username }, $set: { isShared: true } }
+      )
+      .then((result) => {
+        console.log("Accepted events", selectedEvents);
+        console.log(result);
+        resolve(result);
+      })
+      .catch((error) => {
+        reject(error);
+      });
+    } catch (err) {
+      reject(err);
+    }
+  }
+)}
+
 
 
 
@@ -289,6 +275,37 @@ router.delete('/deleteEvents/:id', (req, res) => {
   }
 )}
 );  
+
+
+router.put('/removeInvitedUser/:id', authenticateJWT, (req, res) => {
+  return new Promise((resolve, reject) => {
+    const id = req.params.id;
+    const user= req.body;
+    const calendarCollection = clientMDB.db("SelfieGD").collection('Events');
+    calendarCollection.updateOne({ _id: new ObjectId(id) }, { $pull: { invitedUsers: user } }).then((result) => {
+      res.json(result);
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send('Error removing invited user');
+    });
+  }
+)}
+);
+
+router.put('/removeSharedUser/:id', authenticateJWT, (req, res) => {
+  return new Promise((resolve, reject) => {
+    const id = req.params.id;
+    const user= req.body;
+    const calendarCollection = clientMDB.db("SelfieGD").collection('Events');
+    calendarCollection.updateOne({ _id: new ObjectId(id) }, { $pull: { shared: user } }).then((result) => {
+      res.json(result);
+    }).catch((err) => {
+      console.log(err);
+      res.status(500).send('Error removing shared user');
+    });
+  }
+)}
+);
 
 module.exports = router;
 

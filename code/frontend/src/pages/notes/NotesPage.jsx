@@ -24,7 +24,11 @@ function NotesPage() {
     const isDesktop = useMediaQuery('(min-width:600px)'); // Adjust 600px based on your breakpoint needs
     const [boolToggle, setBoolToggle] = useState(false);
     const [clear, setClear] = useState(false);
-    const [showSharedNotes, setShowSharedNotes] = useState(false);
+    const [showSharedNotes, setShowSharedNotes] = useState(true);
+    const [checkedPrivate, setCheckedPrivate] = useState(false);
+    const [checkedPublic, setCheckedPublic] = useState(false);
+    const [checkedSpecified, setCheckedSpecified] = useState(false);
+    const [users, setUsers] = useState([]);
 
 
     useEffect(() => {
@@ -156,74 +160,51 @@ function NotesPage() {
     if (loginStatus) {
         return (
             <Box sx={styles.container}>
-                {isDesktop ? (
-                    <>
-                        <IconButton color="inherit" onClick={handleNewNote} sx={styles.newNoteDesktop}>
-                            <AddIcon />
-                        </IconButton>
-                        <NotesList 
-                            notes={notes} 
-                            setNotes={setNotes} 
-                            showSharedNotes={showSharedNotes}
-                            setShowSharedNotes={setShowSharedNotes}
-                            onNoteDeleted={handleNoteDeleted} 
-                            onNoteModified={handleNoteModified} 
-                            onCopyNote={handleNoteAdded} 
-                            isDesktop={isDesktop} 
-                            user={userId}
-                        />
-                        <NotesEditor 
-                            onNoteAdded={handleNoteAdded} 
-                            noteToModify={noteToModify} 
-                            setNoteToModify={setNoteToModify} 
-                            setVisualizeEditor={setVisualizeEditor} 
-                            clear={clear}
-                            setClear={setClear}
-                        />
-                        
-                    </>
-                ) : (
-                    visualizeEditor ? (
-                        <>
-                            <Fab color="primary" aria-label="back" onClick={() => {
-                                if(noteToModify) {
-                                    if(window.confirm('Sei sicuro di voler tornare indietro? Le modifiche non salvate andranno perse.')) {
-                                        setNoteToModify(null);
-                                        setVisualizeEditor(false);
+                <Container>
+
+
+                    {visualizeEditor ? (
+                            <>
+                                <Fab aria-label="back" onClick={() => {
+                                    if(noteToModify) {
+                                        if(window.confirm('Sei sicuro di voler tornare indietro? Le modifiche non salvate andranno perse.')) {
+                                            setNoteToModify(null);
+                                            setVisualizeEditor(false);
+                                        }
                                     }
-                                }
-                                setVisualizeEditor(false);
-                            }} sx={styles.newNoteMobile}>
-                                <ArrowBackIcon />
-                            </Fab>
-                            <NotesEditor 
-                                onNoteAdded={handleNoteAdded} 
-                                noteToModify={noteToModify} 
-                                setNoteToModify={setNoteToModify} 
-                                setVisualizeEditor={setVisualizeEditor} 
-                            />
-                        </>
-                    ) : (
-                        <>
-                            <Fab color="primary" aria-label="add" onClick={() => {
-                                setNoteToModify(null);
-                                toggleEditor()}} sx={styles.newNoteMobile}>
-                                <AddIcon />
-                            </Fab>
-                            <NotesList 
-                                notes={notes} 
-                                setNotes={setNotes} 
-                                showSharedNotes={showSharedNotes}
-                                setShowSharedNotes={setShowSharedNotes}
-                                onNoteDeleted={handleNoteDeleted} 
-                                onNoteModified={handleNoteModified} 
-                                onCopyNote={handleNoteAdded} 
-                                isDesktop={isDesktop}
-                                user={userId} 
-                            />
-                        </>
-                    )
-                )}
+                                    setVisualizeEditor(false);
+                                }} sx={styles.newNoteMobile}>
+                                    <ArrowBackIcon />
+                                </Fab>
+                                <NotesEditor 
+                                    onNoteAdded={handleNoteAdded} 
+                                    noteToModify={noteToModify} 
+                                    setNoteToModify={setNoteToModify} 
+                                    setVisualizeEditor={setVisualizeEditor} 
+                                />
+                            </>
+                        ) : (
+                            <>
+                                <Fab aria-label="add" onClick={() => {
+                                    setNoteToModify(null);
+                                    toggleEditor()}} sx={styles.newNoteMobile}>
+                                    <AddIcon />
+                                </Fab>
+                                <NotesList 
+                                    notes={notes} 
+                                    setNotes={setNotes} 
+                                    showSharedNotes={showSharedNotes}
+                                    setShowSharedNotes={setShowSharedNotes}
+                                    onNoteDeleted={handleNoteDeleted} 
+                                    onNoteModified={handleNoteModified} 
+                                    onCopyNote={handleNoteAdded} 
+                                    isDesktop={isDesktop}
+                                    user={userId} 
+                                />
+                            </>
+                        )
+                    }
+                </Container>
             </Box>
         );
     }

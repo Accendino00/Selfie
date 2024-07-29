@@ -38,23 +38,55 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
   const token = Cookies.get('token');
   const [shownNotifications, setShownNotifications] = useState(0);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [selectedNotification, setSelectedNotification] = useState("");
+  const [selectedNotification, setSelectedNotification] = useState(localStorage.getItem('notificationCount') || '');
   const [tasks, setTasks] = useState([]);
   const [totalNotifications, setTotalNotifications] = useState(0);
   const [shownEventNotifications, setShownEventNotifications] = useState(0);
   const [shownTaskNotifications, setShownTaskNotifications] = useState(0);
   const [studyEvents, setStudyEvents] = useState([]);
+  const [noticeDialogOpen, setNoticeDialogOpen] = useState(false);
+  const [repeatDialogOpen, setRepeatDialogOpen] = useState(false);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+  const [selectedRepeat, setSelectedRepeat] = useState(localStorage.getItem('repeatCount') || '');
+
+
+
 
   const notificationOptions = [
     '30 min', '1 hour', '6 hours', '12 hours', '1 day', '3 days',
     '1 week', '2 weeks', '1 month', '3 months', '6 months', '1 year'
   ];
 
-
+function SettingsDialog({ open, onClose }) {
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <Button onClick={handleOpenNoticeDialog}>Set Notice Time</Button>
+            <Button onClick={handleOpenRepeatDialog}>Set Repeats</Button>
+            <NoticeTimeDialog />
+            <RepeatDialog /> 
+    </Dialog>
+  );
+}
   const handleLogout = () => {
     Cookies.remove('token');
     navigate('/');
   };
+
+  const handleOpenNoticeDialog = () => {
+    setNoticeDialogOpen(true);
+};
+
+const handleCloseNoticeDialog = () => {
+    setNoticeDialogOpen(false);
+};
+
+const handleOpenRepeatDialog = () => {
+    setRepeatDialogOpen(true);
+};
+
+const handleCloseRepeatDialog = () => {
+    setRepeatDialogOpen(false);
+};
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -159,8 +191,11 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
   // carica tempo di preavviso per le notifiche degli eventi selezionato
   useEffect(() => {
     const savedSelectedNotification = localStorage.getItem('notificationCount');
+    const savedSelectedRepeat = localStorage.getItem('repeatCount');
     if (savedSelectedNotification) {
       setSelectedNotification(savedSelectedNotification);
+    } else if(savedSelectedRepeat) {
+      setSelectedRepeat(savedSelectedRepeat);
     }
   }, []);
 
@@ -190,7 +225,11 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
   };
 
   const handleSettingsClick = () => {
-    setSettingsOpen(true);
+    setSettingsDialogOpen(true);
+  };
+
+  const handleDialogClose = () => {
+    setSettingsDialogOpen(false);
   };
 
   const handleCloseSettings = () => {
@@ -220,15 +259,47 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
       </Box>
     );
   }
+  
+  const modifyNotifyNotice = async (notice, repeat) => {
+    try {
+      const response = await fetch(`/api/modifyNotificationSettings?username=${username}&notifyNotice=${noticeTimeToMilliseconds(notice)}&notifyRepeat=${parseInt(repeat)}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
+      console.log('Notification settings modified successfully');
+    } catch (error) {
+      console.error('Error modifying notification settings:', error);
+    }
+  };
+  
 
 
   const handleNotificationChange = (event) => {
     setSeedTwo((prev) => prev + 1);
     const value = event.target.value;
     localStorage.setItem('notificationCount', value);
+    //modifyNotifyNotice(value);
+    console.log('value:', value);
+    modifyNotifyNotice(value, selectedRepeat);
     setSelectedNotification(value);
   };
 
+  const handleRepeatChange = (event) => {
+    setSeedTwo((prev) => prev + 1);
+    const newRepeatValue = event.target.value;
+    console.log('newRepeatValue:', newRepeatValue);
+    localStorage.setItem('repeatCount', newRepeatValue);
+    modifyNotifyNotice(selectedNotification, newRepeatValue);
+    setSelectedRepeat(newRepeatValue);
+};
 
   function convertRecurringEventToFirstUsefulDate(event) {
     if (!event.isRecurring) {
@@ -245,7 +316,7 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
       return <Typography variant="body2" color="error" align="center">{error}</Typography>;
     }
     if (combinedItems.length === 0) {
-      return <Typography variant="body2" color="text.secondary" align="center">No tasks or events found.</Typography>;
+      return <Typography variant="body2" color="text.secondary" align="center" padding="10px">No tasks or events found.</Typography>;
     }
 
     return combinedItems
@@ -276,10 +347,10 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
       ));
   };
 
-  const NotificationSettingsDialog = () => {
+  const NoticeTimeDialog = () => {
     return (
-      <Dialog open={settingsOpen} onClose={handleCloseSettings}>
-        <DialogTitle>Notification Settings</DialogTitle>
+        <Dialog open={noticeDialogOpen} onClose={handleCloseNoticeDialog}>
+            <DialogTitle>Notification Settings</DialogTitle>
         <DialogContent>
           <RadioGroup value={selectedNotification} onChange={handleNotificationChange}>
             {notificationOptions.map(option => (
@@ -296,9 +367,33 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
         <DialogActions>
           <Button onClick={handleCloseSettings}>Close</Button>
         </DialogActions>
-      </Dialog>
+        </Dialog>
     );
-  };
+};
+
+const RepeatDialog = () => {
+    return (
+      <Dialog open={repeatDialogOpen} onClose={handleCloseRepeatDialog}>
+      <DialogTitle>Set Repeats</DialogTitle>
+      <DialogContent>
+          <RadioGroup value={selectedRepeat} onChange={handleRepeatChange}>
+              {[...Array(10).keys()].map(num => (
+                  <ListItem key={num}>
+                      <FormControlLabel 
+                          control={<Radio />} 
+                          label={`${num + 1}`} 
+                          value={`${num + 1}`}
+                      />
+                  </ListItem>
+              ))}
+          </RadioGroup>
+      </DialogContent>
+      <DialogActions>
+          <Button onClick={handleCloseRepeatDialog}>Close</Button>
+      </DialogActions>
+  </Dialog>
+    );
+};
 
 
   function formatDate(date) {
@@ -544,21 +639,20 @@ function formatDateWithTime(date) {
             <ExitToAppIcon />
           </IconButton>
           <Menu
-            id="notification-menu"
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-          >
-            <NotificationSettingsDialog />
-            <MenuItem onClick={handleSettingsClick} sx={{ margin: '0' }}>
-              <Grid container direction="row" alignItems="center" justifyContent="center">
-                <SettingsIcon />
-                <Typography fontSize={14}>Settings</Typography>
-              </Grid>
-            </MenuItem>
-            {renderNotifications()}
-          </Menu>
-
+        id="notification-menu"
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+      >
+        <MenuItem onClick={handleSettingsClick} sx={{ margin: '0' }}>
+          <Grid container direction="row" alignItems="center" justifyContent="center">
+            <SettingsIcon />
+            <Typography fontSize={14}>Settings</Typography>
+          </Grid>
+        </MenuItem>
+        {renderNotifications()}
+      </Menu>
+      <SettingsDialog open={settingsDialogOpen} onClose={handleDialogClose} />
         </Toolbar>
       </AppBar>
     );

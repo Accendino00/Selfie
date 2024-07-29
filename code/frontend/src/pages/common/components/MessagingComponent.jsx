@@ -118,8 +118,12 @@ function MessagingComponent() {
     return (
         <Container>
             {open ? (
-                <Drawer anchor="right" open={open} onClose={() => setOpen(false)}>
-                    <Box sx={{ width: 300, padding: 2 }}>
+                <Drawer anchor="right" open={open} onClose={() => setOpen(false)} PaperProps={{
+                    sx: {
+                      maxWidth: "80vw"
+                    }
+                  }}>
+                    <Box sx={{ maxWidth: 300, padding: 2 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
                             <h2>Messages</h2>
                             <IconButton onClick={handleNotification}>

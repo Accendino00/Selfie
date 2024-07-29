@@ -31,75 +31,77 @@ const schedule = require('node-schedule');
 const { clientMDB } = require('./dbmanagement');
 const nodemailer = require('nodemailer'); // Assumendo che userai Nodemailer per l'invio delle email
 
-const checkEvents = async () => {
+function formatDateWithTime(date) {
+  return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
+}
+
+const calculateAllRecurrencies = (event, finalYear) => {
+  const recurrencies = [];
+  let nextStartDate = new Date(event.start);
+  let nextEndDate = event.end ? new Date(event.end) : null;
+
+  const maxRecurrences = event.timesToRepeat ? parseInt(event.timesToRepeat) : Infinity;
+  let counter = 0;
+
+  while ((counter < maxRecurrences) && (nextStartDate.getFullYear() <= finalYear)) {
+      if (event.daysOfWeek.includes(nextStartDate.getDay())) {
+          const startDate = formatDateWithTime(nextStartDate);
+          const endDate = nextEndDate ? formatDateWithTime(nextEndDate) : null;
+
+          recurrencies.push({
+              ...event,
+              start: startDate,
+              end: endDate
+          });
+
+          counter++;
+      }
+
+      nextStartDate.setDate(nextStartDate.getDate() + 7); // Add one week
+      if (nextEndDate) {
+          nextEndDate.setDate(nextEndDate.getDate() + 7); // Add one week to the end date
+      }
+  }
+
+  return recurrencies;
+};
+
+
+async function checkEvents() {
   const eventsCollection = clientMDB.db("SelfieGD").collection('Events');
-  
-  // Otteniamo tutti gli eventi non recurring
+  const usersCollection = clientMDB.db("SelfieGD").collection('Users');
   const now = new Date();
-  const upcomingEvents = await eventsCollection.find({
-    start: { $gte: now.toISOString() },
-    isRecurring: false
-  }).toArray();
 
-  // Adesso andiamo a ottenere tutti quelli che sono recurring
-  // recurring ha: daysOfWeek, timesToRepeat, startRecur, endRecur, startTime, endTime
-  // times to repeat coincide con il numero di settimane nelle quali si ripete
-  // daysOfWeek è un array del tipo: "[0,1]" per indicare domenica e lunedì, etc.
-  
-  // Quello che dobbiamo fare è controllare che:
-  //    La data di inizio dell'evento + ((numero di occorrenze+1) * 7 giorni)
-  //    è più grande della data attuale?
-  //    inoltre, se end è null, allora non c'è una data di fine e quindi l'evento si richiede sempre
+  // Find all events that are either happening soon or need to be checked for recurring notifications
+  const events = await eventsCollection.find({}).toArray();
 
-  const recurringEvents = await eventsCollection.aggregate([
-    {
-      $match: {
-        isRecurring: true
-      }
-    },
-    {
-      $addFields: {
-        timesToRepeatNumeric: {
-          $cond: {
-            if: { $eq: ["$timesToRepeat", null] },
-            then: null,
-            else: { $toInt: "$timesToRepeat" }
+  for (const event of events) {
+      const owner = await usersCollection.findOne({ name: event.name });
+      const sharedUsers = event.shared.map(async username => await usersCollection.findOne({ name: username }));
+
+      // Include both owner and shared users in the notification process
+      const usersToNotify = [owner, ...await Promise.all(sharedUsers)];
+
+      for (const user of usersToNotify) {
+          if (!user) continue;  // Skip if user not found
+
+          const noticeTime = user.notifyNotice;
+          const repeatCount = user.notifyRepeat;
+
+          // Calculate the time intervals at which notifications should be sent
+          for (let i = 0; i < repeatCount; i++) {
+              const notificationTime = new Date(event.start - noticeTime * (i + 1) / repeatCount);
+
+              if (now > notificationTime && now < new Date(notificationTime.getTime() + 30 * 1000)) { // 30-second window to send the notification
+                  // Logic to send email notification
+                  console.log(`Sending notification to ${user.name} for event ${event.name}`);
+                  // Include email logic here, possibly using nodemailer
+              }
           }
-        }
       }
-    },
-    {
-      $addFields: {
-        computedStartTimestamp: {
-          $cond: {
-            if: { $eq: ["$timesToRepeatNumeric", null] },
-            then: { $toLong: new Date() },
-            else: {
-              $subtract: [
-                { $toLong: new Date() },
-                { $multiply: ["$timesToRepeatNumeric", 7 * 24 * 60 * 60 * 1000] }
-              ]
-            }
-          }
-        }
-      }
-    },
-    {
-      $addFields: {
-        computedStart: { $toDate: "$computedStartTimestamp" }
-      }
-    },
-    {
-      $match: {
-        start: { $gte: "$computedStart" }
-      }
-    }
-  ]).toArray();
-  
-  
+  }
 
-  // log
-  console.log('Upcoming events:', upcomingEvents);
+  console.log('Upcoming events checked', events);
 };
 
 // Programma il controllo degli eventi ogni 30 secondi

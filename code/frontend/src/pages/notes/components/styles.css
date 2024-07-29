@@ -1,35 +1,49 @@
 .ql-toolbar.ql-snow {
-    border: 1px solid #7d5ffc;
-    box-sizing: border-box;
-    font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
-    padding: 8px;
-  }
+  /*border: 1px solid transparent;*/
+  border: 0px;  
+  box-sizing: border-box;
+  font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  padding: 8px;
+  border-bottom: 1px solid #7d5ffc;
+}
 
-  .ql-container.ql-snow {
-    border: 1px solid #7d5ffc;
-  }
+.ql-container.ql-snow {
+  /*border: 1px solid #7d5ffc;*/
+  border: 0px;
+  box-shadow: 0px 0px 20px #7d5ffc33;
+  border-radius: 0px 0px 20px 20px;
+  height: auto;
+  min-height: 200px;
+  padding-bottom: 40px;
+}
 
-  .ql-toolbar.ql-snow .ql-picker-label {
-    border: 1px solid transparent;
-    color: #53ddf0;
-  }
+.ql-toolbar.ql-snow .ql-picker-label {
+  /*border: 1px solid transparent;*/
+  border: 0px;
+  color: #53ddf0;
+}
 
-  .ql-editor {
-    box-sizing: border-box;
-    line-height: 1.42;
-    height: 100%;
-    outline: none;
-    overflow-y: auto;
-    padding: 12px 15px;
-    tab-size: 4;
-    -moz-tab-size: 4;
-    text-align: left;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    color: #53ddf0
-  }
+.ql-editor {
+  box-sizing: border-box;
+  line-height: 1.42;
+  height: 100%;
+  outline: none;
+  overflow-y: auto;
+  padding: 12px 15px;
+  tab-size: 4;
+  -moz-tab-size: 4;
+  text-align: left;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: #53ddf0
+}
 
-  .ql-snow.ql-toolbar button,
+
+.ql-image {
+  display: none !important;
+}
+
+.ql-snow.ql-toolbar button,
 .ql-snow .ql-toolbar button {
   background: none;
   border: none;
@@ -73,20 +87,19 @@
 }
 
 
-    .ql-snow.ql-toolbar button:hover:not(.ql-active),
-    .ql-snow .ql-toolbar button:hover:not(.ql-active) {
-      color: #53ddf0;
-    }
-    .ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-fill,
-    .ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-fill,
-    .ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill,
-    .ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill {
-      fill: #53ddf0;
-    }
-    .ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-stroke,
-    .ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke,
-    .ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter,
-    .ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter {
-      stroke: #53ddf0;
-    }
-  
+.ql-snow.ql-toolbar button:hover:not(.ql-active),
+.ql-snow .ql-toolbar button:hover:not(.ql-active) {
+  color: #53ddf0;
+}
+.ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-fill,
+.ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-fill,
+.ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill,
+.ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill {
+  fill: #53ddf0;
+}
+.ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-stroke,
+.ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke,
+.ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter,
+.ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter {
+  stroke: #53ddf0;
+}

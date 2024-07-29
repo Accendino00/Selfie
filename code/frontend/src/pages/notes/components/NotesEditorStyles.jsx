@@ -11,14 +11,15 @@ const styles = {
         padding: '20px',
         width: '100%',
         maxWidth: '800px',
-        height: '84vh',
-        backgroundColor: '#111119'
+        backgroundColor: '#111119',
+        borderRadius: '16px',
+        marginBottom: '20px',
     },
     textField: {
         marginBottom: '20px',
         '& .MuiOutlinedInput-root': {
             '& fieldset': {
-                borderColor: '#7d5ffc',
+                borderColor: '#7d5ffc5e',
             },
             '&:hover fieldset': {
                 borderColor: '#5e4bcc',
@@ -29,14 +30,12 @@ const styles = {
         },
     },
     quill: {
-        height: '60vh', // Adjust the height as needed
         width: '100%',
-        marginBottom: '20px',
-
+        border: "0px",
     },
     actualQuill: {
         width: "100%",
-
+        border: "0px",
     },
     addButton: {
         marginTop: '20px',
