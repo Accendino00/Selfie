@@ -141,6 +141,13 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     setIsTaskCheckBox(true);
     setIsStudyEventCheckBox(true);
     if (info) {
+      if(view){
+        if(view.type === 'timeGridWeek' || view.type === 'timeGridDay'){
+          setAllDay(false);
+          setStartTime(timeToUsable(info.start.getHours(), info.start.getMinutes()));
+          setEndTime(timeToUsable(info.end.getHours(), info.end.getMinutes()));
+      }
+    }
       setStartDate(info.startStr);
       setEndDate(info.endStr);
     }
