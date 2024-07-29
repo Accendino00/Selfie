@@ -363,6 +363,10 @@ const HomePage = () => {
     return new Date(year, month - 1, day); // month is 0-indexed in JavaScript Date
   }
 
+  function formatDateWithTime(date) {
+    return date.toISOString();
+  }
+
   function calculateAllRecurrencies(event, finalDate) {
     const recurrencies = [];
 
@@ -376,66 +380,65 @@ const HomePage = () => {
     const maxRecurrences = event.timesToRepeat ? Math.min(event.timesToRepeat, 52) : 52; // Assuming a limit of 52 repetitions or one year
 
     // Loop until the maximum repetitions are met or the date exceeds the finalDate
-    while ((event.timesToRepeat ? counter < maxRecurrences : true) && nextStartDate.getFullYear() <= new Date(finalDate).getFullYear()) {
-        // Loop through each day of the week
-        for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
-            let currentDay = (nextStartDate.getDay() + dayOffset) % 7;
+    while ((event.timesToRepeat ? counter < maxRecurrences : true) && nextStartDate.getFullYear() <= finalDate) {
+      // Loop through each day of the week
+      for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+        let currentDay = (nextStartDate.getDay() + dayOffset) % 7;
+        if (event.daysOfWeek && event.daysOfWeek.includes(currentDay)) {
+          let eventDate = new Date(nextStartDate.getTime() + dayOffset * 86400000); // 86400000ms per day
+          if (eventDate.getFullYear() > finalDate) {
+            console.log('alo')
+            break;
+          }
 
-            if (event.daysOfWeek && event.daysOfWeek.includes(currentDay)) {
-                let eventDate = new Date(nextStartDate.getTime() + dayOffset * 86400000); // 86400000ms per day
+          // Formatting function to keep time details
+          let startDate = formatDateWithTime(eventDate);
+          let endDate = nextEndDate ? formatDateWithTime(new Date(eventDate.getTime() + (nextEndDate.getTime() - nextStartDate.getTime()))) : null;
 
-                if (eventDate > new Date(finalDate)) {
-                    break;
-                }
+          let newEvent = {
+            title: event.title,
+            description: event.description,
+            color: event.color,
+            allDay: event.allDay,
+            start: startDate,
+            end: endDate,
+            calendar: event.calendar,
+            name: event.name,
+            location: event.location,
+            invitedUsers: event.invitedUsers,
+            shared: event.shared,
+            isRecurring: event.isRecurring,
+            isTask: event.isTask,
+            completed: event.completed,
+            timesToRepeat: event.timesToRepeat,
+            endRecur: event.endRecur
+          };
+          recurrencies.push(newEvent);
+          counter++; // Increment the repetition counter
 
-                // Formatting function to keep time details
-                let startDate = formatDateWithTime(eventDate);
-                let endDate = nextEndDate ? formatDateWithTime(new Date(eventDate.getTime() + (nextEndDate.getTime() - nextStartDate.getTime()))) : null;
-
-                let newEvent = {
-                    title: event.title,
-                    description: event.description,
-                    color: event.color,
-                    allDay: event.allDay,
-                    start: startDate,
-                    end: endDate,
-                    calendar: event.calendar,
-                    name: event.name,
-                    location: event.location,
-                    invitedUsers: event.invitedUsers,
-                    shared: event.shared,
-                    isRecurring: event.isRecurring,
-                    isTask: event.isTask,
-                    completed: event.completed,
-                    timesToRepeat: event.timesToRepeat,
-                    endRecur: event.endRecur
-                };
-
-                recurrencies.push(newEvent);
-                counter++; // Increment the repetition counter
-
-                if (event.timesToRepeat && counter >= maxRecurrences) {
-                    break;
-                }
-            }
+          if (event.timesToRepeat && counter >= maxRecurrences) {
+            break;
+          }
         }
+      }
 
-        // Move to the next week, maintaining the time of day
-        nextStartDate.setDate(nextStartDate.getDate() + 7);
-        if (nextEndDate) {
-            nextEndDate.setDate(nextEndDate.getDate() + 7);
-        }
+      // Move to the next week, maintaining the time of day
+      nextStartDate.setDate(nextStartDate.getDate() + 7);
+      if (nextEndDate) {
+        nextEndDate.setDate(nextEndDate.getDate() + 7);
+      }
     }
-
     return recurrencies;
-}
+  }
 
   function getFirstUsefulDate(event) {
     const recurrencies = calculateAllRecurrencies(event, getNextYear())
+
     const currentDate = new Date()
-    //console.log('recurrencies', recurrencies)
-    return recurrencies.filter(event => stringToDate(event.start) > currentDate)
-      .sort((a, b) => stringToDate(a.start) - stringToDate(b.start))[0] || false;
+    
+    
+    return recurrencies.filter(event => new Date(event.start) > currentDate).sort((a, b) => stringToDate(a.start) - stringToDate(b.start))[0]
+    
 
   }
 

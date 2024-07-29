@@ -171,9 +171,7 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
   };
 
   const showBrowserNotification = (event, count) => {
-    console.log('showBrowserNotification');
     if (Notification.permission === "granted") {
-      console.log('Showing notification');
       new Notification(event.title, {
         body: `${event.start ? new Date(event.start).toLocaleString() : ''} to ${event.end ? new Date(event.end).toLocaleString() : ''}`,
         badge: '../../public/icon-browser.png',
@@ -329,15 +327,13 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
     const maxRecurrences = event.timesToRepeat ? Math.min(event.timesToRepeat, 52) : 52; // Assuming a limit of 52 repetitions or one year
 
     // Loop until the maximum repetitions are met or the date exceeds the finalDate
-    while ((event.timesToRepeat ? counter < maxRecurrences : true) && nextStartDate.getFullYear() <= new Date(finalDate).getFullYear()) {
+    while ((event.timesToRepeat ? counter < maxRecurrences : true) && nextStartDate.getFullYear() <= finalDate) {
         // Loop through each day of the week
         for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
-            let currentDay = (nextStartDate.getDay() + dayOffset) % 7;
-
-            if (event.daysOfWeek && event.daysOfWeek.includes(currentDay)) {
-                let eventDate = new Date(nextStartDate.getTime() + dayOffset * 86400000); // 86400000ms per day
-
-                if (eventDate > new Date(finalDate)) {
+          let currentDay = (nextStartDate.getDay() + dayOffset) % 7;
+          if (event.daysOfWeek && event.daysOfWeek.includes(currentDay)) {
+            let eventDate = new Date(nextStartDate.getTime() + dayOffset * 86400000); // 86400000ms per day
+            if (eventDate.getFullYear() > finalDate) {
                     break;
                 }
 
@@ -363,7 +359,6 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
                     timesToRepeat: event.timesToRepeat,
                     endRecur: event.endRecur
                 };
-
                 recurrencies.push(newEvent);
                 counter++; // Increment the repetition counter
 
@@ -379,7 +374,6 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
             nextEndDate.setDate(nextEndDate.getDate() + 7);
         }
     }
-
     return recurrencies;
 }
 
@@ -396,7 +390,9 @@ function formatDateWithTime(date) {
 
 
   function getFirstUsefulDate(event) {
+    
     const recurrencies = calculateAllRecurrencies(event, getNextYear());
+    
     const currentDate = new Date();
 
     // Calculate the upper boundary for event dates using the notice period
@@ -444,6 +440,7 @@ function formatDateWithTime(date) {
   }
 
   function isNotifiable(event) {
+
     const eventStartDate = new Date(event.start);
 
     const noticeDate = new Date(eventStartDate.getTime() - noticeTimeToMilliseconds());
