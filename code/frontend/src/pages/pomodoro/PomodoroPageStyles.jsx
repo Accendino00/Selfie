@@ -1,17 +1,17 @@
-import { Height } from "@mui/icons-material";
 
 const styles = {
     grid: {
         display: 'flex',
         alignItems: 'center',
         backgroundColor: '#111119',
-        height: '93vh',
         overflow: 'hidden',
         borderRadius: '20px',
     },
     heading: {
         marginTop: '1vh',
-        marginBottom: '1vh'
+        marginBottom: '1vh',
+        fontWeight: '800',
+        fontSize: '1.8em',
     },
     textField: {
         height: '6vh',

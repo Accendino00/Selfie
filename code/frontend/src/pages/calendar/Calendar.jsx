@@ -3,6 +3,7 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import rrulePlugin from '@fullcalendar/rrule';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, FormControl, InputLabel, Box, FormControlLabel, Checkbox, ListItemText } from '@mui/material';
 import cyberpunkColors from './CalendarStyles';
 import Cookies from 'js-cookie';
@@ -786,7 +787,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
   return (
     <>
       <FullCalendar
-        plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
+        plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin, rrulePlugin]}
         headerToolbar={{
           left: 'prev,next today',
           center: 'title',

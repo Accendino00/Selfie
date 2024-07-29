@@ -61,14 +61,6 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
 
     useEffect(() => {
 
-       /* for (let i = 0; i < StudyEvents.length; i++) {
-            if (new Date(StudyEvents[i].end) <= new Date()) {
-                updateStudyEvent(StudyEvents[i]);
-            } else if (StudyEvents[i].isRecurring && new Date(StudyEvents[i].endRecur) <= new Date()) {
-                updateStudyEvent(StudyEvents[i]);
-            }
-        }
-            */
 
         let counter = 0;
         let currentStudyTime = 0;
@@ -107,18 +99,29 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
             })
                 .then((response) => response.json())
                 .then((data) => {
-                    
+                    updateStudyEvent(data)
+
                 }
                 )
                 .catch((error) => {
                     console.error('Failed to modify study events', error);
                 }
                 );
+        } else {
+
+            for (let i = 0; i < StudyEvents.length; i++) {
+                if (new Date(StudyEvents[i].end) <= new Date()) {
+                    updateStudyEvent(StudyEvents[i]);
+                } else if (StudyEvents[i].isRecurring && new Date(StudyEvents[i].endRecur) <= new Date()) {
+                    updateStudyEvent(StudyEvents[i]);
+                }
+            }
+
         }
 
     }, [StudyEvents]);
 
-    
+
 
 
     const updateStudyEvent = (StudyEvent) => {

@@ -15,6 +15,15 @@ import PlayCircleFilledWhiteIcon from '@mui/icons-material/PlayCircleFilledWhite
 import { Cookie } from '@mui/icons-material';
 import Cookies from 'js-cookie';
 import StarIcon from '@mui/icons-material/Star';
+import SharePomodoro from './components/SharePomodoro';
+import PomodoroShared from './components/PomodoroShared';
+
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import Divider from '@mui/material/Divider';
 
 const PomodoroPage = () => {
     const params = useParams();
@@ -311,61 +320,94 @@ const PomodoroPage = () => {
                 justifyContent: 'center',
                 alignItems: 'center',
                 width: "50vw",
-                maxWidth: "100%",
+                maxWidth: "500px !important",
 
                 marginTop: "1rem",
+                marginBottom: "1rem",
 
                 borderRadius: "24px",
 
 
                 // break at 600px to width 100%
-                '@media (max-width: 700px)': {
+                '@media (max-width: 800px)': {
                     width: "100%",
                 }
             }}>
 
                 <Grid container direction="column" sx={styles.grid}>
                     <Typography variant="h4" sx={styles.heading}>Timer Pomodoro</Typography>
-                    <TextField
-                        label="Tempo di Studio (in minuti)"
-                        variant="standard"
-                        type="number"
-                        value={studyTime}
-                        onChange={handleSetStudyTime}
-                        sx={styles.textField}
 
-                    />
-                    <TextField
-                        label="Durata Pausa (in minuti)"
-                        variant="standard"
-                        type="number"
-                        value={breakTime}
-                        onChange={handleSetBreakTime}
-                        sx={styles.textField}
-                    />
-                    <TextField
-                        label="Numero di Cicli"
-                        variant="standard"
-                        type="number"
-                        value={cycles}
-                        onChange={handleSetCycles}
-                        sx={styles.textField}
-                    />
-                    <TextField
-                        label="Tempo Totale (in minuti)"
-                        variant="standard"
-                        type="number"
-                        value={totalMinutes}
-                        onChange={handleTotalTimeChange}
-                        sx={styles.textField}
-                    />
-                    <Typography variant="subtitle1" sx={{ mt: 2 }}>
-                        Cicli rimanenti: {remainingCycles}
-                    </Typography>
-                    <Typography variant="subtitle1">
-                        Tempo rimanente: {totalSeconds / 3600 >= 10 ? `${Math.floor(totalSeconds / 3600)}` : '0' + Math.floor(totalSeconds / 3600)} : {totalSeconds % 3600 / 60 >= 10 ? `${Math.floor(totalSeconds % 3600 / 60)}` : '0' + Math.floor(totalSeconds % 3600 / 60)} : {totalSeconds % 60 >= 10 ? `${totalSeconds % 60}` : '0' + totalSeconds % 60}
-                    </Typography>
+                    <Accordion sx={{
+                        backgroundColor: '#7d5ffc',
+                    }}>
+                        <AccordionSummary
+                            expandIcon={<ArrowDownwardIcon />}
+                            aria-controls="panel1-content"
+                            id="panel1-header"
+                        >
+                            <Typography sx={{ fontWeight: "600", textShadow: "0 0px 3px #858585", color: "white" }}>Impostazioni di pomodoro</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails sx={{
+                            backgroundColor: '#1d1d2f',
+                            display: "flex",
+                            flexDirection: "row",
+                            flexWrap: "wrap",
+                            justifyContent: "space-around",
+                            alignContent: "space-between",
+                            alignItems: "center",
+                        }}>
+                            <TextField
+                                label="Tempo di Studio (in minuti)"
+                                variant="standard"
+                                type="number"
+                                value={studyTime}
+                                onChange={handleSetStudyTime}
+                                sx={styles.textField}
 
+                            />
+                            <TextField
+                                label="Durata Pausa (in minuti)"
+                                variant="standard"
+                                type="number"
+                                value={breakTime}
+                                onChange={handleSetBreakTime}
+                                sx={styles.textField}
+                            />
+                            <TextField
+                                label="Numero di Cicli"
+                                variant="standard"
+                                type="number"
+                                value={cycles}
+                                onChange={handleSetCycles}
+                                sx={styles.textField}
+                            />
+                            <TextField
+                                label="Tempo Totale (in minuti)"
+                                variant="standard"
+                                type="number"
+                                value={totalMinutes}
+                                onChange={handleTotalTimeChange}
+                                sx={styles.textField}
+                            />
+                            <SharePomodoro studyTime={studyTime} breakTime={breakTime} cycles={cycles} totalMinutes={totalMinutes} />
+                            <PomodoroShared setStudyTime={setStudyTime} setBreakTime={setBreakTime} setCycles={setCycles} setTotalMinutes={setTotalMinutes} />
+                        </AccordionDetails>
+                    </Accordion>
+
+                    <Container sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginBottom: "1rem",
+                    }}>
+                        <Typography variant="subtitle1" sx={{ mt: 2 }}>
+                            Cicli rimanenti: <b>{remainingCycles}</b>
+                        </Typography>
+                        <Typography variant="subtitle1">
+                            Tempo rimanente: <b>{totalSeconds / 3600 >= 10 ? `${Math.floor(totalSeconds / 3600)}` : '0' + Math.floor(totalSeconds / 3600)} : {totalSeconds % 3600 / 60 >= 10 ? `${Math.floor(totalSeconds % 3600 / 60)}` : '0' + Math.floor(totalSeconds % 3600 / 60)} : {totalSeconds % 60 >= 10 ? `${totalSeconds % 60}` : '0' + totalSeconds % 60}</b>
+                        </Typography>
+                    </Container>
 
                     <ProgressBarComponent
                         hours={hours > 10 ? hours : '0' + hours}
@@ -375,13 +417,26 @@ const PomodoroPage = () => {
                         label={isStudyTime ? 'Studio' : 'Pausa'}
                     />
 
-                    <Grid container direction="row" justifyContent="center" alignItems="center">
+                    <Grid container direction="row" justifyContent="center" alignItems="center" sx={{
+                        backgroundColor: '#1d1d2f',
+                        borderRadius: "24px",
+                        padding: "1rem",
+                        width: "fit-content",
+                        marginTop: "1rem",
+                        marginBottom: "1rem",
+                    }}>
                         <Button onClick={handleNextTime} sx={styles.button}>
                             <SkipNextIcon />
                         </Button>
+
+                        <Divider orientation="vertical" sx={{ height: "auto !important", color: "grey" }} flexItem />
+
                         <Button onClick={handleStartCycle} sx={styles.button} disabled={disableStartButton}>
                             <PlayArrowIcon />
                         </Button>
+
+                        <Divider orientation="vertical" sx={{ height: "auto !important", color: "grey" }} flexItem />
+
                         {isPaused ? (
                             <Button onClick={handleResumeCycle} sx={styles.button}>
                                 <PlayCircleFilledWhiteIcon />
@@ -391,19 +446,90 @@ const PomodoroPage = () => {
                                 <PauseIcon />
                             </Button>
                         )}
+
+                        <Divider orientation="vertical" sx={{ height: "auto !important", color: "grey" }} flexItem />
+
                         <Button onClick={handleResetCycle} sx={styles.button}>
                             <RestartAltIcon />
                         </Button>
+
+                        <Divider orientation="vertical" sx={{ height: "auto !important", color: "grey" }} flexItem />
+
                         <Button onClick={handleEndCycle} sx={styles.button}>
                             <StopIcon />
                         </Button>
-                    </Grid>
-                    <Button onClick={handleSavePomodoro} sx={styles.button}>
-                        <StarIcon />
-                    </Button>
 
-                </Grid>
-            </Container>
+                        <Divider orientation="vertical" sx={{ height: "auto !important", color: "grey" }} flexItem />
+
+                        <Button onClick={handleSavePomodoro} sx={styles.button}>
+                            <StarIcon />
+                        </Button>
+                    </Grid>
+
+                    <Accordion sx={{ backgroundColor: '#1d1d2f', color: 'white' }}>
+                        <AccordionSummary expandIcon={<ArrowDropDownIcon />} sx={{ backgroundColor: '#7d5ffc' }}>
+                            <Typography>Come usare il metodo Pomodoro su Selfie</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails sx={{ backgroundColor: '#1d1d2f' }}>
+                            <Typography variant="body2" sx={{ marginTop: "1em" }}>
+                                Il Metodo Pomodoro è una tecnica di gestione del tempo sviluppata da Francesco Cirillo negli anni '80.
+                                Si basa sull'uso di un timer per suddividere il lavoro in intervalli di tempo focalizzati, chiamati "Pomodori",
+                                separati da brevi pause. Questo aiuta a migliorare l'agilità mentale e a gestire il tempo più efficacemente.
+                            </Typography>
+                            <Grid container spacing={2} alignItems="center" mt={1}>
+                                <Grid item xs={12} sm={6} md={6} sx={{ display: "flex", alignItems: "center" }}>
+                                    <Button startIcon={<PlayArrowIcon />} sx={styles.button} />
+                                    <Typography sx={{ display: "inline-block" }}>
+                                        Avvia il timer
+                                    </Typography>
+                                </Grid>
+                                <Grid item xs={12} sm={6} md={6} sx={{ display: "flex", alignItems: "center" }}>
+                                    <Button startIcon={<PauseIcon />} sx={styles.button} />
+                                    <Typography sx={{ display: "inline-block" }}>
+                                        Metti il timer in pausa
+                                    </Typography>
+                                </Grid>
+                                <Grid item xs={12} sm={6} md={6} sx={{ display: "flex", alignItems: "center" }}>
+                                    <Button startIcon={<PlayCircleFilledWhiteIcon />} sx={styles.button} />
+                                    <Typography sx={{ display: "inline-block" }}>
+                                        Riprendi il timer dopo una pausa
+                                    </Typography>
+                                </Grid>
+                                <Grid item xs={12} sm={6} md={6} sx={{ display: "flex", alignItems: "center" }}>
+                                    <Button startIcon={<RestartAltIcon />} sx={styles.button} />
+                                    <Typography sx={{ display: "inline-block" }}>
+                                        Resetta il ciclo
+                                    </Typography>
+                                </Grid>
+                                <Grid item xs={12} sm={6} md={6} sx={{ display: "flex", alignItems: "center" }}>
+                                    <Button startIcon={<StopIcon />} sx={styles.button} />
+                                    <Typography sx={{ display: "inline-block" }}>
+                                        Termina il ciclo corrente
+                                    </Typography>
+                                </Grid>
+                                <Grid item xs={12} sm={6} md={6} sx={{ display: "flex", alignItems: "center" }}>
+                                    <Button startIcon={<SkipNextIcon />} sx={styles.button} />
+                                    <Typography sx={{ display: "inline-block" }}>
+                                        Salta alla prossima fase del ciclo
+                                    </Typography>
+                                </Grid>
+
+                                <Grid item xs={12} sm={6} md={6} sx={{ display: "flex", alignItems: "center" }}>
+                                    <Button startIcon={<StarIcon />} sx={styles.button} />
+                                    <Typography sx={{ display: "inline-block" }}>
+                                        Salva il ciclo di Pomodoro
+                                    </Typography>
+                                </Grid>
+                            </Grid>
+
+                            <Typography variant="body2" sx={{ marginTop: "2em" }}>
+                                Puoi personalizzare il tempo di studio, il tempo di pausa, il numero di cicli e il tempo totale, inoltre puoi condividere il tuo timer con altri utenti.
+                            </Typography>
+                        </AccordionDetails>
+                    </Accordion>
+
+                </Grid >
+            </Container >
 
         );
     }

@@ -519,7 +519,7 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
             </IconButton>
           }
           <IconButton
-            edge="start"
+            edge={window.innerWidth > 600 ? "start" : ""}
             color="inherit"
             aria-label="calendar"
             onClick={() => navigate('/calendar/')}

@@ -95,6 +95,26 @@ function MessagingComponent() {
         
     }
 
+    const handleReadMessage = (id) => {
+        console.log('Message read:', id);
+        fetch(`/api/deleteMessage?messageId=${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        }).then(response => {
+            if (response.ok) {
+                console.log('Message read');
+            } else {
+                console.error('Failed to read message');
+            }
+        }
+        ).catch(error => {
+            console.error('Failed to read message', error);
+        });
+    }
+
+
     return (
         <Container>
             {open ? (
@@ -122,6 +142,7 @@ function MessagingComponent() {
                                             <Box key={index} sx={{ marginBottom: 2 }}>
                                                 <h5>From: {msg.username}</h5>
                                                 <p>{msg.message}</p>
+                                                <Button onClick={handleReadMessage(msg._id)}>Read</Button>
                                     </Box>
                                 ))}
                                 </Box>

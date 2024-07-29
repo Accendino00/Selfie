@@ -54,7 +54,7 @@ router.get('/getPomodoros', authenticateJWT, async (req, res) => {
     const username = req.query.username;
     const pomodoroCollection = clientMDB.db("SelfieGD").collection('Pomodoros');
     try {
-        const pomodoros = await pomodoroCollection.find({ user: username }).toArray();
+        const pomodoros = await pomodoroCollection.find({ receiver: username }).toArray();
         res.json(pomodoros);
     } catch (error) {
         console.error(error);
@@ -65,6 +65,7 @@ router.get('/getPomodoros', authenticateJWT, async (req, res) => {
 
 router.post('/sendPomodoro', authenticateJWT, async (req, res) => {
     const pomodoro = req.body;
+    console.log('pomodoro', pomodoro)
     const pomodoroCollection = clientMDB.db("SelfieGD").collection('Pomodoros');
     try {
         const result = await pomodoroCollection.insertOne(pomodoro);
@@ -72,6 +73,18 @@ router.post('/sendPomodoro', authenticateJWT, async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).send('Error sending pomodoro');
+    }
+});
+
+router.delete('/deletePomodoro', authenticateJWT, async (req, res) => {
+    const pomodoroId = req.query.pomodoroId;
+    const pomodoroCollection = clientMDB.db("SelfieGD").collection('Pomodoros');
+    try {
+        const result = await pomodoroCollection.deleteOne({ _id: new ObjectId(pomodoroId) });
+        res.json(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error deleting pomodoro');
     }
 });
 

@@ -30,5 +30,18 @@ router.post('/sendMessage', authenticateJWT, async (req, res) => {
     }
 });
 
+router.delete('/deleteMessage', authenticateJWT, async (req, res) => {
+    const messageId = req.query.messageId;
+    const messagesCollection = clientMDB.db("SelfieGD").collection('Messages');
+    console.log('Deleting message with id:', messageId);
+    try {
+        const result = await messagesCollection.deleteOne({ _id: new ObjectId(messageId) });
+        res.json(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error deleting message');
+    }
+});
+
 
 module.exports = router;
