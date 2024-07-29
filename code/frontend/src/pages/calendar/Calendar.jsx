@@ -55,7 +55,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
   const [dragVariable, setDragVariable] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const [view, setView] = useState('');
+ // const [view, setView] = useState('');
 
 
 
@@ -141,8 +141,11 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     setIsTaskCheckBox(true);
     setIsStudyEventCheckBox(true);
     if (info) {
+      const calendarApi = calendarRef.current.getApi();
+      const view = calendarApi.view
       if(view){
         if(view.type === 'timeGridWeek' || view.type === 'timeGridDay'){
+          console.log(view)
           setAllDay(false);
           setStartTime(timeToUsable(info.start.getHours(), info.start.getMinutes()));
           setEndTime(timeToUsable(info.end.getHours(), info.end.getMinutes()));
@@ -762,13 +765,14 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     return true;
   };
 
+  
 
   const handleGetEvents = () => {
     const calendarApi = calendarRef.current.getApi();
     const events = calendarApi.getEvents();
-    const view = calendarApi.view
-    setView(view)
-    console.log(view.type);
+    //const view = calendarApi.view
+    //setView(view)
+    //console.log(view.type);
   };
 
   useEffect(() => {
