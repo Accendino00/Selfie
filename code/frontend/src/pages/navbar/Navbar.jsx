@@ -627,9 +627,11 @@ function formatDateWithTime(date) {
             onClick={handleNotificationClick}
             sx={{ marginLeft: 'auto' }}
           >
+            
             <Badge badgeContent={totalNotifications} color="secondary">
-              <NotificationsIcon />
+              <NotificationsIcon /> 
             </Badge>
+           
           </IconButton>
           <IconButton
             color="inherit"

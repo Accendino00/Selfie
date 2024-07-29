@@ -730,7 +730,7 @@ const HomePage = () => {
           <img src="/selfie.png" alt="Selfie" style={{ width: '60vw', maxWidth: '320px', height: 'auto', minHeight: '10vh', maxHeight: '60vh' }} />
         </Box>
         <Grid container sx={{ display: 'flex', position: 'relative', zIndex: 1, alignItems: 'center', justifyContent: 'center', gap: "2vh" }}>
-          <Grid item xs={10} md={3}>
+          <Grid item xs={10} md={4}>
             <Button onClick={handleCalendarSettingsClick} sx={{ position: 'absolute', padding: 0, marginTop: '1vh', zIndex: '1000', minWidth: "40px" }}>
               <SettingsIcon sx={{ color: "white" }} />
             </Button>
@@ -767,7 +767,7 @@ const HomePage = () => {
               </CardActionArea>
             </Card>
           </Grid>
-          <Grid item xs={10} md={3}>
+          <Grid item xs={10} md={4}>
             <Button onClick={handlePomodoroSettingsClick} sx={{ position: 'absolute', padding: 0, marginTop: '1vh', zIndex: '1000', minWidth: "40px" }}>
               <SettingsIcon sx={{ color: "white" }} />
             </Button>
@@ -825,7 +825,7 @@ const HomePage = () => {
             </Card>
           </Grid>
 
-          <Grid item xs={10} md={3}>
+          <Grid item xs={10} md={4}>
             <Button onClick={handleNoteSettingsClick} sx={{ position: 'absolute', padding: 0, marginTop: '1vh', zIndex: '1000', minWidth: "40px" }}>
               <SettingsIcon sx={{ color: "white" }} />
             </Button>
