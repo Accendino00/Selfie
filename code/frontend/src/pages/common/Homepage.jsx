@@ -435,10 +435,10 @@ const HomePage = () => {
     const recurrencies = calculateAllRecurrencies(event, getNextYear())
 
     const currentDate = new Date()
-    
-    
+
+
     return recurrencies.filter(event => new Date(event.start) > currentDate).sort((a, b) => stringToDate(a.start) - stringToDate(b.start))[0]
-    
+
 
   }
 
@@ -729,7 +729,7 @@ const HomePage = () => {
         <Box display="flex" align="center" justifyContent="center">
           <img src="/selfie.png" alt="Selfie" style={{ width: '60vw', maxWidth: '320px', height: 'auto', minHeight: '10vh', maxHeight: '60vh' }} />
         </Box>
-        <Grid container sx={{ display: 'flex', position: 'relative', zIndex: 1, alignItems: 'center', justifyContent: 'center', gap: "2vh" }}>
+        <Grid container sx={{ display: 'flex', position: 'relative', zIndex: 1, alignItems: 'center', justifyContent: 'center', top:"6vw", gap: "2vh" }}>
           <Grid item xs={10} md={4}>
             <Button onClick={handleCalendarSettingsClick} sx={{ position: 'absolute', padding: 0, marginTop: '1vh', zIndex: '1000', minWidth: "40px" }}>
               <SettingsIcon sx={{ color: "white" }} />
@@ -746,7 +746,7 @@ const HomePage = () => {
               backdropFilter: "blur(10px)",
               boxShadow: "0px 0px 10px 0px #00000006"
             }}>
-              <CardActionArea onClick={() => navigate('/calendar/')} sx={{minHeight: "20vh", maxHeight: "60vh"}}>
+              <CardActionArea onClick={() => navigate('/calendar/')} sx={{ minHeight: "20vh", maxHeight: "60vh" }}>
                 <CardContent>
                   <Typography variant="h5" component="div" align="center" sx={{
                     fontSize: "40px",
@@ -783,7 +783,7 @@ const HomePage = () => {
               backdropFilter: "blur(10px)",
               boxShadow: "0px 0px 10px 0px #00000006"
             }}>
-              <CardActionArea onClick={() => navigate('/timer/')} sx={{minHeight: "20vh", maxHeight: "60vh"}}>
+              <CardActionArea onClick={() => navigate('/timer/')} sx={{ minHeight: "20vh", maxHeight: "60vh" }}>
                 <CardContent>
                   <Typography variant="h5" component="div" align="center" sx={{
                     fontSize: "40px",
@@ -841,7 +841,7 @@ const HomePage = () => {
               backdropFilter: "blur(10px)",
               boxShadow: "0px 0px 10px 0px #00000006"
             }}>
-              <CardActionArea onClick={() => navigate('/notes/')} sx={{minHeight: "20vh", maxHeight: "60vh"}}>
+              <CardActionArea onClick={() => navigate('/notes/')} sx={{ minHeight: "20vh", maxHeight: "60vh" }}>
                 <CardContent>
                   <Typography variant="h5" component="div" align="center" sx={{
                     fontSize: "40px",

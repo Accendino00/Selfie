@@ -30,7 +30,7 @@ function registerUser(username, password, truename, birthdate) {
                             truename: truename,
                             birthdate: birthdate,
                             notifyNotice: 60000 * 60 * 24,
-                            notifyRepeat: 3
+                            notifyRepeat: 3,
                         };
                         usersCollection.insertOne(newUser)
                         .then(() => {

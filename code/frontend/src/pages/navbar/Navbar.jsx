@@ -28,6 +28,7 @@ import { set } from 'date-fns';
 import WarningIcon from '@mui/icons-material/Warning';
 import NotificationImportantIcon from '@mui/icons-material/NotificationImportant';
 import HomeIcon from '@mui/icons-material/Home';
+import Divider from '@mui/material/Divider';
 
 const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
   const navigate = useNavigate();
@@ -57,16 +58,21 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
     '1 week', '2 weeks', '1 month', '3 months', '6 months', '1 year'
   ];
 
-function SettingsDialog({ open, onClose }) {
-  return (
-    <Dialog open={open} onClose={onClose}>
-      <Button onClick={handleOpenNoticeDialog}>Set Notice Time</Button>
-            <Button onClick={handleOpenRepeatDialog}>Set Repeats</Button>
-            <NoticeTimeDialog />
-            <RepeatDialog /> 
-    </Dialog>
-  );
-}
+  function SettingsDialog({ open, onClose }) {
+    return (
+      <Dialog open={open} onClose={onClose}>
+        <Button sx={{ padding: "20px" }} onClick={handleOpenNoticeDialog}>Set Notice Time</Button>
+        <Divider sx={{
+          height: "0px",
+          boxShadow: "0px 0px 2px #0000007d",
+          color: "grey",
+          }}/>
+        <Button sx={{ padding: "20px" }} onClick={handleOpenRepeatDialog}>Set Repeats</Button>
+        <NoticeTimeDialog />
+        <RepeatDialog />
+      </Dialog>
+    );
+  }
   const handleLogout = () => {
     Cookies.remove('token');
     navigate('/');
@@ -74,19 +80,19 @@ function SettingsDialog({ open, onClose }) {
 
   const handleOpenNoticeDialog = () => {
     setNoticeDialogOpen(true);
-};
+  };
 
-const handleCloseNoticeDialog = () => {
+  const handleCloseNoticeDialog = () => {
     setNoticeDialogOpen(false);
-};
+  };
 
-const handleOpenRepeatDialog = () => {
+  const handleOpenRepeatDialog = () => {
     setRepeatDialogOpen(true);
-};
+  };
 
-const handleCloseRepeatDialog = () => {
+  const handleCloseRepeatDialog = () => {
     setRepeatDialogOpen(false);
-};
+  };
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -194,7 +200,7 @@ const handleCloseRepeatDialog = () => {
     const savedSelectedRepeat = localStorage.getItem('repeatCount');
     if (savedSelectedNotification) {
       setSelectedNotification(savedSelectedNotification);
-    } else if(savedSelectedRepeat) {
+    } else if (savedSelectedRepeat) {
       setSelectedRepeat(savedSelectedRepeat);
     }
   }, []);
@@ -259,7 +265,7 @@ const handleCloseRepeatDialog = () => {
       </Box>
     );
   }
-  
+
   const modifyNotifyNotice = async (notice, repeat) => {
     try {
       const response = await fetch(`/api/modifyNotificationSettings?username=${username}&notifyNotice=${noticeTimeToMilliseconds(notice)}&notifyRepeat=${parseInt(repeat)}`, {
@@ -269,17 +275,17 @@ const handleCloseRepeatDialog = () => {
           'Content-Type': 'application/json'
         }
       });
-  
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-  
+
       console.log('Notification settings modified successfully');
     } catch (error) {
       console.error('Error modifying notification settings:', error);
     }
   };
-  
+
 
 
   const handleNotificationChange = (event) => {
@@ -299,7 +305,7 @@ const handleCloseRepeatDialog = () => {
     localStorage.setItem('repeatCount', newRepeatValue);
     modifyNotifyNotice(selectedNotification, newRepeatValue);
     setSelectedRepeat(newRepeatValue);
-};
+  };
 
   function convertRecurringEventToFirstUsefulDate(event) {
     if (!event.isRecurring) {
@@ -338,7 +344,7 @@ const handleCloseRepeatDialog = () => {
               <Typography align="center" sx={{ marginBottom: '5px' }}>
                 {item.start && new Date(item.start).toLocaleDateString()}
                 {(!item.isTask && !item.isStudyEvent) ? (item.end && ` to ${new Date(item.end).toLocaleDateString()}`) : null}
-                
+
               </Typography>
             </Grid>
           </Grid>
@@ -349,8 +355,8 @@ const handleCloseRepeatDialog = () => {
 
   const NoticeTimeDialog = () => {
     return (
-        <Dialog open={noticeDialogOpen} onClose={handleCloseNoticeDialog}>
-            <DialogTitle>Notification Settings</DialogTitle>
+      <Dialog open={noticeDialogOpen} onClose={handleCloseNoticeDialog}>
+        <DialogTitle>Notification Settings</DialogTitle>
         <DialogContent>
           <RadioGroup value={selectedNotification} onChange={handleNotificationChange}>
             {notificationOptions.map(option => (
@@ -367,33 +373,33 @@ const handleCloseRepeatDialog = () => {
         <DialogActions>
           <Button onClick={handleCloseSettings}>Close</Button>
         </DialogActions>
-        </Dialog>
+      </Dialog>
     );
-};
+  };
 
-const RepeatDialog = () => {
+  const RepeatDialog = () => {
     return (
       <Dialog open={repeatDialogOpen} onClose={handleCloseRepeatDialog}>
-      <DialogTitle>Set Repeats</DialogTitle>
-      <DialogContent>
+        <DialogTitle>Set Repeats</DialogTitle>
+        <DialogContent>
           <RadioGroup value={selectedRepeat} onChange={handleRepeatChange}>
-              {[...Array(10).keys()].map(num => (
-                  <ListItem key={num}>
-                      <FormControlLabel 
-                          control={<Radio />} 
-                          label={`${num + 1}`} 
-                          value={`${num + 1}`}
-                      />
-                  </ListItem>
-              ))}
+            {[...Array(10).keys()].map(num => (
+              <ListItem key={num}>
+                <FormControlLabel
+                  control={<Radio />}
+                  label={`${num + 1}`}
+                  value={`${num + 1}`}
+                />
+              </ListItem>
+            ))}
           </RadioGroup>
-      </DialogContent>
-      <DialogActions>
+        </DialogContent>
+        <DialogActions>
           <Button onClick={handleCloseRepeatDialog}>Close</Button>
-      </DialogActions>
-  </Dialog>
+        </DialogActions>
+      </Dialog>
     );
-};
+  };
 
 
   function formatDate(date) {
@@ -423,59 +429,59 @@ const RepeatDialog = () => {
 
     // Loop until the maximum repetitions are met or the date exceeds the finalDate
     while ((event.timesToRepeat ? counter < maxRecurrences : true) && nextStartDate.getFullYear() <= finalDate) {
-        // Loop through each day of the week
-        for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
-          let currentDay = (nextStartDate.getDay() + dayOffset) % 7;
-          if (event.daysOfWeek && event.daysOfWeek.includes(currentDay)) {
-            let eventDate = new Date(nextStartDate.getTime() + dayOffset * 86400000); // 86400000ms per day
-            if (eventDate.getFullYear() > finalDate) {
-                    break;
-                }
+      // Loop through each day of the week
+      for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+        let currentDay = (nextStartDate.getDay() + dayOffset) % 7;
+        if (event.daysOfWeek && event.daysOfWeek.includes(currentDay)) {
+          let eventDate = new Date(nextStartDate.getTime() + dayOffset * 86400000); // 86400000ms per day
+          if (eventDate.getFullYear() > finalDate) {
+            break;
+          }
 
-                // Formatting function to keep time details
-                let startDate = formatDateWithTime(eventDate);
-                let endDate = nextEndDate ? formatDateWithTime(new Date(eventDate.getTime() + (nextEndDate.getTime() - nextStartDate.getTime()))) : null;
+          // Formatting function to keep time details
+          let startDate = formatDateWithTime(eventDate);
+          let endDate = nextEndDate ? formatDateWithTime(new Date(eventDate.getTime() + (nextEndDate.getTime() - nextStartDate.getTime()))) : null;
 
-                let newEvent = {
-                    title: event.title,
-                    description: event.description,
-                    color: event.color,
-                    allDay: event.allDay,
-                    start: startDate,
-                    end: endDate,
-                    calendar: event.calendar,
-                    name: event.name,
-                    location: event.location,
-                    invitedUsers: event.invitedUsers,
-                    shared: event.shared,
-                    isRecurring: event.isRecurring,
-                    isTask: event.isTask,
-                    completed: event.completed,
-                    timesToRepeat: event.timesToRepeat,
-                    endRecur: event.endRecur
-                };
-                recurrencies.push(newEvent);
-                counter++; // Increment the repetition counter
+          let newEvent = {
+            title: event.title,
+            description: event.description,
+            color: event.color,
+            allDay: event.allDay,
+            start: startDate,
+            end: endDate,
+            calendar: event.calendar,
+            name: event.name,
+            location: event.location,
+            invitedUsers: event.invitedUsers,
+            shared: event.shared,
+            isRecurring: event.isRecurring,
+            isTask: event.isTask,
+            completed: event.completed,
+            timesToRepeat: event.timesToRepeat,
+            endRecur: event.endRecur
+          };
+          recurrencies.push(newEvent);
+          counter++; // Increment the repetition counter
 
-                if (event.timesToRepeat && counter >= maxRecurrences) {
-                    break;
-                }
-            }
+          if (event.timesToRepeat && counter >= maxRecurrences) {
+            break;
+          }
         }
+      }
 
-        // Move to the next week, maintaining the time of day
-        nextStartDate.setDate(nextStartDate.getDate() + 7);
-        if (nextEndDate) {
-            nextEndDate.setDate(nextEndDate.getDate() + 7);
-        }
+      // Move to the next week, maintaining the time of day
+      nextStartDate.setDate(nextStartDate.getDate() + 7);
+      if (nextEndDate) {
+        nextEndDate.setDate(nextEndDate.getDate() + 7);
+      }
     }
     return recurrencies;
-}
+  }
 
-// Helper function to format date with time
-function formatDateWithTime(date) {
+  // Helper function to format date with time
+  function formatDateWithTime(date) {
     return date.toISOString();
-}
+  }
 
 
   function formatDate(date) {
@@ -485,9 +491,9 @@ function formatDateWithTime(date) {
 
 
   function getFirstUsefulDate(event) {
-    
+
     const recurrencies = calculateAllRecurrencies(event, getNextYear());
-    
+
     const currentDate = new Date();
 
     // Calculate the upper boundary for event dates using the notice period
@@ -570,31 +576,31 @@ function formatDateWithTime(date) {
 
   if (loginStatus) {
     return (
-      <AppBar position="static" sx={{ color: "#ffffff", backgroundColor: '#7d5ffc' }}>
+      <AppBar position="static" sx={{ color: "#ffffff", backgroundColor: '#7d5ffc', height: "64px !important" }}>
         <Toolbar>
 
           {
-          window.innerWidth > 600 ?
-            <IconButton
-              color="inherit"
-              aria-label="home"
-              onClick={() => navigate('/home/')}
-            >
-              <img
-                src="../../selfie.png"
-                alt="Home"
-                style={{ width: 100, height: 48, marginRight: 15 }}
-              />
+            window.innerWidth > 600 ?
+              <IconButton
+                color="inherit"
+                aria-label="home"
+                onClick={() => navigate('/home/')}
+              >
+                <img
+                  src="../../selfie.png"
+                  alt="Home"
+                  style={{ width: 100, height: 48, marginRight: 15 }}
+                />
 
-            </IconButton>
-            :
-            <IconButton
-              color="inherit"
-              aria-label="home"
-              onClick={() => navigate('/home/')}
-            >
-              <HomeIcon />
-            </IconButton>
+              </IconButton>
+              :
+              <IconButton
+                color="inherit"
+                aria-label="home"
+                onClick={() => navigate('/home/')}
+              >
+                <HomeIcon />
+              </IconButton>
           }
           <IconButton
             edge={window.innerWidth > 600 ? "start" : ""}
@@ -641,20 +647,20 @@ function formatDateWithTime(date) {
             <ExitToAppIcon />
           </IconButton>
           <Menu
-        id="notification-menu"
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        <MenuItem onClick={handleSettingsClick} sx={{ margin: '0' }}>
-          <Grid container direction="row" alignItems="center" justifyContent="center">
-            <SettingsIcon />
-            <Typography fontSize={14}>Settings</Typography>
-          </Grid>
-        </MenuItem>
-        {renderNotifications()}
-      </Menu>
-      <SettingsDialog open={settingsDialogOpen} onClose={handleDialogClose} />
+            id="notification-menu"
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+          >
+            <MenuItem onClick={handleSettingsClick} sx={{ margin: '0' }}>
+              <Grid container direction="row" alignItems="center" justifyContent="center">
+                <SettingsIcon />
+                <Typography fontSize={14}>Settings</Typography>
+              </Grid>
+            </MenuItem>
+            {renderNotifications()}
+          </Menu>
+          <SettingsDialog open={settingsDialogOpen} onClose={handleDialogClose} />
         </Toolbar>
       </AppBar>
     );
