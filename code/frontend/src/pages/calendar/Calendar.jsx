@@ -55,6 +55,8 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
   const [dragVariable, setDragVariable] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  const [view, setView] = useState('');
+
 
 
   // tasks
@@ -757,7 +759,9 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
   const handleGetEvents = () => {
     const calendarApi = calendarRef.current.getApi();
     const events = calendarApi.getEvents();
-    console.log(events);
+    const view = calendarApi.view
+    setView(view)
+    console.log(view.type);
   };
 
   useEffect(() => {

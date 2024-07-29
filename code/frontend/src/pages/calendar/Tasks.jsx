@@ -64,12 +64,13 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
     useEffect(() => {
 
         for (let i = 0; i < tasks.length; i++) {
+            //console.log(tasks[i])
 
             if (new Date(tasks[i].end) <= new Date()) {
                 updateTask(tasks[i]);
             } else if (tasks[i].isRecurring && new Date(tasks[i].endRecur) <= new Date()) {
                 updateTask(tasks[i]);
-            } 
+            }
         }
 
     }, [tasks]);
@@ -144,9 +145,9 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
             if (task.daysOfWeek) {
                 updatedTask.daysOfWeek = task.daysOfWeek;
             }
-            
+
             if (new Date(task.endRecur) <= addSevenDays(new Date())) {
-                
+
                 updatedTask.start = formatDate(nextSameWeekday(task.start));
             }
             updatedTask.endRecur = calculateRepeatEndDate(updatedTask.start, updatedTask.timesToRepeat);
@@ -158,6 +159,7 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
         } else {
 
             if (new Date(updatedTask.end) <= new Date()) {
+                //console.log('end', updatedTask.end, 'new Date()', new Date());
                 updatedTask.start = new Date();
                 updatedTask.end = new Date();
                 updatedTask.isLate = true;
@@ -234,7 +236,7 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
             title: title,
             description: description,
             start: combineDateAndTime(startDate, startTime),
-            end: startDate,
+            end: combineDateAndTime(startDate, startTime),
             name: username,
             timesToRepeat: timesToRepeat,
             isRecurring: isRecurring,
@@ -696,27 +698,27 @@ const Tasks = ({ tasksToSend, tasksDialog, taskToModify, taskFinish, taskToDrag,
                         />
                     }
                     <div>
-                    <TextField
-                    margin="dense"
-                    label="Add Users"
-                    type="text"
-                    fullWidth
-                    variant="standard"
-                    InputLabelProps={{
-                        shrink: true,
-                    }}
-                    value={usersInput}
-                    onChange={(e) => setUsersInput(e.target.value)}
-                />
-                <Button onClick={handleUserAdd}>Add</Button>
-                <div>
-                    <ul>
-                        {users.map((user, index) => (
-                        <li key={index}>{user}</li>
-                        ))}
-                    </ul>
-                </div>
-                </div>
+                        <TextField
+                            margin="dense"
+                            label="Add Users"
+                            type="text"
+                            fullWidth
+                            variant="standard"
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                            value={usersInput}
+                            onChange={(e) => setUsersInput(e.target.value)}
+                        />
+                        <Button onClick={handleUserAdd}>Add</Button>
+                        <div>
+                            <ul>
+                                {users.map((user, index) => (
+                                    <li key={index}>{user}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
                 </DialogContent>
                 <DialogActions>
                     {modifying && <Button onClick={() => handleDeleteTask(currentId)}>Delete</Button>}
