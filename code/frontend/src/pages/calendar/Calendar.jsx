@@ -188,13 +188,6 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
 
     if (isRecurring) {
 
-      if (recurringDays.length !== 0) {
-
-        eventData.daysOfWeek = convertDaysToIntegers(recurringDays);
-
-      } else {
-        eventData.daysOfWeek = null;
-      }
       eventData.startRecur = startDate;
       eventData.start = startDate;
       eventData.end = endDate;
@@ -205,6 +198,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
 
         eventData.endRecur = calculateRepeatEndDate(startDate, timesToRepeat);
       } else {
+
         eventData.endRecur = null;
         eventData.end = null;
 
@@ -223,11 +217,23 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
 
         eventData.endRecur = calculateRepeatEndDate(startDate, timesToRepeat);
         eventData.timesToRepeat = timesToRepeat;
-        eventData.daysOfWeek = getDayOfWeek(startDate, eventData.end);
+
       }
       if (timesToRepeat == "0") {
 
         eventData.timesToRepeat = null;
+      }
+
+      eventData.daysOfWeek = getDayOfWeek(startDate, endDate);
+      console.log('calculate days of week', getDayOfWeek(startDate, endDate))
+      if (recurringDays.length !== 0) {
+        console.log('recurring days', recurringDays)
+
+        eventData.daysOfWeek = convertDaysToIntegers(recurringDays);
+
+      } else {
+        console.log('daysofweek is null')
+        eventData.daysOfWeek = null;
       }
 
     } else {
@@ -237,6 +243,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
       eventData.startRecur = null;
       eventData.endRecur = null;
     }
+    console.log('eventdata', eventData)
 
     if (modifying) {
 
@@ -341,7 +348,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     let start = startDate instanceof Date ? startDate : new Date(startDate);
     let daysOfWeek = [];
 
-    if (endDate === null) {
+    if (endDate === null || endDate === '') {
       // If endDate is null, only use startDate
       daysOfWeek.push(start.getDay());
       console.log('Only start date provided, calculated day of week.');
@@ -557,7 +564,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
 
 
       console.log('wtf', event)
-      if (event.extendedProps.daysOfWeek !== null) {
+      if (event._def.recurringDef.typeData.daysOfWeek !== null) {
 
         setRecurringDays(convertIntegersToDays(event._def.recurringDef.typeData.daysOfWeek));
 

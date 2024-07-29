@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, CircularProgress, Typography } from '@mui/material';
+import { Box, CircularProgress, Typography, Button } from '@mui/material';
 
 function interpolateColor(progress) {
     const startColor = [255, 255, 255]; // Bianco
@@ -12,7 +12,7 @@ function interpolateColor(progress) {
     return `rgb(${r}, ${g}, ${b})`;
 }
 
-function ProgressBarComponent({ hours, minutes, seconds, inputValue, label }) {
+function ProgressBarComponent({ inputValue, label, hours, minutes, seconds, handleStart }) {
     const totalSeconds = hours * 3600 + minutes * 60 + seconds;
     const initialSeconds = inputValue * 60;
     let progress = (totalSeconds / initialSeconds) * 100; // Calcola il progresso basato sul tempo rimanente
@@ -56,11 +56,38 @@ function ProgressBarComponent({ hours, minutes, seconds, inputValue, label }) {
                 flexDirection="column"
                 sx={{ textAlign: 'center' }}
             >
-                <Typography variant="caption" component="div" fontSize="1.3em" lineHeight="1em" fontWeight="bold">
-                    {label}
-                </Typography>
+                    {label == "Hai finito!" ? 
+                        <Box 
+                            sx={{
+                                color: 'inherit',
+                            }}
+                        >   
+                        <Typography variant="caption" component="div" fontSize="1.3em" lineHeight="1em" fontWeight="bold">
+                            {label}
+                        </Typography>
+                            <Button
+                                variant="contained"
+                                color="inherit"
+                                size="small"
+                                onClick={handleStart}
+                                sx={{ marginTop: '1em' }}
+                            >
+                            Ricomincia
+                            </Button>
+                        </Box> :
+                        <Box 
+                            sx={{
+                                color: 'inherit',
+                            }}
+                        >
+                            <Typography variant="caption" component="div" fontSize="1.3em" lineHeight="1em" fontWeight="bold">
+                            {label}
+                            </Typography>
+                        </Box>
+                    }
+                
                 <Typography variant="caption" component="div">
-                    {`${hours}:${minutes}:${seconds}`}
+                    {!(label == "Hai finito!") && `${hours}:${minutes}:${seconds}`}
                 </Typography>
             </Box>
         </Box>

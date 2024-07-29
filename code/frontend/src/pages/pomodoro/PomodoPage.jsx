@@ -28,6 +28,9 @@ import Divider from '@mui/material/Divider';
 const PomodoroPage = () => {
     const params = useParams();
 
+    const MemoizedProgressBarComponent = React.memo(ProgressBarComponent);
+
+
     // Default values if no parameters are provided
     const defaultStudyTime = 30;
     const defaultBreakTime = 5;
@@ -43,6 +46,7 @@ const PomodoroPage = () => {
     // Current state values
     const [remainingCycles, setRemainingCycles] = useState(Number(params.cycles) || defaultCycles);
     const [totalSeconds, setTotalSeconds] = useState(totalMinutes * 60);
+    const [finishedStudy, setFinishedStudy] = useState(false);
 
     // Conta se sono a studio o in pausa
     const [oneCycle, setoneCycle] = useState(0);
@@ -53,8 +57,8 @@ const PomodoroPage = () => {
     const [isPaused, setIsPaused] = useState(false);
 
     // Ore, minuti e secondi displayed.
-    const [hours, setHours] = useState(0);
-    const [minutes, setMinutes] = useState(0);
+    const [hours, setHours] = useState(isStudyTime ? Math.floor(studyTime / 60) : Math.floor(breakTime / 60));
+    const [minutes, setMinutes] = useState(isStudyTime ? studyTime % 60 : breakTime % 60);
     const [seconds, setSeconds] = useState(0);
 
     // utility per salvare informazioni nel database
@@ -75,6 +79,19 @@ const PomodoroPage = () => {
             }
         }
     }, [loginStatus, isTokenLoading]);
+
+    useEffect(() => {
+        resetTime();
+    }
+    , [isStudyTime, studyTime, breakTime, finishedStudy]);
+
+    useEffect(() => {
+        console.log('Remaining cycles:', remainingCycles);
+    }, [remainingCycles]);
+    
+    useEffect(() => {
+        console.log('One cycle:', oneCycle);
+    }, [oneCycle]);
 
 
     // Gestisce il fetch dell'userID
@@ -125,9 +142,10 @@ const PomodoroPage = () => {
                     setSeconds(59);
                     setTotalSeconds(prev => prev - 1);
                 } else {
+                    console.log('oneCycle', oneCycle);
                     if (oneCycle >= 2) {
                         clearInterval(interval);
-                        handleEndOfCycle();
+                        handleEndCycle();
                     } else {
                         setoneCycle(prev => prev + 1);
                         setIsStudyTime(prev => !prev);
@@ -172,22 +190,6 @@ const PomodoroPage = () => {
         }
     };
 
-
-    const handleEndOfCycle = () => {
-        alert('Ciclo completato');
-        setIsActive(false);
-        if (remainingCycles > 0) {
-            setRemainingCycles(prev => prev - 1);
-        } else {
-            alert('Tutti i cicli sono stati completati');
-            setRemainingCycles(0);
-        }
-        setTotalSeconds(remainingCycles * (studyTime * 60 + breakTime * 60));
-        setIsStudyTime(true);
-        resetTime();
-        setoneCycle(0);
-    };
-
     const handleSetStudyTime = (e) => {
         setStudyTime(Number(e.target.value));
         resetTime();
@@ -202,12 +204,6 @@ const PomodoroPage = () => {
         setCycles(Number(e.target.value));
         setRemainingCycles(Number(e.target.value));
         resetTime();
-    };
-
-    const resetTime = () => {
-        setHours(Math.floor((isStudyTime ? studyTime : breakTime) / 60));
-        setMinutes((isStudyTime ? studyTime : breakTime) % 60);
-        setSeconds(0);
     };
 
     const calculateCycleSettings = (minutes) => {
@@ -225,37 +221,36 @@ const PomodoroPage = () => {
 
     const handleStartCycle = () => {
         if (totalSeconds == 0 || totalMinutes == 0) {
-            disableStartButton(true);
+            setDisableStartButton(true);
             return;
         } else if (remainingCycles == 0) {
-            disableStartButton(true);
-            return;
-        } else if (isActive) {
-            disableStartButton(true);
-            return;
-        } else if (isPaused) {
-            disableStartButton(true);
+            setDisableStartButton(true);
             return;
         } else {
+            setIsPaused(false);
             setIsActive(true);
             resetTime();
+            setDisableStartButton(true);
         }
     };
 
     const handlePauseCycle = () => {
         setIsActive(false);
+        setDisableStartButton(true);
         setIsPaused(true);
     };
 
     const handleResumeCycle = () => {
         setIsActive(true);
+        setDisableStartButton(true);
         setIsPaused(false);
     };
 
     const handleResetCycle = () => {
         setIsActive(false);
+        setDisableStartButton(false);
         if (studyTime == 0 || breakTime == 0 || cycles == 0 || totalMinutes == 0) {
-            alert('Inserire un tempo valido');
+            setDisableStartButton(true);
             return;
         }
         setIsStudyTime(true);
@@ -267,49 +262,78 @@ const PomodoroPage = () => {
             setTotalSeconds(remainingCycles * (studyTime * 60 + breakTime * 60));
         }
     };
-
-    const handleEndCycle = () => {
-        setIsActive(false);
-        if (studyTime == 0 || breakTime == 0 || cycles == 0 || totalMinutes == 0) {
-            alert('Inserire un tempo valido');
-            return;
-        }
-        setIsStudyTime(true);
-        resetTime();
-        setoneCycle(0);
-        alert('Ciclo terminato anticipatamente');
-        setRemainingCycles(remainingCycles - 1);
-        setTotalSeconds(remainingCycles * (studyTime * 60 + breakTime * 60));
+    
+    const resetTime = () => {
+        setIsStudyTime(prevIsStudyTime => {
+            const newHours = prevIsStudyTime ? Math.floor(studyTime / 60) : Math.floor(breakTime / 60);
+            const newMinutes = prevIsStudyTime ? studyTime % 60 : breakTime % 60;
+            setHours(newHours);
+            setMinutes(newMinutes);
+            setSeconds(0);
+            return prevIsStudyTime;  // Maintain the current phase
+        });
     };
-
+    
+    // Update handleNextTime function
     const handleNextTime = () => {
         setIsActive(false);
-        if (studyTime == 0 || breakTime == 0 || cycles == 0 || totalMinutes == 0) {
-            alert('Inserire un tempo valido');
+    
+        if (studyTime === 0 || breakTime === 0 || cycles === 0 || totalMinutes === 0) {
+            setDisableStartButton(true);
             return;
         }
-        setIsStudyTime(!isStudyTime);
-        resetTime();
-        if (oneCycle >= 2) {
-            handleEndOfCycle();
+    
+        if (oneCycle === 1) { // This indicates that we are at the end of a study-break cycle
+            handleEndCycle();
         } else {
-            setTotalSeconds(totalSeconds - (isStudyTime ? studyTime : breakTime) * 60);
-            setoneCycle(prev => prev + 1);
+            setoneCycle(1); // Set oneCycle to 1 after the first call, indicating the next cycle is ready
+            setIsStudyTime(prevIsStudyTime => {
+                setTotalSeconds(prevTotalSeconds => Math.max(0, prevTotalSeconds - (prevIsStudyTime ? studyTime : breakTime) * 60));
+                return !prevIsStudyTime;
+            });
+            resetTime();
         }
     };
+    
+    const handleEndCycle = () => {
+        setIsActive(false);
+        setRemainingCycles(prevRemainingCycles => {
+            const newRemainingCycles = Math.max(0, prevRemainingCycles - 1);
+            if (newRemainingCycles > 0) {
+                setIsStudyTime(true);
+                resetTime();
+                setTotalSeconds(newRemainingCycles * (studyTime * 60 + breakTime * 60));
+            } else {
+                setFinishedStudy(true);
+                setDisableStartButton(true);
+                setTotalSeconds(0); // Ensure totalSeconds is set to 0 when cycles are finished
+                resetTime();
+            }
+            return newRemainingCycles;
+        });
+        setoneCycle(0); // Reset oneCycle after ending a full cycle
+    };
+    
+    
 
-    console.log('studyTime', studyTime);
-    console.log('breakTime', breakTime);
-    console.log('cycles', cycles);
-    console.log('totalMinutes', totalMinutes);
-    console.log('remainingCycles', remainingCycles);
-    console.log('totalSeconds', totalSeconds);
-    console.log('oneCycle', oneCycle);
-    console.log('isActive', isActive);
-    console.log('hours', hours);
-    console.log('minutes', minutes);
-    console.log('seconds', seconds);
-    console.log('isStudyTime', isStudyTime);
+const handleStart = () => { 
+    setFinishedStudy(false);
+    setDisableStartButton(false);
+    setIsActive(false);
+    setIsPaused(false);
+    setoneCycle(0);
+    setIsStudyTime(true);
+    setRemainingCycles(cycles);
+    setStudyTime(defaultStudyTime);
+    setBreakTime(defaultBreakTime);
+    setCycles(defaultCycles);
+    setTotalMinutes(defaultTotalMinutes);
+    setTotalSeconds(defaultTotalMinutes * 60);
+    resetTime();
+};
+    
+    // Disable buttons conditionally
+const disableButtons = remainingCycles === 0 && totalSeconds === 0;
 
 
     if (loginStatus) {
@@ -409,12 +433,13 @@ const PomodoroPage = () => {
                         </Typography>
                     </Container>
 
-                    <ProgressBarComponent
-                        hours={hours > 10 ? hours : '0' + hours}
-                        minutes={minutes > 10 ? minutes : '0' + minutes}
-                        seconds={seconds > 10 ? seconds : '0' + seconds}
-                        inputValue={isStudyTime ? studyTime : breakTime}
-                        label={isStudyTime ? 'Studio' : 'Pausa'}
+                    <MemoizedProgressBarComponent
+                        inputValue={finishedStudy? 0 : (isStudyTime ? studyTime : breakTime)}
+                        label={finishedStudy? "Hai finito!" : (isStudyTime ? "Studio" : "Pausa")}
+                        hours={hours >= 10 ? hours : '0' + hours}
+                        minutes={minutes >= 10 ? minutes : '0' + minutes}
+                        seconds={seconds >= 10 ? seconds : '0' + seconds}
+                        handleStart={handleStart}
                     />
 
                     <Grid container direction="row" justifyContent="center" alignItems="center" sx={{
@@ -425,43 +450,43 @@ const PomodoroPage = () => {
                         marginTop: "1rem",
                         marginBottom: "1rem",
                     }}>
-                        <Button onClick={handleNextTime} sx={styles.button}>
+                        <Button onClick={handleNextTime} sx={styles.button} disabled={disableButtons}>
                             <SkipNextIcon />
                         </Button>
 
                         <Divider orientation="vertical" sx={{ height: "auto !important", color: "grey" }} flexItem />
 
-                        <Button onClick={handleStartCycle} sx={styles.button} disabled={disableStartButton}>
+                        <Button onClick={handleStartCycle} sx={styles.button} disabled={disableStartButton || disableButtons}>
                             <PlayArrowIcon />
                         </Button>
 
                         <Divider orientation="vertical" sx={{ height: "auto !important", color: "grey" }} flexItem />
 
                         {isPaused ? (
-                            <Button onClick={handleResumeCycle} sx={styles.button}>
+                            <Button onClick={handleResumeCycle} sx={styles.button} disabled={disableButtons}>
                                 <PlayCircleFilledWhiteIcon />
                             </Button>
                         ) : (
-                            <Button onClick={handlePauseCycle} sx={styles.button}>
+                            <Button onClick={handlePauseCycle} sx={styles.button} disabled={disableButtons}>
                                 <PauseIcon />
                             </Button>
                         )}
 
                         <Divider orientation="vertical" sx={{ height: "auto !important", color: "grey" }} flexItem />
 
-                        <Button onClick={handleResetCycle} sx={styles.button}>
+                        <Button onClick={handleResetCycle} sx={styles.button} disabled={disableButtons}>
                             <RestartAltIcon />
                         </Button>
 
                         <Divider orientation="vertical" sx={{ height: "auto !important", color: "grey" }} flexItem />
 
-                        <Button onClick={handleEndCycle} sx={styles.button}>
+                        <Button onClick={handleEndCycle} sx={styles.button} disabled={disableButtons}>
                             <StopIcon />
                         </Button>
 
                         <Divider orientation="vertical" sx={{ height: "auto !important", color: "grey" }} flexItem />
 
-                        <Button onClick={handleSavePomodoro} sx={styles.button}>
+                        <Button onClick={handleSavePomodoro} sx={styles.button} disabled={disableButtons}>
                             <StarIcon />
                         </Button>
                     </Grid>

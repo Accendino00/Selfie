@@ -75,8 +75,7 @@ const StudyEvents = ({ StudyEventsToSend, StudyEventsDialog, StudyEventToModify,
                 currentBreakTime += StudyEvents[i].breakTime;
                 currentCycles += StudyEvents[i].cycles;
                 currentTotalMinutes += StudyEvents[i].totalMinutes;
-                dates.push(StudyEvents[i].start);
-                console.log('dates', dates)
+                dates.push(StudyEvents[i].start);        
 
             }
         }

@@ -98,7 +98,7 @@ function RegisterComponent(props) {
         props.setTrigger(false);
         props.setOpenRegisterSuccess(true);
         setLoading(false);
-        
+
       } else {
         setErrorMessage("L'utente esiste già o le credenziali contengono caratteri non validi")
         setErrorRegistration(true);
@@ -112,7 +112,7 @@ function RegisterComponent(props) {
     }
   };
 
-  
+
 
 
   return (props.trigger) ? (
@@ -127,11 +127,11 @@ function RegisterComponent(props) {
         <Grid container sx={styles.grid} spacing={2}>
           <Grid item xs={12}>
             <IconButton onClick={() => props.setTrigger(false)} sx={styles.closeButton}>
-              <CloseIcon sx={{color: '#7d5ffc'}}/>
+              <CloseIcon sx={{ color: '#7d5ffc' }} />
             </IconButton>
           </Grid>
           <Grid item>
-            <Typography component="h1" variant="h5">
+            <Typography component="h1" variant="h5" sx={{ color: "white" }}>
               {formTitle.register}
             </Typography>
           </Grid>

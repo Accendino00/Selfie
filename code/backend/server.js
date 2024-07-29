@@ -18,6 +18,7 @@ const express = require('express');
 const cookieParser = require("cookie-parser");
 const config = require('./config'); // Contiene variabili utili per il server
 const { clientMDB, connectToDatabase, disconnectFromDatabase }  = require('./utils/dbmanagement'); 
+const scheduler = require("./utils/notifications"); // Per gestire l'invio degli eventi
 
 
 /* SETUP SERVER */
@@ -73,7 +74,6 @@ app.use("/api", require(config.ROUTESERVIZI + "/studyevents"))
 app.use("/api", require(config.ROUTESERVIZI + "/pomodoro"))
 app.use("/api", require(config.ROUTESERVIZI + "/messages"))
 
-
 // Setup per mandare le richieste di "/" a "routes/webpages" package
 app.get("*", require(config.ROUTESERVIZI + "/webpages"));
 
@@ -86,6 +86,9 @@ function startServer() {
     console.log(`Server acceso su http://localhost:${PORT}`);
     // Ci colleghiamo al database
     connectToDatabase();
+    
+    // Avviamo il task scheduler
+    scheduler.checkEvents();
   });
 }
 startServer();

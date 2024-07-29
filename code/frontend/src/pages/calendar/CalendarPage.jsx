@@ -292,7 +292,7 @@ const CalendarPage = () => {
 
   if (loginStatus) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', height: '93vh', width: '100%', overflow: 'hidden', backgroundColor: '#111119' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 65px)', width: '100%', overflow: 'hidden', backgroundColor: '#111119' }}>
         <Box sx={{ display: 'flex', height: '100vh', width: '100%' }}>
           <IconButton
             sx={{

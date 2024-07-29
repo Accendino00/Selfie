@@ -98,6 +98,9 @@ const styles = {
   },
 
   truenameTextField: {
+    '& label': {
+      color: '#7d5ffc',
+    },
     '& label.Mui-focused': {
       color: '#7d5ffc',
     },

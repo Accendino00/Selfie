@@ -8,7 +8,7 @@ export default function TruenameTextField({truename, setTruename}) {
         <TextField
             sx = {styles.truenameTextField}
             variant="filled"
-            label="Truename"
+            label="True name"
             value={truename}
             onChange={(e) => setTruename(e.target.value)}
             type="text"
