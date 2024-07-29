@@ -126,6 +126,7 @@ router.post("/modifyNotificationSettings", authenticateJWT, function (req, res) 
   const notifyNotice = req.query.notifyNotice;
   const notifyRepeat = req.query.notifyRepeat;
   console.log("username: " + username + " notifyNotice: " + notifyNotice + " notifyRepeat: " + notifyRepeat);
+  
   if(!username){
     res.status(403).send({
       success: false,

@@ -856,6 +856,18 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     return days.map(day => getDayName(day));
   }
 
+  const handleSharedUserList = (user) => {
+    if (user === username) {
+      return;
+    } else {
+      return (
+        <Box display="flex" flexDirection="row" >
+        <Typography>{user}</Typography><Button onClick={() => removeSharedUser(user)}>Delete</Button>
+        </Box>
+      )
+    }
+}
+
   return (
     <>
       <FullCalendar
@@ -1165,10 +1177,10 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
             ))}
           </div>
           <div>
+            {name}
             {shared.map((user, index) => (
               <div key={index}>
-                {(user != username) && user && (user != name) && name &&
-                  <Button onClick={() => removeSharedUser(user)}>Remove</Button>}
+                {handleSharedUserList(user)}
               </div>
             ))}
           </div>

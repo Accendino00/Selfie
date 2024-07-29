@@ -26,6 +26,7 @@ import { useNavigate } from 'react-router-dom';
 import StudyEvent from './StudyEvents.jsx';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import Datebook from './Datebook'
 
 const CalendarPage = () => {
   const navigate = useNavigate();
@@ -45,6 +46,7 @@ const CalendarPage = () => {
   const [checkboxState, setCheckboxState] = useState({});
   const [studyEventCreate, setStudyEventCreate] = useState(false);
   const [taskCreate, setTaskCreate] = useState(false);
+  const [events, setEvents] = useState([])
 
 
   useEffect(() => {
@@ -65,6 +67,8 @@ const CalendarPage = () => {
     setCheckboxState(savedCheckboxState);
     setChosenCalendars(savedChosenCalendars);
   }, []);
+
+
 
   useEffect(() => {
     const fetchCalendars = () => {
@@ -92,6 +96,31 @@ const CalendarPage = () => {
     // Cleanup: stop polling on component unmount
     return () => clearInterval(intervalId);
   }, [token, username]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetch(`/api/getEventsGeneric?calendars=&username=${username}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+        .then(response => response.json())
+        .then(data => {
+
+          setEvents(data);
+          //console.log(data)
+
+        })
+        .catch(error => {
+          console.error("Error fetching events:", error)
+
+        });
+    }, 500);
+
+    // Pulizia: interrompe il polling quando il componente viene smontato
+    return () => clearInterval(interval);
+  }, [token, username, events]);
 
   useEffect(() => {
     const fetchInvitedEvents = () => {
@@ -134,7 +163,7 @@ const CalendarPage = () => {
     }
 
     fetch('/api/createCalendars', {
-      method: 'POST', 
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
@@ -420,6 +449,11 @@ const CalendarPage = () => {
                   <Button onClick={() => acceptInvitedEvents(Object.keys(checkboxState).filter(key => checkboxState[key]))}>Accept</Button>
                 </List>
               </Collapse>
+
+              <ListItem sx={{ pl: 4 }}>
+                <Datebook events={events} />
+              </ListItem>
+
             </List>
           </Drawer>
 

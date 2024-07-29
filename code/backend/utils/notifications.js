@@ -35,6 +35,13 @@ function formatDateWithTime(date) {
   return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
 }
 
+
+function getNextYear() {
+    const currentDate = new Date();
+    const nextYear = currentDate.getFullYear() + 1;
+    return nextYear;
+};
+
 const calculateAllRecurrencies = (event, finalYear) => {
   const recurrencies = [];
   let nextStartDate = new Date(event.start);
@@ -44,23 +51,23 @@ const calculateAllRecurrencies = (event, finalYear) => {
   let counter = 0;
 
   while ((counter < maxRecurrences) && (nextStartDate.getFullYear() <= finalYear)) {
-      if (event.daysOfWeek.includes(nextStartDate.getDay())) {
-          const startDate = formatDateWithTime(nextStartDate);
-          const endDate = nextEndDate ? formatDateWithTime(nextEndDate) : null;
+    if (event.daysOfWeek?.includes(nextStartDate.getDay()) ?? false) {
+        const startDate = formatDateWithTime(nextStartDate);
+        const endDate = nextEndDate ? formatDateWithTime(nextEndDate) : null;
 
-          recurrencies.push({
-              ...event,
-              start: startDate,
-              end: endDate
-          });
+        recurrencies.push({
+            ...event,
+            start: startDate,
+            end: endDate
+        });
 
-          counter++;
-      }
+        counter++;
+    }
 
-      nextStartDate.setDate(nextStartDate.getDate() + 7); // Add one week
-      if (nextEndDate) {
-          nextEndDate.setDate(nextEndDate.getDate() + 7); // Add one week to the end date
-      }
+    nextStartDate.setDate(nextStartDate.getDate() + 7); // Add one week
+    if (nextEndDate) {
+        nextEndDate.setDate(nextEndDate.getDate() + 7); // Add one week to the end date
+    }
   }
 
   return recurrencies;
@@ -75,8 +82,19 @@ async function checkEvents() {
   // Find all events that are either happening soon or need to be checked for recurring notifications
   const events = await eventsCollection.find({}).toArray();
 
-  for (const event of events) {
-      const owner = await usersCollection.findOne({ name: event.name });
+  // add all recurrencies for repeated events
+  // we consider recurrencies as singular events, with their own notification
+  let allEvents = events
+  for (let event of events) {
+    if (event) {
+        recurrencies = calculateAllRecurrencies(event, getNextYear())
+        allEvents = allEvents.concat(recurrencies)
+    }
+  }
+
+  for (const event of allEvents) {
+      const owner = await usersCollection.findOne({ username: event.name });
+      //const owner = event.name;
       const sharedUsers = event.shared.map(async username => await usersCollection.findOne({ name: username }));
 
       // Include both owner and shared users in the notification process
@@ -84,28 +102,34 @@ async function checkEvents() {
 
       for (const user of usersToNotify) {
           if (!user) continue;  // Skip if user not found
+          console.log("user.notifyNotice", user.notifyNotice, "user.username", user.username)
 
-          const noticeTime = user.notifyNotice;
+          const noticeTime = new Date(user.notifyNotice);
           const repeatCount = user.notifyRepeat;
+          const eventStart = new Date(event.start);
 
           // Calculate the time intervals at which notifications should be sent
           for (let i = 0; i < repeatCount; i++) {
-              const notificationTime = new Date(event.start - noticeTime * (i + 1) / repeatCount);
+              const notificationTime = new Date(eventStart.getTime() - noticeTime.getTime() * (i + 1) / repeatCount);
+
+              console.log("condizione 1: ", now > notificationTime, " condizione 2: ", now < new Date(notificationTime.getTime() + 30 * 1000))
+              console.log("repeatcount: ", repeatCount, " event.start: ", eventStart.getTime(), " noticeTime: ", noticeTime.getTime())
+              console.log("notificationTime: ", event.start - noticeTime * (i + 1) / repeatCount)
 
               if (now > notificationTime && now < new Date(notificationTime.getTime() + 30 * 1000)) { // 30-second window to send the notification
                   // Logic to send email notification
-                  console.log(`Sending notification to ${user.name} for event ${event.name}`);
+                  console.log(`[NOTIFICATION] Sending notification to ${user.name} for event ${event.name}`);
                   // Include email logic here, possibly using nodemailer
               }
           }
       }
   }
 
-  console.log('Upcoming events checked', events);
+  //console.log('Upcoming events checked', events);
 };
 
 // Programma il controllo degli eventi ogni 30 secondi
-schedule.scheduleJob('*/30 * * * * *', function(){
+schedule.scheduleJob('*/10 * * * * *', function(){
   console.log('Checking for upcoming events...');
   checkEvents();
 });
