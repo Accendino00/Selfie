@@ -67,7 +67,6 @@ app.use("/api", require(config.ROUTESERVIZI + "/diagnostic"))
 app.use("/api", require(config.ROUTESERVIZI + "/notes"))
 app.use("/api", require(config.ROUTESERVIZI + "/calendars"))
 app.use("/api", require(config.ROUTESERVIZI + "/events"))
-app.use("/api", require(config.ROUTESERVIZI + "/account"))
 app.use("/api", require(config.ROUTESERVIZI + "/tasks"))
 app.use("/api", require(config.ROUTESERVIZI + "/studyevents"))
 app.use("/api", require(config.ROUTESERVIZI + "/pomodoro"))
@@ -83,7 +82,6 @@ app.get("*", require(config.ROUTESERVIZI + "/webpages"));
 /* SERVER START */
 function startServer() {
   server = app.listen(PORT, () => {
-    console.log(`Server acceso su http://localhost:${PORT}`);
     // Ci colleghiamo al database
     connectToDatabase();
     
@@ -99,7 +97,7 @@ startServer();
 
 // Capture termination and interrupt signals
 function handleShutdown() {
-  console.log("Spegnendo server...");
+  //console.log("Spegnendo server...");
   disconnectFromDatabase().then(() => {
     process.exit(0);
   });

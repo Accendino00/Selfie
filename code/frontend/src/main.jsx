@@ -72,15 +72,12 @@ function App() {
           path: "/timer/:studyTime/:breakTime/:cycles/:totalMinutes/:currentId",
           element: <PomodoroPage />,
         },
-        // Route without parameters
         {
           path: "/timer",
           element: <PomodoroPage />,
         },
       ]
     },
-    // Routes without a navbar on the side
-    // Routes with a navbar on the side
     {
       path: "*",
       element: <ErrorPage />,
