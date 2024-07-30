@@ -69,21 +69,21 @@ const CalendarPage = () => {
           'Authorization': `Bearer ${token}`
         }
       })
-      .then(response => response.json())
-      .then(data => {
-        setRestrictedPeriods(data);
-      })
-      .catch(error => console.error('Error fetching restricted periods:', error));
+        .then(response => response.json())
+        .then(data => {
+          setRestrictedPeriods(data);
+        })
+        .catch(error => console.error('Error fetching restricted periods:', error));
     };
-  
+
     // Fetch restricted periods initially and set up polling
     const intervalId = setInterval(fetchRestrictedPeriods, 1000);
     fetchRestrictedPeriods();
-  
+
     // Cleanup: stop polling on component unmount
     return () => clearInterval(intervalId);
-  }, [token, restrictedPeriods, username]);
-  
+  }, [token, username]);
+
 
   useEffect(() => {
     // Imposta lo stato dei checkbox e i calendari scelti in base ai valori salvati in localStorage,
@@ -372,9 +372,22 @@ const CalendarPage = () => {
             anchor="left"
             open={drawerOpen}
             onClose={() => setDrawerOpen(false)}
+            sx={{
+              width: 250,
+              flexShrink: 0,
+              '& .MuiDrawer-paper': {
+                width: 250,
+                boxSizing: 'border-box',
+                backgroundColor: '#111119',
+                color: 'white',
+              },
+            }}
           >
-            <List sx={{ height: '100vh' }}>
-              <ListItem disablePadding>
+            <List sx={{
+              height: '100vh',
+
+            }}>
+              <ListItem disablePadding >
                 <ListItemButton onMouseDown={() => setCreateCalendarButton(true)} onMouseUp={() => setCreate(false)} onMouseLeave={() => setCreate(false)}>
                   <ListItemText primary="Create Calendar" />
                 </ListItemButton>
@@ -413,7 +426,7 @@ const CalendarPage = () => {
               </ListItem>
               <Collapse in={openCalendars} timeout="auto" unmountOnExit>
                 <List component="div" disablePadding>
-                  <ListItem key="shared" sx={{ pl: 4 }}>
+                  <ListItem key="shared" sx={{ pl: 4, justifyContent: "space-between" }}>
                     <FormControlLabel
                       control={<Checkbox checked={checkboxState['shared'] || false} onChange={() => handleCheckboxChange('shared')} />}
                       label="Shared Events"
@@ -421,7 +434,7 @@ const CalendarPage = () => {
                     <Button onClick={() => alert('Shared calendar cannot be deleted')} endIcon={<DeleteIcon />}>
                     </Button>
                   </ListItem>
-                  <ListItem key="tasks" sx={{ pl: 4 }}>
+                  <ListItem key="tasks" sx={{ pl: 4, justifyContent: "space-between" }}>
                     <FormControlLabel
                       control={<Checkbox checked={checkboxState['tasks'] || false} onChange={() => handleCheckboxChange('tasks')} />}
                       label="Tasks"
@@ -429,7 +442,7 @@ const CalendarPage = () => {
                     <Button onClick={() => alert('Tasks calendar cannot be deleted')} endIcon={<DeleteIcon />}>
                     </Button>
                   </ListItem>
-                  <ListItem key="pomodoro" sx={{ pl: 4 }}>
+                  <ListItem key="pomodoro" sx={{ pl: 4, justifyContent: "space-between" }}>
                     <FormControlLabel
                       control={<Checkbox checked={checkboxState['pomodoro'] || false} onChange={() => handleCheckboxChange('pomodoro')} />}
                       label="Pomodoro"
@@ -438,7 +451,7 @@ const CalendarPage = () => {
                     </Button>
                   </ListItem>
                   {calendars.map((calendar) => (
-                    <ListItem key={calendar._id} sx={{ pl: 4 }}>
+                    <ListItem key={calendar._id} sx={{ pl: 4, justifyContent: "space-between" }}>
                       <FormControlLabel
                         control={<Checkbox checked={checkboxState[calendar.name] || false} onChange={() => handleCheckboxChange(calendar.name)} />}
                         label={calendar.name}
@@ -456,6 +469,7 @@ const CalendarPage = () => {
                   ))}
                 </List>
               </Collapse>
+              <hr style={{ height: "2px" }} />
               <ListItem disablePadding>
                 <ListItemButton onClick={toggleInvitedEvents}>
                   <ListItemText primary="Invited Events" />
@@ -474,9 +488,14 @@ const CalendarPage = () => {
                       </Button>
                     </ListItem>
                   ))}
-                  <Button onClick={() => acceptInvitedEvents(Object.keys(checkboxState).filter(key => checkboxState[key]))}>Accept</Button>
+                  <Button sx={{
+                    float: "right",
+                    marginRight: "20px",
+                  }} onClick={() => acceptInvitedEvents(Object.keys(checkboxState).filter(key => checkboxState[key]))}>Accept</Button>
                 </List>
               </Collapse>
+
+              <hr style={{ height: "2px" }} />
 
               <ListItem sx={{ pl: 4 }}>
                 <Datebook events={events} />
@@ -485,6 +504,8 @@ const CalendarPage = () => {
               <ListItem sx={{ pl: 4 }}>
                 <Calparser />
               </ListItem>
+
+              <hr style={{ height: "2px" }} />
 
               <RestrictedPeriods restrictedPeriods={restrictedPeriods} setRestrictedPeriods={setRestrictedPeriods} username={username} />
             </List>

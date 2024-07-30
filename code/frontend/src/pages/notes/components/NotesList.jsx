@@ -31,7 +31,7 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 
-function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNoteDeleted, onNoteModified, onCopyNote, isDesktop, user}) {
+function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNoteDeleted, onNoteModified, onCopyNote, isDesktop, user }) {
     const token = Cookies.get('token');
     const [order, setOrder] = useState('title-asc');
     const [anchorEl, setAnchorEl] = useState({});
@@ -81,7 +81,7 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
             throw new Error('Failed to fetch the note');
         }).then(copiedNote => {
             let newAccess;
-            if(copiedNote.access === 'public') {
+            if (copiedNote.access === 'public') {
                 newAccess = 'private';
             } else {
                 newAccess = copiedNote.access;
@@ -112,7 +112,7 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
             throw new Error('Failed to copy the note');
         }).then(addedNote => {
             onCopyNote(addedNote);
-            
+
         }).catch(error => {
             console.error('Failed to copy the note', error);
         });
@@ -147,7 +147,7 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
         setCurrentNote(note);
         setOpen(true);
     };
-    
+
     const handleCheckboxChange = (event) => {
         setShowSharedNotes(event.target.checked);
     };
@@ -162,120 +162,123 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
             borderRadius: "20px",
             paddingBottom: "20px",
         }}>
-            <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center',  }}>
-                <Accordion square='false' sx={{ backgroundColor: '#1d1d2f', color: 'white', width: "100%", borderRadius: "20px 20px 0px 0px", marginBottom: "20px" }}>
-                        <AccordionSummary expandIcon={<ArrowDropDownIcon />} sx={{ backgroundColor: '#7d5ffc', borderRadius: "19px 19px 0px 0px" }}>
-                            <Typography> <FilterAltIcon/> Filter notes</Typography>
-                        </AccordionSummary>
-                        <AccordionDetails sx={{ backgroundColor: '#1d1d2f', borderRadius: "20px 20px 0px 0px" }}>
-                            <Box style={{ 
-                                display: 'flex', 
-                                flexWrap: 'wrap', 
-                                flexDirection: 'row',
-                                justifyContent: 'center',
-                                gap: "20px", 
-                                marginTop: "20px",
-                                }}>
-                                <TextField label="Search Notes" variant="outlined" fullWidth onChange={e => setSearchTerm(e.target.value)} 
-                                    InputProps={{
+            <Box style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', }}>
+                <Accordion sx={{ backgroundColor: '#1d1d2f', color: 'white', width: "100%", borderRadius: "20px 20px 0px 0px", marginBottom: "20px" }}>
+                    <AccordionSummary expandIcon={<ArrowDropDownIcon />} sx={{ backgroundColor: '#7d5ffc', borderRadius: "19px 19px 0px 0px" }}>
+                        <Typography> <FilterAltIcon /> Filter notes</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails sx={{ backgroundColor: '#1d1d2f', borderRadius: "20px 20px 0px 0px" }}>
+                        <Box style={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            flexDirection: 'row',
+                            justifyContent: 'center',
+                            gap: "20px",
+                            marginTop: "20px",
+                        }}>
+                            <TextField label="Search Notes" variant="outlined" fullWidth onChange={e => setSearchTerm(e.target.value)}
+                                InputProps={{
+                                    style: {
+                                        color: '#53ddf0',
+                                    }
+                                }}
+                                InputLabelProps={{
+                                    style: {
+                                        color: '#7d5ffc',
+
+                                    }
+                                }} />
+                            <Select
+                                value={order}
+                                onChange={handleOrderChange}
+                                displayEmpty
+                                inputProps={{ 'aria-label': 'Without label' }}
+
+                                MenuProps={{
+                                    PaperProps: {
                                         style: {
                                             color: '#53ddf0',
+                                            backgroundColor: '#111119',
+                                            fontSize: '1.2rem',
+                                            fontWeight: 'bold',
+                                            backgroundColor: '#111119',
+                                            fontSize: '1.2rem',
+                                            fontWeight: 'bold'
                                         }
-                                    }}
-                                    InputLabelProps={{
-                                        style: {
-                                            color: '#7d5ffc',
+                                    }
+                                }}
+                                sx={{
+                                    width: "100%",
+                                    '& .MuiSelect-select': {
+                                        color: '#7d5ffc',
 
-                                        }
-                                }} />
-                                <Select
-                                    value={order}
-                                    onChange={handleOrderChange}
-                                    displayEmpty
-                                    inputProps={{ 'aria-label': 'Without label' }}
-
-                                    MenuProps={{
-                                        PaperProps: {
-                                            style: {
-                                                color: '#53ddf0',
-                                                backgroundColor: '#111119',
-                                                fontSize: '1.2rem',
-                                                fontWeight: 'bold',
-                                                backgroundColor: '#111119',
-                                                fontSize: '1.2rem',
-                                                fontWeight: 'bold'
-                                            }
-                                        }
-                                    }}
-                                    sx={{
-                                        width: "100%",
-                                        '& .MuiSelect-select': {
-                                            color: '#7d5ffc',
-                                            
-                                        }
-                                    }}
-                                >
-                                    <MenuItem value="title-asc" sx>Titolo Crescente</MenuItem>
-                                    <MenuItem value="title-desc">Titolo Decrescente</MenuItem>
-                                    <MenuItem value="creationDate-asc">Data di Creazione Crescente</MenuItem>
-                                    <MenuItem value="creationDate-desc">Data di Creazione Decrescente</MenuItem>
-                                    <MenuItem value="modificationDate-asc">Data di Modifica Crescente</MenuItem>
-                                    <MenuItem value="modificationDate-desc">Data di Modifica Decrescente</MenuItem>
-                                    <MenuItem value="length-asc">Lunghezza Note Crescente</MenuItem>
-                                    <MenuItem value="length-desc">Lunghezza Note Decrescente</MenuItem>
-                                </Select>
-                                <FormControlLabel
-                                    control={<Checkbox
-                                        checked={showSharedNotes}
-                                        onChange={handleCheckboxChange}
-                                        style={{ color: '#53ddf0' }}
-                                    />}
-                                    label="Show Shared"
-                                />
-                            </Box>
-                        </AccordionDetails>
+                                    }
+                                }}
+                            >
+                                <MenuItem value="title-asc">Titolo Crescente</MenuItem>
+                                <MenuItem value="title-desc">Titolo Decrescente</MenuItem>
+                                <MenuItem value="creationDate-asc">Data di Creazione Crescente</MenuItem>
+                                <MenuItem value="creationDate-desc">Data di Creazione Decrescente</MenuItem>
+                                <MenuItem value="modificationDate-asc">Data di Modifica Crescente</MenuItem>
+                                <MenuItem value="modificationDate-desc">Data di Modifica Decrescente</MenuItem>
+                                <MenuItem value="length-asc">Lunghezza Note Crescente</MenuItem>
+                                <MenuItem value="length-desc">Lunghezza Note Decrescente</MenuItem>
+                            </Select>
+                            <FormControlLabel
+                                control={<Checkbox
+                                    checked={showSharedNotes}
+                                    onChange={handleCheckboxChange}
+                                    style={{ color: '#53ddf0' }}
+                                />}
+                                label="Show Shared"
+                            />
+                        </Box>
+                    </AccordionDetails>
                 </Accordion>
-                <Box style={{ 
-                    display: 'flex', 
-                    flexWrap: 'wrap', 
+                <Box style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
                     justifyContent: 'space-around',
                 }}>
                     {filteredNotes.map((note) => (
-                        <Box style={{ display: 'flex', 
-                            flexDirection: 'column', 
+                        <Box key={note.id} style={{
+
+                            display: 'flex',
+                            flexDirection: 'column',
                             alignItems: 'center',
                             backgroundColor: "#111119",
                             borderRadius: "10px",
                             boxShadow: "0px 0px 0px #53ddf063",
                             padding: "8px",
-                            margin: "5px", }}>
-                        <Card key={note.id} sx={{ 
-                            maxWidth: '300px', 
-                            margin: '10px', 
-                            padding: '10px', 
-                            height: "208px",
-                            width: "147px",
-                            overflow: "hidden", 
-                        }}
-                        >
-                            <CardContent onClick={() => onNoteModified(note.id)} style={{ cursor: 'pointer' }}>
-                                <Typography variant="body2"
-                                    sx={{
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        textAlign: 'justify',
-                                        textShadow: "0px 0px 0px white !important",
-                            
-                                        zoom: "0.3",
-                                        overflowWrap: "break-word",
-                                        textWrap: "wrap",
-                                        height: "370px",
-                                    }}
-                                >{parse(note.note.substring(0, 200))}</Typography>
-                            </CardContent>
+                            margin: "5px",
+                        }}>
+                            <Card key={note.id} sx={{
+                                maxWidth: '300px',
+                                margin: '10px',
+                                padding: '10px',
+                                height: "208px",
+                                width: "147px",
+                                overflow: "hidden",
+                            }}
+                            >
+                                <CardContent onClick={() => onNoteModified(note.id)} style={{ cursor: 'pointer' }}>
+                                    <Typography variant="body2" component="div"
+                                        sx={{
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            textAlign: 'justify',
+                                            textShadow: "0px 0px 0px white !important",
+
+                                            zoom: "0.3",
+                                            overflowWrap: "break-word",
+                                            textWrap: "wrap",
+                                            height: "370px",
+                                        }}
+                                    >{parse(note.note.substring(0, 200))}</Typography>
+                                </CardContent>
                                 <CardActions disableSpacing>
-                                    <IconButton aria-label="settings" onClick={(e) => handleMenu(e, note.id)} 
+                                    <IconButton aria-label="settings" onClick={(e) => handleMenu(e, note.id)}
                                         sx={{
                                             position: 'relative',
                                             left: '80%',
@@ -289,7 +292,7 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                                         keepMounted
                                         open={Boolean(anchorEl[note.id])}
                                         onClose={() => handleClose(note.id)}
-                                        sx = {{
+                                        sx={{
                                             '& .MuiMenu-paper': {
                                                 backgroundColor: '#111119',
                                                 color: '#53ddf0',
@@ -305,48 +308,48 @@ function NotesList({ notes, setNotes, showSharedNotes, setShowSharedNotes, onNot
                                             <MenuItem onClick={() => handleOpenDialog(note)}>Set Access</MenuItem>}
                                     </Menu>
                                 </CardActions>
-                        </Card>
-                        <Box sx={{
-                            width: "147px",
-                            display: "flex",
-                            flexDirection: "column",
-                            flexWrap: "wrap",
-                            backgroundColor: "#111119",
-                            borderRadius: "10px",
-                            boxShadow: note.owner == username ? "1px 1px 0px rgb(238 79 252), -1px -1px 0px #7d5ffc" : "1px 1px 0px #5ffcf6, -1px -1px 0px rgb(255 244 43)",
-                            padding: "8px",
-                            margin: "5px",
-                            marginTop: "0px",
-                            marginBottom: "9px",
-                        }}>
-                            <Typography variant="caption" sx={{
-                                fontSize: "0.65em",
+                            </Card>
+                            <Box sx={{
+                                width: "147px",
                                 display: "flex",
-                                flexDirection: "row",
+                                flexDirection: "column",
                                 flexWrap: "wrap",
-                                justifyContent: "space-between",
-                                alignItems: "baseline",    
-                            }} color="#ffffff88">Title  <span style={{fontSize: "1.7em", color: "#53ddf0"}}> {note.title} </span></Typography>
-                            <Divider color="#fff" sx={{height: "0px !important", color: "#ffffff55"}}/>
-                            <Typography variant="caption" sx={{
-                                fontSize: "0.5em",
-                                display: "flex",
-                                flexDirection: "row",
-                                flexWrap: "wrap",
-                                justifyContent: "space-between",
-                                alignItems: "baseline",
-                                lineHeight: "2",  
-                            }} color="#ffffff88">Creation Date  <span style={{fontSize: "1.5em", color: "#53ddf0"}}>{new Date(note.creationDate).toLocaleDateString()}</span></Typography>
-                            <Divider sx={{height: "0px !important", color: "#ffffff55"}}/>
-                            <Typography variant="caption" sx={{
-                                fontSize: "0.65em",
-                                display: "flex",
-                                flexDirection: "row",
-                                flexWrap: "wrap",
-                                justifyContent: "space-between",
-                                alignItems: "baseline",    
-                            }} color="#ffffff88">Owner  <span style={{fontSize: "1.2em", color: "#53ddf0"}}>{note.owner}</span></Typography>
-                        </Box>
+                                backgroundColor: "#111119",
+                                borderRadius: "10px",
+                                boxShadow: note.owner == username ? "1px 1px 0px rgb(238 79 252), -1px -1px 0px #7d5ffc" : "1px 1px 0px #5ffcf6, -1px -1px 0px rgb(255 244 43)",
+                                padding: "8px",
+                                margin: "5px",
+                                marginTop: "0px",
+                                marginBottom: "9px",
+                            }}>
+                                <Typography variant="caption" sx={{
+                                    fontSize: "0.65em",
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    flexWrap: "wrap",
+                                    justifyContent: "space-between",
+                                    alignItems: "baseline",
+                                }} color="#ffffff88">Title  <span style={{ fontSize: "1.7em", color: "#53ddf0" }}> {note.title} </span></Typography>
+                                <Divider color="#fff" sx={{ height: "0px !important", color: "#ffffff55" }} />
+                                <Typography variant="caption" sx={{
+                                    fontSize: "0.5em",
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    flexWrap: "wrap",
+                                    justifyContent: "space-between",
+                                    alignItems: "baseline",
+                                    lineHeight: "2",
+                                }} color="#ffffff88">Creation Date  <span style={{ fontSize: "1.5em", color: "#53ddf0" }}>{new Date(note.creationDate).toLocaleDateString()}</span></Typography>
+                                <Divider sx={{ height: "0px !important", color: "#ffffff55" }} />
+                                <Typography variant="caption" sx={{
+                                    fontSize: "0.65em",
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    flexWrap: "wrap",
+                                    justifyContent: "space-between",
+                                    alignItems: "baseline",
+                                }} color="#ffffff88">Owner  <span style={{ fontSize: "1.2em", color: "#53ddf0" }}>{note.owner}</span></Typography>
+                            </Box>
                         </Box>
                     ))}
                 </Box>

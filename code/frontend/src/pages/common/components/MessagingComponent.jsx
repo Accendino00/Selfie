@@ -66,14 +66,14 @@ function MessagingComponent() {
 
 
     const handleSendMessage = () => {
-        
+
         const messageToSend = {
             user: userId,
             username: username,
             message: message,
             receiver: receiver,
         };
-        
+
         fetch(`/api/sendMessage`, {
             method: 'POST',
             headers: {
@@ -92,7 +92,7 @@ function MessagingComponent() {
         }).catch(error => {
             console.error('Failed to send message', error);
         });
-        
+
     }
 
     const handleReadMessage = (id) => {
@@ -116,18 +116,26 @@ function MessagingComponent() {
 
 
     return (
-        <Container>
+        <Container
+            sx={{
+                position: 'absolute',
+                top: '1vh',
+                right: '1vh',
+                color: '#ffffffdf',
+                width: "auto",
+                zIndex: 1000
+            }}>
             {open ? (
                 <Drawer anchor="right" open={open} onClose={() => setOpen(false)} PaperProps={{
                     sx: {
-                      maxWidth: "80vw"
+                        maxWidth: "80vw"
                     }
-                  }}>
+                }}>
                     <Box sx={{ maxWidth: 300, padding: 2 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
                             <h2>Messages</h2>
                             <IconButton onClick={handleNotification}>
-                                <NotificationIcon />
+                                <MessageIcon />
                             </IconButton>
                         </Box>
                         {showNotifications && (
@@ -147,19 +155,19 @@ function MessagingComponent() {
                                                 <h5>From: {msg.username}</h5>
                                                 <p>{msg.message}</p>
                                                 <Button onClick={handleReadMessage(msg._id)}>Read</Button>
+                                            </Box>
+                                        ))}
                                     </Box>
-                                ))}
-                                </Box>
                                 )
-                            }
+                                }
                             </Box>
                         )}
-                        <Box 
-                        sx={{ 
-                            marginTop: 2, 
-                            border: '1px solid #ccc',
-                            padding: 2,
-                        }}
+                        <Box
+                            sx={{
+                                marginTop: 2,
+                                border: '1px solid #ccc',
+                                padding: 2,
+                            }}
                         >
                             <TextField
                                 sx={{
@@ -174,7 +182,7 @@ function MessagingComponent() {
                             />
                             <TextField
                                 sx={{
-                                    
+
                                 }}
                                 label="Message"
                                 variant="outlined"
@@ -194,10 +202,10 @@ function MessagingComponent() {
                     </Box>
                 </Drawer>
             ) : (
-                <IconButton 
+                <IconButton
                     onClick={() => setOpen(true)}
-                    sx={{ color: 'white'}}
-                    >
+                    sx={{ color: 'white' }}
+                >
                     <MessageIcon />
                 </IconButton>
             )}

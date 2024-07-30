@@ -10,6 +10,7 @@ const TimeMachine = ({ onDateChange, setSeed, originalDate, setShowTimeMachine, 
   const boxRef = useRef(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const dragHandleRef = useRef(null);
 
   const handleDateChange = (event) => {
     const { name, value } = event.target;
@@ -51,48 +52,49 @@ const TimeMachine = ({ onDateChange, setSeed, originalDate, setShowTimeMachine, 
   };
 
   return (
-<Draggable
-  cancel="input, textarea, button, select, option, [role='button'], .cancel-drag"
->
-  <Box ref={boxRef} sx={boxStyles}>
-    <Box display="flex" justifyContent="space-between" alignItems="center">
-      <Typography variant="h6" color="primary">Time Machine</Typography>
-      <IconButton size="small" onClick={handleClose} className="cancel-drag">
-        <MinimizeIcon fontSize="small" />
-      </IconButton>
-    </Box>
-    <TextField
-      label="Date"
-      type="date"
-      name="date"
-      value={format(currentDate, 'yyyy-MM-dd')}
-      onChange={handleDateChange}
-      fullWidth
-      margin="normal"
-      className="cancel-drag"
-    />
-    <TextField
-      label="Time"
-      type="time"
-      name="time"
-      value={format(currentDate, 'HH:mm')}
-      onChange={handleDateChange}
-      fullWidth
-      margin="normal"
-      className="cancel-drag"
-    />
-    <Button
-      variant="contained"
-      color="primary"
-      onClick={resetToSystemTime}
-      fullWidth
-      sx={{ mt: 2 }}
-      className="cancel-drag"
+    <Draggable
+      cancel="input, textarea, button, select, option, [role='button'], .cancel-drag"
+      nodeRef={dragHandleRef}  // Attach the ref here
     >
-      Reset to System Time
-    </Button>
-  </Box>
-</Draggable>
+      <Box ref={dragHandleRef} sx={boxStyles}>  {/* Use the ref on your Box component */}
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="h6" color="primary">Time Machine</Typography>
+          <IconButton size="small" onClick={handleClose} className="cancel-drag">
+            <MinimizeIcon fontSize="small" />
+          </IconButton>
+        </Box>
+        <TextField
+          label="Date"
+          type="date"
+          name="date"
+          value={format(currentDate, 'yyyy-MM-dd')}
+          onChange={handleDateChange}
+          fullWidth
+          margin="normal"
+          className="cancel-drag"
+        />
+        <TextField
+          label="Time"
+          type="time"
+          name="time"
+          value={format(currentDate, 'HH:mm')}
+          onChange={handleDateChange}
+          fullWidth
+          margin="normal"
+          className="cancel-drag"
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={resetToSystemTime}
+          fullWidth
+          sx={{ mt: 2 }}
+          className="cancel-drag"
+        >
+          Reset to System Time
+        </Button>
+      </Box>
+    </Draggable>
 
   );
 };

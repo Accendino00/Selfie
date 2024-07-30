@@ -59,11 +59,11 @@ const HomePage = () => {
             const fetchedUserId = await response.json();
             setUserId(fetchedUserId);
           } else {
-            console.error('Failed to fetch user id');
+            // console.error('Failed to fetch user id');
           }
         }
         catch (error) {
-          console.error('Failed to fetch user id', error);
+          // console.error('Failed to fetch user id', error);
         }
       }
       fetchUserId();
@@ -99,7 +99,7 @@ const HomePage = () => {
         setEvents(data);
 
       } catch (error) {
-        console.error('Error fetching events:', error);
+        // console.error('Error fetching events:', error);
       }
     };
 
@@ -115,7 +115,7 @@ const HomePage = () => {
         setTasks(data);
 
       } catch (error) {
-        console.error('Error fetching tasks:', error);
+        // console.error('Error fetching tasks:', error);
       }
     };
 
@@ -131,7 +131,7 @@ const HomePage = () => {
         setStudyEvents(data);
 
       } catch (error) {
-        console.error('Error fetching study events:', error);
+        // console.error('Error fetching study events:', error);
       }
     };
 
@@ -142,6 +142,12 @@ const HomePage = () => {
 
 
   const fetchLastCreatedNote = async () => {
+    if (!userId) {
+      // console.error("No userId available");
+      setNoNotes(true);
+      return;
+    }
+
     try {
       const response = await fetch(`/api/getLastCreatedNote?userId=${userId}`, {
         method: 'GET',
@@ -150,58 +156,55 @@ const HomePage = () => {
         }
       });
 
-      if (!response.ok) {
-        // Handle 404 or other errors
-        if (response.status === 404) {
-          setNoNotes(true);
-        } else {
-          console.error(`Error fetching last created note: ${response.statusText}`);
-        }
-        return;
+      const data = await response.json();
+
+      if (data === '') {
+        setNoNotes(true);
+      } else {
+        setLastCreatedNote(data);
+        setLastModifiedNote('');
+        setFirstModifiedNote('');
+        setFirstCreatedNote('');
+        setNoNotes(false);
       }
 
-      const data = await response.json();
-      setLastCreatedNote(data);
-      setLastModifiedNote('');
-      setFirstModifiedNote('');
-      setFirstCreatedNote('');
-      setNoNotes(false);
-
     } catch (error) {
-      console.error('Error fetching last created note:', error);
+      // console.error('Error fetching last created note:', error);
       setNoNotes(true);
     }
   };
 
   const fetchLastPomodoro = async () => {
+    if (!userId) {
+      // console.error("No userId available");
+      setNoPomodoro(true);
+      return;
+    }
+  
+    let response;
     try {
-      const response = await fetch(`/api/getLastPomodoro?userId=${userId}`, {
+      response = await fetch(`/api/getLastPomodoro?userId=${userId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-
-      if (!response.ok) {
-        // Handle 404 or other errors
-        if (response.status === 404) {
-          setNoPomodoro(true);
-        } else {
-          console.error(`Error fetching last pomodoro: ${response.statusText}`);
-        }
-        return;
-      }
-
+  
       const data = await response.json();
-      setLastPomodoro(data);
-      setFirstPomodoro('');
-      setNoPomodoro(false);
-
+  
+      if (data === '') {
+        setNoPomodoro(true);
+      } else {
+        setLastPomodoro(data);
+        setFirstPomodoro('');
+        setNoPomodoro(false);
+      }
     } catch (error) {
-      console.error('Error fetching last pomodoro:', error);
+      // console.error('Error fetching last pomodoro:', error);
       setNoPomodoro(true);
     }
   };
+  
 
   useEffect(() => {
     if (loginStatus) {
@@ -212,6 +215,14 @@ const HomePage = () => {
 
 
   const fetchFirstCreatedNote = async () => {
+    if (!userId) {
+      // console.error("No userId available");
+      setLastModifiedNote('');
+      setFirstModifiedNote('');
+      setLastCreatedNote('');
+      return;
+    }
+
     try {
       const response = await fetch(`/api/getFirstCreatedNote?userId=${userId}`, {
         method: 'GET',
@@ -226,7 +237,7 @@ const HomePage = () => {
       setLastCreatedNote('');
 
     } catch (error) {
-      console.error('Error fetching first created note:', error);
+      // console.error('Error fetching first created note:', error);
     }
   };
 
@@ -243,7 +254,7 @@ const HomePage = () => {
       setLastPomodoro('');
 
     } catch (error) {
-      console.error('Error fetching first pomodoro:', error);
+      // console.error('Error fetching first pomodoro:', error);
     }
   };
 
@@ -262,7 +273,7 @@ const HomePage = () => {
       setFirstCreatedNote('');
 
     } catch (error) {
-      console.error('Error fetching last modified note:', error);
+      // console.error('Error fetching last modified note:', error);
     }
   };
 
@@ -281,12 +292,13 @@ const HomePage = () => {
       setFirstCreatedNote('');
 
     } catch (error) {
-      console.error('Error fetching first modified note:', error);
+      // console.error('Error fetching first modified note:', error);
     }
   };
 
   const handlePomodoroSettingsClick = () => {
     setPomodoroSettings(true);
+    event.stopPropagation()
   }
 
   const handlePomodoroSettingsClose = () => {
@@ -299,6 +311,7 @@ const HomePage = () => {
 
   const handleNoteSettingsClick = () => {
     setNoteSettings(true);
+    event.stopPropagation()
   }
 
   const handleNoteSettingsClose = () => {
@@ -570,17 +583,8 @@ const HomePage = () => {
           minHeight: '100vh',
         }}
       >
-        <IconButton
-          sx={{
-            position: 'absolute',
-            top: '1vh',
-            right: '1vh',
-            color: '#ffffffdf',
-            zIndex: 1000
-          }}
-        >
-          <MessagingComponent />
-        </IconButton>
+        <MessagingComponent />
+
         <Dialog open={calendarSettings} onClose={handleCalendarSettingsClose}>
           <DialogTitle>Configure Your Settings</DialogTitle>
           <DialogContent>
@@ -729,7 +733,7 @@ const HomePage = () => {
         <Box display="flex" align="center" justifyContent="center">
           <img src="/selfie.png" alt="Selfie" style={{ width: '60vw', maxWidth: '320px', height: 'auto', minHeight: '10vh', maxHeight: '60vh' }} />
         </Box>
-        <Grid container sx={{ display: 'flex', position: 'relative', zIndex: 1, alignItems: 'center', justifyContent: 'center', top:"6vw", gap: "2vh" }}>
+        <Grid container sx={{ display: 'flex', position: 'relative', zIndex: 1, alignItems: 'center', justifyContent: 'center', top: "6vw", gap: "2vh" }}>
           <Grid item xs={10} md={4}>
             <Button onClick={handleCalendarSettingsClick} sx={{ position: 'absolute', padding: 0, marginTop: '1vh', zIndex: '1000', minWidth: "40px" }}>
               <SettingsIcon sx={{ color: "white" }} />

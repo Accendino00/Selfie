@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ICAL from 'ical.js';
 import { EventSeat } from '@mui/icons-material';
 import Cookies from 'js-cookie';
 import useTokenChecker from '../../utils/useTokenChecker';
+import { Input } from '@mui/material';
+import { Button } from '@mui/material';
 
 
 const Calparser = () => {
@@ -10,6 +12,8 @@ const Calparser = () => {
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
     const token = Cookies.get('token');
     const [events, setEvents] = useState([]);
+    const uploadInputRef = React.createRef();
+
 
     function parseIcsFile(fileContent) {
         try {
@@ -52,6 +56,9 @@ const Calparser = () => {
         }
     }
 
+    useEffect(() => {
+        saveEvents();
+    }, [events]);
 
     const handleFileChange = async (event) => {
         const file = event.target.files[0];
@@ -62,7 +69,7 @@ const Calparser = () => {
                 const parsedEvents = parseIcsFile(fileContent);
                 console.log('parsedevents', parsedEvents);
                 setEvents(parsedEvents);
-                saveEvents();
+                //saveEvents();
             };
             reader.readAsText(file);
         }
@@ -151,7 +158,19 @@ const Calparser = () => {
 
     return (
         <div>
-            <input type="file" onChange={handleFileChange} />
+            <input
+                ref={uploadInputRef}
+                onChange={handleFileChange}
+                type="file"
+                hidden
+            />
+            <Button
+                component="label"
+                onClick={() => uploadInputRef.current && uploadInputRef.current.click()}
+                sx={{ textShadow: "0px 0px 0px #fff0" }}
+            >
+                Upload File
+            </Button>
         </div>
     );
 

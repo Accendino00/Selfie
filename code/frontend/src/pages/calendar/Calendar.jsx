@@ -108,7 +108,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
         .then(response => response.json())
         .then(data => {
           setEvents(data);
-
+          console.log(data)
 
         })
         .catch(error => {
@@ -140,8 +140,8 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     }
   }, [createButton, studyEventCreateButton, taskCreateButton]);
 
-  
-  
+
+
   const addEvent = (info) => {
     resetForm();
     setAllDay(true);
@@ -678,11 +678,11 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
 
   const addInvitedUser = async () => {
     const error = await checkRestrictedPeriods(inviteUser);
-    console .log('error', error)  
+    console.log('error', error)
     if (error) {
       setValidationError(error);
       setInviteUser('');
-      
+
     } else {
       setInvitedUsers([...invitedUsers, inviteUser]);
       setInviteUser('');
@@ -691,7 +691,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
   };
 
 
-  
+
 
   const removeInvitedUser = (user) => {
     setInvitedUsers(invitedUsers.filter(u => u !== user));
@@ -765,6 +765,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     let lateTasks = [];
     let nonLateTasks = [];
     let allEvents = [];
+
     for (let i = 0; i < events.length; i++) {
       allEvents.push(events[i]);
     }
@@ -935,7 +936,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
       const restrictedPeriods = await fetchRestrictedPeriods.json();
       console.log('restricted periods', restrictedPeriods)
       if (restrictedPeriods.length > 0) {
-        for(let i = 0; i < restrictedPeriods.length; i++) {
+        for (let i = 0; i < restrictedPeriods.length; i++) {
           console.log('start', new Date(restrictedPeriods[i].start))
           console.log('end', new Date(restrictedPeriods[i].end))
           if (new Date(restrictedPeriods[i].start) >= new Date(startDate) && new Date(restrictedPeriods[i].start) <= new Date(endDate) || new Date(restrictedPeriods[i].end) >= new Date(startDate) && new Date(restrictedPeriods[i].end) <= new Date(endDate) || new Date(restrictedPeriods[i].start) <= new Date(startDate) && new Date(restrictedPeriods[i].end) >= new Date(endDate)) {
@@ -951,7 +952,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     }
 
   }
-      
+
 
   return (
     <>
@@ -964,8 +965,8 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
         }}
         initialView="dayGridMonth"
         selectable={true}
-        //events={allEventsToDisplay().allEvents}
-        events={events}
+        events={allEventsToDisplay().allEvents}
+        //events={events}
         ref={calendarRef}
         select={(e) => addEvent(e)}
         editable={true}
@@ -1254,11 +1255,11 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
             onChange={(e) => setInviteUser(e.target.value)}
           />
           <Button onClick={addInvitedUser}>Add User</Button>
-          {validationError && 
-          <Box display="flex" flexDirection="row" >
-          <Typography color="error">{validationError}</Typography>
-          <Button onClick={() => setValidationError('')}>Ok</Button>
-          </Box>
+          {validationError &&
+            <Box display="flex" flexDirection="row" >
+              <Typography color="error">{validationError}</Typography>
+              <Button onClick={() => setValidationError('')}>Ok</Button>
+            </Box>
           }
           <div>
             {invitedUsers.map((user, index) => (
@@ -1322,7 +1323,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
       {/* Tasks */}
       <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer(false)}>
         <Box p={2} width="250px" role="presentation">
-          <button onClick={handleGetEvents}>Get Events</button>
+          {/*Usato per debugging: <button onClick={handleGetEvents}>Get Events</button>*/}
           <Typography variant="h4" gutterBottom>Tasks</Typography>
           <List>
             {Array.isArray(allEventsToDisplay().nonLateTasks) && allEventsToDisplay().nonLateTasks.map(task => (

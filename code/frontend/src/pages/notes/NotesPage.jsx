@@ -98,7 +98,7 @@ function NotesPage() {
         };
 
         fetchNotes(userId);
-    }, [userId, token, loginStatus, username, notes]);
+    }, [showSharedNotes, userId, notes]); // Dipendenze appropriate
 
     const handleNoteAdded = (note) => {
         // Aggiorna lo stato delle note aggiungendo la nuova nota

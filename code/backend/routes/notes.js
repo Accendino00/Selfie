@@ -303,120 +303,142 @@ router.put("/notes/:id", authenticateJWT, function (req, res) {
         });
 });
 
-router.get("/getLastCreatedNote", authenticateJWT, function (req, res) {
-    const userId = req.query.userId;
-    const notesCollection = clientMDB.db("SelfieGD").collection("Notes");
-    notesCollection.find({ userId: userId }).sort({ creationDate: -1 }).limit(1).toArray()
-        .then((lastNote) => {
-            if (lastNote.length > 0) {
-                res.status(200).send({
-                    id: lastNote[0]._id.toString(), // Convert ObjectId to string
-                    title: lastNote[0].title,
-                    category: lastNote[0].category,
-                    note: lastNote[0].note,
-                    userId: lastNote[0].userId,
-                    owner: lastNote[0].owner,
-                    characters: lastNote[0].characters,
-                    access: lastNote[0].access,
-                    users: lastNote[0].users,
-                    creationDate: lastNote[0].creationDate,
-                    modificationDate: lastNote[0].modificationDate
-                });
-            } else {
-                res.status(404).send({ message: "No note found for this user" });
+router.get('/getLastCreatedNote', authenticateJWT, async (req, res) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const userId = req.query.userId;
+            const notesCollection = clientMDB.db("SelfieGD").collection("Notes");
+            try {
+                const lastNote = await notesCollection.find({ userId: userId }).sort({ creationDate: -1 }).limit(1).toArray();
+                if (lastNote.length > 0) {
+                    res.status(200).json({
+                        id: lastNote[0]._id.toString(), // Convert ObjectId to string
+                        title: lastNote[0].title,
+                        category: lastNote[0].category,
+                        note: lastNote[0].note,
+                        userId: lastNote[0].userId,
+                        owner: lastNote[0].owner,
+                        characters: lastNote[0].characters,
+                        access: lastNote[0].access,
+                        users: lastNote[0].users,
+                        creationDate: lastNote[0].creationDate,
+                        modificationDate: lastNote[0].modificationDate
+                    });
+                } else {
+                    res.send('');
+                }
+            } catch (error) {
+                console.error('Unexpected error occurred:', error);
+                res.send({ message: 'Error getting last note' });
             }
-        })
-        .catch((error) => {
-            console.error("Failed to get last note", error);
-            res.status(500).send({ message: "Failed to get last note" });
-        });
+        } catch (error) {
+            reject(error);
+        }
+    });
 });
 
+
 router.get("/getFirstCreatedNote", authenticateJWT, function (req, res) {
-    const userId = req.query.userId;
-    const notesCollection = clientMDB.db("SelfieGD").collection("Notes");
-    notesCollection.find({ userId: userId }).sort({ creationDate: 1 }).limit(1).toArray()
-        .then((firstNote) => {
-            if (firstNote.length > 0) {
-                res.status(200).send({
-                    id: firstNote[0]._id.toString(), // Convert ObjectId to string
-                    title: firstNote[0].title,
-                    category: firstNote[0].category,
-                    note: firstNote[0].note,
-                    userId: firstNote[0].userId,
-                    owner: firstNote[0].owner,
-                    characters: firstNote[0].characters,
-                    access: firstNote[0].access,
-                    users: firstNote[0].users,
-                    creationDate: firstNote[0].creationDate,
-                    modificationDate: firstNote[0].modificationDate
-                });
-            } else {
-                res.status(404).send({ message: "No note found for this user" });
+    return new Promise(async (resolve, reject) => {
+        try {
+            const userId = req.query.userId;
+            const notesCollection = clientMDB.db("SelfieGD").collection("Notes");
+            try {
+                const firstNote = await notesCollection.find({ userId: userId }).sort({ creationDate: 1 }).limit(1).toArray();
+                if (firstNote.length > 0) {
+                    res.json({
+                        id: firstNote[0]._id.toString(), // Convert ObjectId to string
+                        title: firstNote[0].title,
+                        category: firstNote[0].category,
+                        note: firstNote[0].note,
+                        userId: firstNote[0].userId,
+                        owner: firstNote[0].owner,
+                        characters: firstNote[0].characters,
+                        access: firstNote[0].access,
+                        users: firstNote[0].users,
+                        creationDate: firstNote[0].creationDate,
+                        modificationDate: firstNote[0].modificationDate
+                    });
+                } else {
+                    res.send({ message: "No note found for this user" });
+                }
+            } catch (error) {
+                console.error('Unexpected error occurred:', error);
+                res.send({ message: 'Error getting first note' });
             }
-        })
-        .catch((error) => {
-            console.error("Failed to get first note", error);
-            res.status(500).send({ message: "Failed to get first note" });
-        });
+        } catch (error) {
+            reject(error);
+        }
+    });
 });
 
 router.get("/getLastModifiedNote", authenticateJWT, function (req, res) {
-    const userId = req.query.userId;
-    const notesCollection = clientMDB.db("SelfieGD").collection("Notes");
-    notesCollection.find({ userId: userId }).sort({ modificationDate: -1 }).limit(1).toArray()
-        .then((lastNote) => {
-            if (lastNote.length > 0) {
-                res.status(200).send({
-                    id: lastNote[0]._id.toString(), // Convert ObjectId to string
-                    title: lastNote[0].title,
-                    category: lastNote[0].category,
-                    note: lastNote[0].note,
-                    userId: lastNote[0].userId,
-                    owner: lastNote[0].owner,
-                    characters: lastNote[0].characters,
-                    access: lastNote[0].access,
-                    users: lastNote[0].users,
-                    creationDate: lastNote[0].creationDate,
-                    modificationDate: lastNote[0].modificationDate
-                });
-            } else {
-                res.status(404).send({ message: "No note found for this user" });
+    return new Promise(async (resolve, reject) => {
+        try {
+            const userId = req.query.userId;
+            const notesCollection = clientMDB.db("SelfieGD").collection("Notes");
+            try {
+                const lastNote = await notesCollection.find({ userId: userId }).sort({ modificationDate: -1 }).limit(1).toArray();
+                if (lastNote.length > 0) {
+                    res.json({
+                        id: lastNote[0]._id.toString(), // Convert ObjectId to string
+                        title: lastNote[0].title,
+                        category: lastNote[0].category,
+                        note: lastNote[0].note,
+                        userId: lastNote[0].userId,
+                        owner: lastNote[0].owner,
+                        characters: lastNote[0].characters,
+                        access: lastNote[0].access,
+                        users: lastNote[0].users,
+                        creationDate: lastNote[0].creationDate,
+                        modificationDate: lastNote[0].modificationDate
+                    });
+                } else {
+                    res.send({ message: "No note found for this user" });
+                }
+            } catch (error) {
+                console.error('Unexpected error occurred:', error);
+                res.send({ message: 'Error getting last note' });
             }
-        })
-        .catch((error) => {
-            console.error("Failed to get last note", error);
-            res.status(500).send({ message: "Failed to get last note" });
-        });
+        } catch (error) {
+            reject(error);
+        }
+    });
 });
 
 router.get("/getFirstModifiedNote", authenticateJWT, function (req, res) {
-    const userId = req.query.userId;
-    const notesCollection = clientMDB.db("SelfieGD").collection("Notes");
-    notesCollection.find({ userId: userId }).sort({ modificationDate: 1 }).limit(1).toArray()
-        .then((firstNote) => {
-            if (firstNote.length > 0) {
-                res.status(200).send({
-                    id: firstNote[0]._id.toString(), // Convert ObjectId to string
-                    title: firstNote[0].title,
-                    category: firstNote[0].category,
-                    note: firstNote[0].note,
-                    userId: firstNote[0].userId,
-                    owner: firstNote[0].owner,
-                    characters: firstNote[0].characters,
-                    access: firstNote[0].access,
-                    users: firstNote[0].users,
-                    creationDate: firstNote[0].creationDate,
-                    modificationDate: firstNote[0].modificationDate
-                });
-            } else {
-                res.status(404).send({ message: "No note found for this user" });
+    return new Promise(async (resolve, reject) => {
+        try {
+            const userId = req.query.userId;
+            const notesCollection = clientMDB.db("SelfieGD").collection("Notes");
+            try {
+                const firstNote = await notesCollection.find({ userId: userId }).sort({ modificationDate: 1 }).limit(1).toArray();
+                if (firstNote.length > 0) {
+                    res.json({
+                        id: firstNote[0]._id.toString(), // Convert ObjectId to string
+                        title: firstNote[0].title,
+                        category: firstNote[0].category,
+                        note: firstNote[0].note,
+                        userId: firstNote[0].userId,
+                        owner: firstNote[0].owner,
+                        characters: firstNote[0].characters,
+                        access: firstNote[0].access,
+                        users: firstNote[0].users,
+                        creationDate: firstNote[0].creationDate,
+                        modificationDate: firstNote[0].modificationDate
+                    });
+                } else {
+                    res.send({ message: "No note found for this user" });
+                }
+            } catch (error) {
+                console.error('Unexpected error occurred:', error);
+                res.send({ message: 'Error getting first note' });
             }
-        })
-        .catch((error) => {
-            console.error("Failed to get first note", error);
-            res.status(500).send({ message: "Failed to get first note" });
-        });
-});
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+);
 
 module.exports = router;

@@ -27,18 +27,18 @@ const RestrictedPeriods = ({ restrictedPeriods, setRestrictedPeriods, username }
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(
-            { ...newPeriod, username }
+          { ...newPeriod, username }
         )
       })
-      .then(response => response.json())
-      .then(data => {
-        setRestrictedPeriods([...restrictedPeriods, data]);
-        setRestrictedStart('');
-        setRestrictedEnd('');
-        setValidationError('');
-        handleCloseDialog();
-      })
-      .catch(error => console.error('Error adding restricted period:', error));
+        .then(response => response.json())
+        .then(data => {
+          setRestrictedPeriods([...restrictedPeriods, data]);
+          setRestrictedStart('');
+          setRestrictedEnd('');
+          setValidationError('');
+          handleCloseDialog();
+        })
+        .catch(error => console.error('Error adding restricted period:', error));
     } else {
       setValidationError('Please enter both start and end dates for the restricted period.');
     }
@@ -52,16 +52,20 @@ const RestrictedPeriods = ({ restrictedPeriods, setRestrictedPeriods, username }
         'Authorization': `Bearer ${token}`
       }
     })
-    .then(response => response.json())
-    .then(data => {
-      setRestrictedPeriods(restrictedPeriods.filter(period => period._id !== id));
-    })
-    .catch(error => console.error('Error deleting restricted period:', error));
+      .then(response => response.json())
+      .then(data => {
+        setRestrictedPeriods(restrictedPeriods.filter(period => period._id !== id));
+      })
+      .catch(error => console.error('Error deleting restricted period:', error));
   };
 
   return (
-    <Box>
-      <Button variant="contained" color="primary" onClick={handleOpenDialog}>
+    <Box sx={{
+      paddingLeft: "20px",
+      paddingRight: "20px",
+      paddingBottom: "20px",
+    }}>
+      <Button color="primary" onClick={handleOpenDialog}>
         Add Restricted Period
       </Button>
       <Dialog open={openDialog} onClose={handleCloseDialog}>
@@ -100,12 +104,17 @@ const RestrictedPeriods = ({ restrictedPeriods, setRestrictedPeriods, username }
       </Dialog>
       <Typography variant="body1">Restricted Periods:</Typography>
       <ul>
-        {restrictedPeriods.map((period) => (
+        {restrictedPeriods.length >= 1 ? restrictedPeriods.map((period) => (
           <li key={period._id}>
             {new Date(period.start).toDateString()} - {new Date(period.end).toDateString()}
             <Button onClick={() => handleDeleteRestrictedPeriod(period._id)}>Delete</Button>
           </li>
-        ))}
+        )) :
+          <li style={{
+            color: "gray",
+            fontStyle: "italic",
+          }}>No restricted periods</li>
+        }
       </ul>
     </Box>
   );
