@@ -27,6 +27,7 @@ import StudyEvent from './StudyEvents.jsx';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import Datebook from './Datebook'
+import Calparser from './Calparser'
 
 const CalendarPage = () => {
   const navigate = useNavigate();
@@ -453,6 +454,11 @@ const CalendarPage = () => {
               <ListItem sx={{ pl: 4 }}>
                 <Datebook events={events} />
               </ListItem>
+
+              <ListItem sx={{ pl: 4 }}>
+                <Calparser />
+              </ListItem>
+
 
             </List>
           </Drawer>

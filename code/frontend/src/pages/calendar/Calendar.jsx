@@ -27,6 +27,7 @@ import { List } from '@mui/material';
 import { Edit } from '@mui/icons-material';
 import { Delete } from '@mui/icons-material';
 import { set } from 'date-fns';
+import iCalendarPlugin from '@fullcalendar/icalendar';
 
 export default function Calendar({ createButton, chosenCalendars, calendars, studyEventCreateButton, taskCreateButton }) {
 
@@ -56,7 +57,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [name, setName] = useState('');
 
- // const [view, setView] = useState('');
+  // const [view, setView] = useState('');
 
 
 
@@ -70,6 +71,8 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
   const [taskToDelete, setTaskToDelete] = useState('');
   const [isTaskCheckBox, setIsTaskCheckBox] = useState(false);
   const [passLateTasks, setPassLateTasks] = useState([]);
+
+  //const [icsEvents, setIcsEvents] = useState([]);
 
   // studyevents
   const [isStudyEvent, setIsStudyEvent] = useState(false);
@@ -103,7 +106,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
         .then(response => response.json())
         .then(data => {
           setEvents(data);
-          
+
 
         })
         .catch(error => {
@@ -144,14 +147,14 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     if (info) {
       const calendarApi = calendarRef.current.getApi();
       const view = calendarApi.view
-      if(view){
-        if(view.type === 'timeGridWeek' || view.type === 'timeGridDay'){
+      if (view) {
+        if (view.type === 'timeGridWeek' || view.type === 'timeGridDay') {
           console.log(view)
           setAllDay(false);
           setStartTime(timeToUsable(info.start.getHours(), info.start.getMinutes()));
           setEndTime(timeToUsable(info.end.getHours(), info.end.getMinutes()));
+        }
       }
-    }
       setStartDate(info.startStr);
       setEndDate(info.endStr);
     }
@@ -227,8 +230,7 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
       } else {
         eventData.endTime = null;
       }
-      if (timesToRepeat != "0" && eventData.daysOfWeek === null && eventData.endRecur === null && eventData.end === null) {
-
+      if (timesToRepeat != "0" && eventData.daysOfWeek === null) {
         eventData.endRecur = calculateRepeatEndDate(startDate, timesToRepeat);
         eventData.timesToRepeat = timesToRepeat;
 
@@ -474,9 +476,12 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     }
     if (event._def.extendedProps.isRecurring) {
       setIsRecurring(true);
-      if (event._def.recurringDef.typeData.daysOfWeek !== null) {
-        setRecurringDays(convertIntegersToDays(event._def.recurringDef.typeData.daysOfWeek));
+      if (event._def.recurringDef) {
 
+        if (event._def.recurringDef.typeData.daysOfWeek !== null) {
+          setRecurringDays(convertIntegersToDays(event._def.recurringDef.typeData.daysOfWeek));
+
+        }
       }
     }
     setCurrentId(event.id);
@@ -590,10 +595,12 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
 
 
       console.log('wtf', event)
-      if (event._def.recurringDef.typeData.daysOfWeek !== null) {
+      if (event._def.recurringDef) {
+        if (event._def.recurringDef.typeData.daysOfWeek !== null) {
 
-        setRecurringDays(convertIntegersToDays(event._def.recurringDef.typeData.daysOfWeek));
+          setRecurringDays(convertIntegersToDays(event._def.recurringDef.typeData.daysOfWeek));
 
+        }
       }
     }
     setSelectedCalendars(event._def.extendedProps.calendar);
@@ -815,14 +822,43 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     return true;
   };
 
-  
+  /*const downloadIcsFile = (icsEvents) => {
+    const element = document.createElement('a');
+    const file = new Blob([icsEvents], { type: 'text/calendar' });
+    element.href = URL.createObjectURL(file);
+    element.download = "events.ics";
+    document.body.appendChild(element); // Required for this to work in FireFox
+    element.click();
+  };
 
+
+  
+  const fetchICS = () => {
+    fetch('/api/getCalendar', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+        }
+        })
+        .then(response => response.text())
+        .then(data => {
+          setIcsEvents(data);
+          downloadIcsFile(data);
+          
+          
+          })
+          .catch(error => console.error('Error fetching calendar:', error));
+          };
+          
+          */
   const handleGetEvents = () => {
     const calendarApi = calendarRef.current.getApi();
     const events = calendarApi.getEvents();
+    //fetchICS();
     //const view = calendarApi.view
     //setView(view)
     //console.log(view.type);
+    console.log(events);
   };
 
   useEffect(() => {
@@ -862,16 +898,16 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     } else {
       return (
         <Box display="flex" flexDirection="row" >
-        <Typography>{user}</Typography><Button onClick={() => removeSharedUser(user)}>Delete</Button>
+          <Typography>{user}</Typography><Button onClick={() => removeSharedUser(user)}>Delete</Button>
         </Box>
       )
     }
-}
+  }
 
   return (
     <>
       <FullCalendar
-        plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin, rrulePlugin]}
+        plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin, rrulePlugin, iCalendarPlugin]}
         headerToolbar={{
           left: 'prev,next today',
           center: 'title',
@@ -879,7 +915,8 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
         }}
         initialView="dayGridMonth"
         selectable={true}
-        events={allEventsToDisplay().allEvents}
+        //events={allEventsToDisplay().allEvents}
+        events={events}
         ref={calendarRef}
         select={(e) => addEvent(e)}
         editable={true}

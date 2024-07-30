@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "ical.js": "^2.0.1",
     "react-draggable": "^4.4.6"
   }
 }

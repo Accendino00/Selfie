@@ -74,4 +74,16 @@ router.delete('/deleteCalendar', authenticateJWT, async (req, res) => {
     }
   });
 
+router.get('/getCalendar', authenticateJWT, async (req, res) => {
+  try {
+    const response = await fetch('https://calendar.google.com/calendar/ical/38d6a54381102a45fedc744e87204280d3df7ca63f7aa9216c7ffa5536ec33c9%40group.calendar.google.com/public/basic.ics');
+    const data = await response.text();
+    res.send(data);
+  } catch (error) {
+    console.error('Failed to fetch calendar:', error);
+    res.status(500).send('Failed to fetch calendar');
+  }
+}
+);
+
 module.exports = router;

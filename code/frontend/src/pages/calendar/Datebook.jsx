@@ -7,7 +7,6 @@ import { Button, Dialog } from '@mui/material';
 
 
 const Datebook = ({ events }) => {
-    //const [events, setEvents] = useState([])
     const token = Cookies.get('token');
     const { loginStatus, isTokenLoading, username } = useTokenChecker();
     const [open, setOpen] = useState(false);
@@ -17,6 +16,15 @@ const Datebook = ({ events }) => {
         currentDate.setDate(currentDate.getDate() + days); // Add 14 days
         return currentDate;
     }
+
+    const calculateWeeks = (endDate) => {
+        const today = new Date();
+        const end = new Date(endDate);
+        const differenceInTime = end.getTime() - today.getTime();
+        const differenceInDays = differenceInTime / (1000 * 3600 * 24);
+        const differenceInWeeks = Math.floor(differenceInDays / 7);
+        return differenceInWeeks;
+    };
 
     const setupEvent = (event) => {
         // standardizzo le date per assicurarmi che siano utili
@@ -33,22 +41,25 @@ const Datebook = ({ events }) => {
             let frequency = null;
             let weekdays = [];
             let count = 0;
-            // se ho daysofweek, allora devo metterlo per forza weekly perche'
-            // datebook me lo richiede per settare i weekdays
             if (event.isRecurring) {
+                // se ho daysofweek, allora devo metterlo per forza weekly perche'
+                // datebook me lo richiede per settare i weekdays
 
                 if (event.daysOfWeek) {
                     frequency = "WEEKLY";
                     weekdays = event.daysOfWeek;
+                    newEnd = new Date(event.start);
+                    if (event.timesToRepeat != 0 && event.timesToRepeat != '' && event.timesToRepeat != null) {
+                        console.log('ciao', event)
+                        count = (calculateWeeks(event.end)) * event.daysOfWeek.length;
+                    }
                 }
-                // se ho anche timesToRepeat, ma non ho daysOfWeek, 
-                // allora l'evento ha una durata di timesToRepeat settimane,
-                // tutti i giorni della settimana, fino ad end, se c'e',
-                // altrimenti fino a count, che e' il massimo numero di eventi
-                // che si possono creare
+                // se ho timesToRepeat, ma non ho daysOfWeek, 
+                // allora l'evento e' daily
                 else if (!event.daysOfWeek && event.timesToRepeat > 0) {
                     frequency = "DAILY";
                     newEnd = addDaysToDate(event.timesToRepeat * 7);
+                    count = event.timesToRepeat;
 
                 }
                 // se non ho ne' daysOfWeek ne' timesToRepeat, allora e' un evento
@@ -112,9 +123,9 @@ const Datebook = ({ events }) => {
             if (weekdays.length > 0) {
                 eventData.recurrence.weekdays = weekdays;
             }
-            //if (count > 0) {
-            //   eventData.recurrence.count = count;
-            //}
+            if (count > 0) {
+                eventData.recurrence.count = count;
+            }
             if (frequency === "WEEKLY") {
                 eventData.recurrence.frequency = frequency;
             }
