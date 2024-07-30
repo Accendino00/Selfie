@@ -6,7 +6,7 @@ let bcrypt = require('bcryptjs');
 let { clientMDB }  = require('../utils/dbmanagement');
 
 
-function registerUser(username, password, truename, birthdate) {
+function registerUser(username, password, truename, birthdate, email) {
     return new Promise((resolve, reject) => {
         try {
             bcrypt.hash(password, 8)
@@ -29,6 +29,7 @@ function registerUser(username, password, truename, birthdate) {
                             password: hashedPassword,
                             truename: truename,
                             birthdate: birthdate,
+                            email: email,
                             notifyNotice: 60000 * 60 * 24,
                             notifyRepeat: 3,
                         };
@@ -97,10 +98,11 @@ router.post("/register", function (req, res) {
         let password = req.body.password;
         let truename = req.body.truename;
         let birthdate = req.body.birthdate;
+        let email = req.body.email;
         // Creiamo un nuovo utente con i parametri appena ricevuti
 
         // Registriamo l'utente
-        registerUser(username, password, truename, birthdate).then((result) => {
+        registerUser(username, password, truename, birthdate, email).then((result) => {
             // Se non ci sono stati errori, ritorniamo un 200
             res.status(result.status);
             

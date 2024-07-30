@@ -634,8 +634,9 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
             sx={{ marginLeft: 'auto' }}
           >
             <Badge badgeContent={totalNotifications} color="secondary">
-              <NotificationsIcon />
+              <NotificationsIcon /> 
             </Badge>
+           
           </IconButton>
           <IconButton
             color="inherit"

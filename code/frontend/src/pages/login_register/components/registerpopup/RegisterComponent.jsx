@@ -8,6 +8,7 @@ import UsernameField from '../fields/UsernameField'; // Username field
 import ConfirmPasswordField from '../fields/ConfirmPasswordField'; // Confirm password field
 import TruenameTextField from '../fields/TruenameTextField';
 import BirthdateTextField from '../fields/BirthdateTextField';
+import EmailTextField from '../fields/EmailTextField';
 import Grid from '@mui/material/Grid';
 import CircularProgress from '@mui/material/CircularProgress';
 import Snackbar from '@mui/material/Snackbar';
@@ -28,6 +29,8 @@ function RegisterComponent(props) {
   const [passwordsMatch, setPasswordsMatch] = useState(0); // 0 no password, 1 passwords match, -1 passwords don't match
   const [loading, setLoading] = useState(false); // Loading state
   const [errorMessage, setErrorMessage] = useState("Credenziali sbagliate"); // Error message state
+  const [email, setEmail] = useState(''); // Email state
+  const [errorEmail, setErrorEmail] = useState(false); // Error email state
 
   const [errorRegistration, setErrorRegistration] = useState(false); // Error registration state
 
@@ -75,7 +78,8 @@ function RegisterComponent(props) {
       username: username,
       password: password,
       truename: truename,
-      birthdate: birthdate
+      birthdate: birthdate,
+      email: email
     }
 
     try {
@@ -177,6 +181,15 @@ function RegisterComponent(props) {
               birthdate={birthdate}
               setBirthdate={setBirthdate}
             />
+          </Grid>
+          <Grid item>
+              <EmailTextField
+              {...formFields.email}
+              email={email}
+              setEmail={setEmail}
+              error={errorEmail}
+              setError={setErrorEmail}
+              />
           </Grid>
           {
             loading ? (
