@@ -129,7 +129,7 @@ async function checkEvents() {
   const now = new Date();
   
   // Find all events that are either happening soon or need to be checked for recurring notifications
-  const events = await eventsCollection.find({});
+  let events = await eventsCollection.find({});
   if (!events) return;
 
   try{

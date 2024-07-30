@@ -13,7 +13,6 @@ import { Accessibility, Check } from '@mui/icons-material';
 import AccessibilityIcon from '@mui/icons-material/Accessibility';
 import { set } from 'date-fns';
 import { Checkbox } from '@mui/material';
-import EmailShareButton from '../../components/EmailShareButton.jsx';
 import { Box } from '@mui/material';
 import { Form } from 'react-router-dom';
 import { FormControlLabel } from '@mui/material';

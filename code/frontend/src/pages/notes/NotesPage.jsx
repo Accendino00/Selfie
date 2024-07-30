@@ -10,7 +10,6 @@ import { useNavigate } from "react-router-dom";
 import { useMediaQuery, Fab, IconButton, Tooltip } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import EmailShareButton from "../components/EmailShareButton";
 
 
 function NotesPage() {
@@ -33,6 +32,8 @@ function NotesPage() {
 
     useEffect(() => {
         let timeoutId;
+        console.log('Fetching user id');
+        console.log(username);
         const fetchUserId = async () => {
             if (!token || !username) return; // Verifica che il token e username siano disponibili
             try {
