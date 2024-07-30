@@ -16,7 +16,7 @@ import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import Drawer from '@mui/material/Drawer';
 import StudyComponent from './components/StudyComponent';
 import { useRef } from 'react';
-import "bootswatch/dist/Vapor/bootstrap.min.css"
+import "./bootstrap.min.css"
 import { useNavigate } from 'react-router-dom';
 import TimeMachine from '../common/TimeMachine';
 import { CircularProgress } from '@mui/material';

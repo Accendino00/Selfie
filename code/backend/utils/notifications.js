@@ -129,8 +129,16 @@ async function checkEvents() {
   const now = new Date();
   
   // Find all events that are either happening soon or need to be checked for recurring notifications
-  const events = await eventsCollection.find({}).toArray();
-  
+  const events = await eventsCollection.find({});
+  if (!events) return;
+
+  try{
+
+    events= await events.toArray();
+  } catch (error) {
+    events = [events];
+  }
+
   // add all recurrencies for repeated events
   // we consider recurrencies as singular events, with their own notification
   let allEvents = events;
