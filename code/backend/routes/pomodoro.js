@@ -13,13 +13,14 @@ router.get('/getLastPomodoro', authenticateJWT, async (req, res) => {
         if (lastPomodoro.length > 0) {
             res.json(lastPomodoro[0]);
         } else {
-            res.status(404).send('No pomodoro found for this user');
+            res.status(404).json({ message: 'No pomodoro found for this user' });
         }
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Error getting last pomodoro');
+        console.error('Unexpected error occurred:', error);
+        res.status(500).json({ message: 'Error getting last pomodoro' });
     }
 });
+
 
 router.get('/getFirstPomodoro', authenticateJWT, async (req, res) => {
     const userId = req.query.userId;

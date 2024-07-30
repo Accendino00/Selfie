@@ -90,6 +90,8 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
   const token = Cookies.get('token');
   const navigate = useNavigate();
   const calendarRef = useRef(null);
+  const [validationError, setValidationError] = useState('');
+
 
 
   useEffect(() => {
@@ -135,7 +137,8 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     }
   }, [createButton, studyEventCreateButton, taskCreateButton]);
 
-
+  
+  
   const addEvent = (info) => {
     resetForm();
     setAllDay(true);
@@ -663,12 +666,25 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
     setShared([]);
     setIsStudyEvent(false);
     setIsTask(false);
+    setInvitedUsers([]);
   };
 
-  const addInvitedUser = () => {
-    setInvitedUsers([...invitedUsers, inviteUser]);
-    setInviteUser('');
+  const addInvitedUser = async () => {
+    const error = await checkRestrictedPeriods(inviteUser);
+    console .log('error', error)  
+    if (error) {
+      setValidationError(error);
+      setInviteUser('');
+      
+    } else {
+      setInvitedUsers([...invitedUsers, inviteUser]);
+      setInviteUser('');
+      setValidationError('');
+    }
   };
+
+
+  
 
   const removeInvitedUser = (user) => {
     setInvitedUsers(invitedUsers.filter(u => u !== user));
@@ -867,6 +883,39 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
       )
     }
 }
+
+
+  const checkRestrictedPeriods = async (username) => {
+    try {
+      console.log('username', username)
+      console.log('startDate', startDate)
+      console.log('endDate', endDate)
+      const fetchRestrictedPeriods = await fetch(`/api/restrictedPeriods?username=${username}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const restrictedPeriods = await fetchRestrictedPeriods.json();
+      console.log('restricted periods', restrictedPeriods)
+      if (restrictedPeriods.length > 0) {
+        for(let i = 0; i < restrictedPeriods.length; i++) {
+          console.log('start', new Date(restrictedPeriods[i].start))
+          console.log('end', new Date(restrictedPeriods[i].end))
+          if (new Date(restrictedPeriods[i].start) >= new Date(startDate) && new Date(restrictedPeriods[i].start) <= new Date(endDate) || new Date(restrictedPeriods[i].end) >= new Date(startDate) && new Date(restrictedPeriods[i].end) <= new Date(endDate) || new Date(restrictedPeriods[i].start) <= new Date(startDate) && new Date(restrictedPeriods[i].end) >= new Date(endDate)) {
+            console.log('User is not available during this time.')
+            return 'User is not available during this time.';
+          }
+        }
+      }
+      return '';
+    }
+    catch (error) {
+      console.error('Error fetching restricted periods:', error);
+    }
+
+  }
+      
 
   return (
     <>
@@ -1168,6 +1217,12 @@ export default function Calendar({ createButton, chosenCalendars, calendars, stu
             onChange={(e) => setInviteUser(e.target.value)}
           />
           <Button onClick={addInvitedUser}>Add User</Button>
+          {validationError && 
+          <Box display="flex" flexDirection="row" >
+          <Typography color="error">{validationError}</Typography>
+          <Button onClick={() => setValidationError('')}>Ok</Button>
+          </Box>
+          }
           <div>
             {invitedUsers.map((user, index) => (
               <div key={index}>

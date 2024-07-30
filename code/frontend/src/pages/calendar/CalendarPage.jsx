@@ -27,6 +27,7 @@ import StudyEvent from './StudyEvents.jsx';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import Datebook from './Datebook';
+import RestrictedPeriods from './components/RestrictedPeriods.jsx';
 
 const CalendarPage = () => {
   const navigate = useNavigate();
@@ -47,6 +48,7 @@ const CalendarPage = () => {
   const [studyEventCreate, setStudyEventCreate] = useState(false);
   const [taskCreate, setTaskCreate] = useState(false);
   const [events, setEvents] = useState([])
+  const [restrictedPeriods, setRestrictedPeriods] = useState([]);
 
 
   useEffect(() => {
@@ -57,6 +59,30 @@ const CalendarPage = () => {
     }
 
   }, [loginStatus, isTokenLoading]);
+
+  useEffect(() => {
+    const fetchRestrictedPeriods = () => {
+      fetch(`/api/restrictedPeriods?username=${username}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        setRestrictedPeriods(data);
+      })
+      .catch(error => console.error('Error fetching restricted periods:', error));
+    };
+  
+    // Fetch restricted periods initially and set up polling
+    const intervalId = setInterval(fetchRestrictedPeriods, 1000);
+    fetchRestrictedPeriods();
+  
+    // Cleanup: stop polling on component unmount
+    return () => clearInterval(intervalId);
+  }, [token, restrictedPeriods, username]);
+  
 
   useEffect(() => {
     // Imposta lo stato dei checkbox e i calendari scelti in base ai valori salvati in localStorage,
@@ -91,11 +117,12 @@ const CalendarPage = () => {
 
     // Start polling on component mount
     const intervalId = setInterval(fetchCalendars, 1000);
-    fetchCalendars();
+    if (username)
+      fetchCalendars();
 
     // Cleanup: stop polling on component unmount
     return () => clearInterval(intervalId);
-  }, [token, username]);
+  }, [username]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -453,8 +480,9 @@ const CalendarPage = () => {
               <ListItem sx={{ pl: 4 }}>
                 <Datebook events={events} />
               </ListItem>
-
+              <RestrictedPeriods restrictedPeriods={restrictedPeriods} setRestrictedPeriods={setRestrictedPeriods} username={username} />
             </List>
+
           </Drawer>
 
           {/* Calendario */}

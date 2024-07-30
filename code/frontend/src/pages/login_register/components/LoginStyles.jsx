@@ -1,3 +1,4 @@
+import EmailTextField from "./fields/EmailTextField";
 
 const styles = {
   grid: {
@@ -138,6 +139,24 @@ const styles = {
     },
     '& .MuiInputBase-input': {
             color: '#53ddf0',
+      }
+  },
+
+  EmailTextField:{
+    '& label': {
+      color: '#7d5ffc',
+    },
+    '& label.Mui-focused': {
+      color: '#7d5ffc',
+    },
+    '& .MuiFilledInput-underline:after': {
+      borderBottomColor: '#7d5ffc',
+    },
+    '& .MuiFilledInput-underline:before': {
+      borderBottomColor: '#53ddf0',
+    },
+    '& .MuiInputBase-input': {
+            color: '#53ddf0', 
       }
   },
 

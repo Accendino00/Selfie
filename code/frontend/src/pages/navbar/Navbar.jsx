@@ -633,7 +633,6 @@ const Navbar = ({ setSeedTwo, showTimeMachine, setShowTimeMachine }) => {
             onClick={handleNotificationClick}
             sx={{ marginLeft: 'auto' }}
           >
-            
             <Badge badgeContent={totalNotifications} color="secondary">
               <NotificationsIcon /> 
             </Badge>

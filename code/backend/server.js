@@ -69,10 +69,10 @@ app.use("/api", require(config.ROUTESERVIZI + "/calendars"))
 app.use("/api", require(config.ROUTESERVIZI + "/events"))
 app.use("/api", require(config.ROUTESERVIZI + "/account"))
 app.use("/api", require(config.ROUTESERVIZI + "/tasks"))
-app.use("/api", require(config.ROUTESERVIZI + "/email"))
 app.use("/api", require(config.ROUTESERVIZI + "/studyevents"))
 app.use("/api", require(config.ROUTESERVIZI + "/pomodoro"))
 app.use("/api", require(config.ROUTESERVIZI + "/messages"))
+app.use("/api", require(config.ROUTESERVIZI + "/restrictedPeriods"))
 
 // Setup per mandare le richieste di "/" a "routes/webpages" package
 app.get("*", require(config.ROUTESERVIZI + "/webpages"));
